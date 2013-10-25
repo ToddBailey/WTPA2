@@ -1,0 +1,25 @@
+   1               		.file	"globals.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.global __do_copy_data
+   8               		.global __do_clear_bss
+  16               	.Ltext0:
+  17               		.comm bankStates,68,1
+  18               		.comm systemTicks,2,1
+  19               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 globals.c
+     /tmp/cc4ejpUH.s:2      *ABS*:0000003f __SREG__
+     /tmp/cc4ejpUH.s:3      *ABS*:0000003e __SP_H__
+     /tmp/cc4ejpUH.s:4      *ABS*:0000003d __SP_L__
+     /tmp/cc4ejpUH.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/cc4ejpUH.s:6      *ABS*:00000001 __zero_reg__
+                            *COM*:00000044 bankStates
+                            *COM*:00000002 systemTicks
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

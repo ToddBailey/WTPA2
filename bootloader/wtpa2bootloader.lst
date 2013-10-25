@@ -1,0 +1,979 @@
+   1               		.file	"wtpa2bootloader.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  15               	.Ltext0:
+  16               	.global	HandleSoftclock
+  18               	HandleSoftclock:
+  19               	.LFB4:
+  20               	.LM1:
+  21               	/* prologue: function */
+  22               	/* frame size = 0 */
+  23               	.LM2:
+  24 0000 A89B      		sbis 53-32,0
+  25 0002 00C0      		rjmp .L3
+  26               	.LM3:
+  27 0004 A89A      		sbi 53-32,0
+  28               	.LM4:
+  29 0006 8091 0000 		lds r24,systemTicks
+  30 000a 9091 0000 		lds r25,(systemTicks)+1
+  31 000e 0196      		adiw r24,1
+  32 0010 9093 0000 		sts (systemTicks)+1,r25
+  33 0014 8093 0000 		sts systemTicks,r24
+  34               	.L3:
+  35 0018 0895      		ret
+  36               	.LFE4:
+  39               	UpdateCrc:
+  40               	.LFB9:
+  41               	.LM5:
+  42               	.LVL0:
+  43               	/* prologue: function */
+  44               	/* frame size = 0 */
+  45               	.LM6:
+  46 001a 362F      		mov r19,r22
+  47               	.LVL1:
+  48 001c 20E0      		ldi r18,lo8(0)
+  49               	.LVL2:
+  50 001e 2827      		eor r18,r24
+  51 0020 3927      		eor r19,r25
+  52               	.LVL3:
+  53 0022 40E0      		ldi r20,lo8(0)
+  54               	.LVL4:
+  55               	.LM7:
+  56 0024 61E2      		ldi r22,lo8(4129)
+  57 0026 70E1      		ldi r23,hi8(4129)
+  58               	.LVL5:
+  59               	.L7:
+  60 0028 C901      		movw r24,r18
+  61 002a 880F      		lsl r24
+  62 002c 991F      		rol r25
+  63               	.LVL6:
+  64               	.LM8:
+  65 002e 37FF      		sbrs r19,7
+  66 0030 00C0      		rjmp .L5
+  67               	.LVL7:
+  68               	.LM9:
+  69 0032 9C01      		movw r18,r24
+  70 0034 2627      		eor r18,r22
+  71 0036 3727      		eor r19,r23
+  72 0038 00C0      		rjmp .L6
+  73               	.LVL8:
+  74               	.L5:
+  75               	.LM10:
+  76 003a 9C01      		movw r18,r24
+  77               	.L6:
+  78               	.LM11:
+  79 003c 4F5F      		subi r20,lo8(-(1))
+  80 003e 4830      		cpi r20,lo8(8)
+  81 0040 01F4      		brne .L7
+  82               	.LM12:
+  83 0042 C901      		movw r24,r18
+  84               	.LVL9:
+  85               	/* epilogue start */
+  86 0044 0895      		ret
+  87               	.LFE9:
+  90               	GetSdBlock:
+  91               	.LFB7:
+  92               	.LM13:
+  93               	.LVL10:
+  94 0046 AF92      		push r10
+  95 0048 BF92      		push r11
+  96 004a CF92      		push r12
+  97 004c DF92      		push r13
+  98 004e EF92      		push r14
+  99 0050 FF92      		push r15
+ 100 0052 0F93      		push r16
+ 101 0054 1F93      		push r17
+ 102 0056 CF93      		push r28
+ 103 0058 DF93      		push r29
+ 104               	/* prologue: function */
+ 105               	/* frame size = 0 */
+ 106 005a 6B01      		movw r12,r22
+ 107               	.LM14:
+ 108 005c A0E0      		ldi r26,lo8(0)
+ 109 005e B0E0      		ldi r27,hi8(0)
+ 110               	.LVL11:
+ 111 0060 BC01      		movw r22,r24
+ 112 0062 CD01      		movw r24,r26
+ 113               	.LVL12:
+ 114 0064 0E94 0000 		call SdBeginSingleBlockRead
+ 115               	.LVL13:
+ 116 0068 8130      		cpi r24,lo8(1)
+ 117 006a 01F0      		breq .L11
+ 118 006c DD24      		clr r13
+ 119               	.LVL14:
+ 120 006e 00C0      		rjmp .L19
+ 121               	.LVL15:
+ 122               	.L11:
+ 123               	.LM15:
+ 124 0070 8091 0000 		lds r24,systemTicks
+ 125 0074 9091 0000 		lds r25,(systemTicks)+1
+ 126               	.LVL16:
+ 127               	.LM16:
+ 128 0078 7C01      		movw r14,r24
+ 129 007a 00E0      		ldi r16,lo8(0)
+ 130 007c 10E0      		ldi r17,hi8(0)
+ 131 007e 8AE7      		ldi r24,lo8(122)
+ 132 0080 90E0      		ldi r25,hi8(122)
+ 133 0082 A0E0      		ldi r26,hlo8(122)
+ 134 0084 B0E0      		ldi r27,hhi8(122)
+ 135               	.LVL17:
+ 136 0086 E80E      		add r14,r24
+ 137 0088 F91E      		adc r15,r25
+ 138 008a 0A1F      		adc r16,r26
+ 139 008c 1B1F      		adc r17,r27
+ 140 008e 00C0      		rjmp .L13
+ 141               	.L15:
+ 142               	.LM17:
+ 143 0090 0E94 0000 		call HandleSoftclock
+ 144               	.L13:
+ 145               	.LM18:
+ 146 0094 8091 0000 		lds r24,systemTicks
+ 147 0098 9091 0000 		lds r25,(systemTicks)+1
+ 148 009c A0E0      		ldi r26,lo8(0)
+ 149 009e B0E0      		ldi r27,hi8(0)
+ 150 00a0 8E15      		cp r24,r14
+ 151 00a2 9F05      		cpc r25,r15
+ 152 00a4 A007      		cpc r26,r16
+ 153 00a6 B107      		cpc r27,r17
+ 154 00a8 00F4      		brsh .L14
+ 155 00aa 8FEF      		ldi r24,lo8(-1)
+ 156 00ac 0E94 0000 		call TransferSdByte
+ 157 00b0 8E3F      		cpi r24,lo8(-2)
+ 158 00b2 01F4      		brne .L15
+ 159               	.L14:
+ 160               	.LM19:
+ 161 00b4 A090 0000 		lds r10,systemTicks
+ 162 00b8 B090 0000 		lds r11,(systemTicks)+1
+ 163 00bc C0E0      		ldi r28,lo8(0)
+ 164 00be D0E0      		ldi r29,hi8(0)
+ 165               	.LVL18:
+ 166               	.L16:
+ 167               	.LM20:
+ 168 00c0 8FEF      		ldi r24,lo8(-1)
+ 169 00c2 0E94 0000 		call TransferSdByte
+ 170 00c6 D601      		movw r26,r12
+ 171 00c8 8D93      		st X+,r24
+ 172 00ca 6D01      		movw r12,r26
+ 173               	.LM21:
+ 174 00cc 2196      		adiw r28,1
+ 175 00ce B2E0      		ldi r27,hi8(512)
+ 176 00d0 C030      		cpi r28,lo8(512)
+ 177 00d2 DB07      		cpc r29,r27
+ 178 00d4 01F4      		brne .L16
+ 179 00d6 DD24      		clr r13
+ 180               	.LVL19:
+ 181 00d8 C501      		movw r24,r10
+ 182 00da A0E0      		ldi r26,lo8(0)
+ 183 00dc B0E0      		ldi r27,hi8(0)
+ 184 00de E816      		cp r14,r24
+ 185 00e0 F906      		cpc r15,r25
+ 186 00e2 0A07      		cpc r16,r26
+ 187 00e4 1B07      		cpc r17,r27
+ 188 00e6 00F0      		brlo .L17
+ 189 00e8 DD24      		clr r13
+ 190 00ea D394      		inc r13
+ 191               	.L17:
+ 192               	.LM22:
+ 193 00ec 8FEF      		ldi r24,lo8(-1)
+ 194 00ee 0E94 0000 		call TransferSdByte
+ 195               	.LM23:
+ 196 00f2 8FEF      		ldi r24,lo8(-1)
+ 197 00f4 0E94 0000 		call TransferSdByte
+ 198               	.L19:
+ 199               	.LM24:
+ 200 00f8 8091 C800 		lds r24,200
+ 201 00fc 86FF      		sbrs r24,6
+ 202 00fe 00C0      		rjmp .L19
+ 203               	.LM25:
+ 204 0100 0E94 0000 		call EndSdTransfer
+ 205               	.LM26:
+ 206 0104 8FEF      		ldi r24,lo8(-1)
+ 207 0106 0E94 0000 		call TransferSdByte
+ 208               	.LM27:
+ 209 010a 8D2D      		mov r24,r13
+ 210               	/* epilogue start */
+ 211 010c DF91      		pop r29
+ 212 010e CF91      		pop r28
+ 213               	.LVL20:
+ 214 0110 1F91      		pop r17
+ 215 0112 0F91      		pop r16
+ 216 0114 FF90      		pop r15
+ 217 0116 EF90      		pop r14
+ 218 0118 DF90      		pop r13
+ 219               	.LVL21:
+ 220 011a CF90      		pop r12
+ 221               	.LVL22:
+ 222 011c BF90      		pop r11
+ 223 011e AF90      		pop r10
+ 224 0120 0895      		ret
+ 225               	.LFE7:
+ 227               	.global	main
+ 229               	main:
+ 230               	.LFB11:
+ 231               	.LM28:
+ 232 0122 4F92      		push r4
+ 233 0124 5F92      		push r5
+ 234 0126 6F92      		push r6
+ 235 0128 7F92      		push r7
+ 236 012a 8F92      		push r8
+ 237 012c 9F92      		push r9
+ 238 012e AF92      		push r10
+ 239 0130 BF92      		push r11
+ 240 0132 CF92      		push r12
+ 241 0134 DF92      		push r13
+ 242 0136 EF92      		push r14
+ 243 0138 FF92      		push r15
+ 244 013a 0F93      		push r16
+ 245 013c 1F93      		push r17
+ 246 013e CF93      		push r28
+ 247 0140 DF93      		push r29
+ 248               	/* prologue: function */
+ 249               	/* frame size = 0 */
+ 250               	.LM29:
+ 251               	/* #APP */
+ 252               	 ;  342 "wtpa2bootloader.c" 1
+ 253 0142 F894      		cli
+ 254               	 ;  0 "" 2
+ 255               	.LM30:
+ 256               	/* #NOAPP */
+ 257 0144 8FEE      		ldi r24,lo8(-17)
+ 258 0146 87B9      		out 39-32,r24
+ 259               	.LM31:
+ 260 0148 88E0      		ldi r24,lo8(8)
+ 261 014a 88B9      		out 40-32,r24
+ 262               	.LM32:
+ 263 014c 80E8      		ldi r24,lo8(-128)
+ 264 014e 8AB9      		out 42-32,r24
+ 265               	.LM33:
+ 266 0150 1BB8      		out 43-32,__zero_reg__
+ 267               	.LM34:
+ 268 0152 86E0      		ldi r24,lo8(6)
+ 269 0154 82B9      		out 34-32,r24
+ 270               	.LM35:
+ 271 0156 8EE3      		ldi r24,lo8(62)
+ 272 0158 81B9      		out 33-32,r24
+ 273               	.LM36:
+ 274 015a 1FEF      		ldi r17,lo8(-1)
+ 275 015c 14B9      		out 36-32,r17
+ 276               	.LBB28:
+ 277               	.LBB29:
+ 278               	.LM37:
+ 279 015e 15B8      		out 37-32,__zero_reg__
+ 280               	.LM38:
+ 281 0160 14B9      		out 36-32,r17
+ 282               	.LM39:
+ 283 0162 5F9A      		sbi 43-32,7
+ 284               	.LM40:
+ 285 0164 5F98      		cbi 43-32,7
+ 286               	.LBE29:
+ 287               	.LBE28:
+ 288               	.LBB30:
+ 289               	.LBB31:
+ 290               	.LM41:
+ 291 0166 8091 6400 		lds r24,100
+ 292 016a 8F7D      		andi r24,lo8(-33)
+ 293 016c 8093 6400 		sts 100,r24
+ 294               	.LM42:
+ 295 0170 1092 6E00 		sts 110,__zero_reg__
+ 296               	.LM43:
+ 297 0174 14BC      		out 68-32,__zero_reg__
+ 298               	.LM44:
+ 299 0176 16BC      		out 70-32,__zero_reg__
+ 300               	.LM45:
+ 301 0178 15BB      		out 53-32,r17
+ 302               	.LM46:
+ 303 017a 1092 0000 		sts (systemTicks)+1,__zero_reg__
+ 304 017e 1092 0000 		sts systemTicks,__zero_reg__
+ 305               	.LM47:
+ 306 0182 83E0      		ldi r24,lo8(3)
+ 307 0184 85BD      		out 69-32,r24
+ 308               	.LBE31:
+ 309               	.LBE30:
+ 310               	.LM48:
+ 311 0186 0E94 0000 		call InitSdInterface
+ 312               	.LBB32:
+ 313               	.LBB33:
+ 314               	.LM49:
+ 315 018a 15B9      		out 37-32,r17
+ 316               	.LM50:
+ 317 018c 14B8      		out 36-32,__zero_reg__
+ 318               	.LM51:
+ 319 018e 4398      		cbi 40-32,3
+ 320               	.LM52:
+ 321               	/* #APP */
+ 322               	 ;  126 "wtpa2bootloader.c" 1
+ 323 0190 0000      		nop
+ 324               	 ;  0 "" 2
+ 325               	.LM53:
+ 326               	 ;  127 "wtpa2bootloader.c" 1
+ 327 0192 0000      		nop
+ 328               	 ;  0 "" 2
+ 329               	.LM54:
+ 330               	 ;  128 "wtpa2bootloader.c" 1
+ 331 0194 0000      		nop
+ 332               	 ;  0 "" 2
+ 333               	.LM55:
+ 334               	 ;  129 "wtpa2bootloader.c" 1
+ 335 0196 0000      		nop
+ 336               	 ;  0 "" 2
+ 337               	.LM56:
+ 338               	 ;  130 "wtpa2bootloader.c" 1
+ 339 0198 0000      		nop
+ 340               	 ;  0 "" 2
+ 341               	.LM57:
+ 342               	 ;  131 "wtpa2bootloader.c" 1
+ 343 019a 0000      		nop
+ 344               	 ;  0 "" 2
+ 345               	.LM58:
+ 346               	/* #NOAPP */
+ 347 019c 83B1      		in r24,35-32
+ 348               	.LVL23:
+ 349 019e 8095      		com r24
+ 350               	.LM59:
+ 351 01a0 439A      		sbi 40-32,3
+ 352               	.LM60:
+ 353 01a2 9FEF      		ldi r25,lo8(-1)
+ 354 01a4 94B9      		out 36-32,r25
+ 355               	.LM61:
+ 356 01a6 87FF      		sbrs r24,7
+ 357 01a8 00C0      		rjmp .L23
+ 358 01aa 80FF      		sbrs r24,0
+ 359 01ac 00C0      		rjmp .L23
+ 360               	.LBE33:
+ 361               	.LBE32:
+ 362               	.LBB34:
+ 363               	.LBB35:
+ 364               	.LM62:
+ 365 01ae 81E0      		ldi r24,lo8(1)
+ 366               	.LVL24:
+ 367 01b0 85B9      		out 37-32,r24
+ 368               	.LM63:
+ 369 01b2 94B9      		out 36-32,r25
+ 370               	.LM64:
+ 371 01b4 5F9A      		sbi 43-32,7
+ 372               	.LM65:
+ 373 01b6 5F98      		cbi 43-32,7
+ 374               	.LBE35:
+ 375               	.LBE34:
+ 376               	.LM66:
+ 377 01b8 3599      		sbic 38-32,5
+ 378 01ba 00C0      		rjmp .L24
+ 379               	.LBB36:
+ 380               	.LBB37:
+ 381               	.LM67:
+ 382 01bc 83E0      		ldi r24,lo8(3)
+ 383 01be 85B9      		out 37-32,r24
+ 384               	.LM68:
+ 385 01c0 94B9      		out 36-32,r25
+ 386               	.LM69:
+ 387 01c2 5F9A      		sbi 43-32,7
+ 388               	.LM70:
+ 389 01c4 5F98      		cbi 43-32,7
+ 390 01c6 00C0      		rjmp .L25
+ 391               	.L26:
+ 392               	.LBE37:
+ 393               	.LBE36:
+ 394               	.LM71:
+ 395 01c8 0E94 0000 		call HandleSoftclock
+ 396               	.L25:
+ 397               	.LM72:
+ 398 01cc 8091 0000 		lds r24,systemTicks
+ 399 01d0 9091 0000 		lds r25,(systemTicks)+1
+ 400 01d4 8256      		subi r24,lo8(610)
+ 401 01d6 9240      		sbci r25,hi8(610)
+ 402 01d8 00F0      		brlo .L26
+ 403               	.LM73:
+ 404 01da 0E94 0000 		call SdHandshake
+ 405 01de 8130      		cpi r24,lo8(1)
+ 406 01e0 01F0      		breq .+2
+ 407 01e2 00C0      		rjmp .L24
+ 408               	.LBB38:
+ 409               	.LBB39:
+ 410               	.LM74:
+ 411 01e4 87E0      		ldi r24,lo8(7)
+ 412 01e6 85B9      		out 37-32,r24
+ 413               	.LM75:
+ 414 01e8 8FEF      		ldi r24,lo8(-1)
+ 415 01ea 84B9      		out 36-32,r24
+ 416               	.LM76:
+ 417 01ec 5F9A      		sbi 43-32,7
+ 418               	.LM77:
+ 419 01ee 5F98      		cbi 43-32,7
+ 420               	.LBE39:
+ 421               	.LBE38:
+ 422               	.LM78:
+ 423 01f0 80E0      		ldi r24,lo8(0)
+ 424 01f2 90E0      		ldi r25,hi8(0)
+ 425 01f4 60E0      		ldi r22,lo8(bootBuffer)
+ 426 01f6 70E0      		ldi r23,hi8(bootBuffer)
+ 427 01f8 0E94 0000 		call GetSdBlock
+ 428 01fc 8130      		cpi r24,lo8(1)
+ 429 01fe 01F0      		breq .+2
+ 430 0200 00C0      		rjmp .L24
+ 431 0202 E0E0      		ldi r30,lo8(bootHeader)
+ 432 0204 F0E0      		ldi r31,hi8(bootHeader)
+ 433 0206 A0E0      		ldi r26,lo8(bootBuffer)
+ 434 0208 B0E0      		ldi r27,hi8(bootBuffer)
+ 435               	.LVL25:
+ 436               	.L27:
+ 437               	.LBB40:
+ 438               	.LBB41:
+ 439               	.LM79:
+ 440 020a 9C91      		ld r25,X
+ 441 020c 8081      		ld r24,Z
+ 442 020e 9817      		cp r25,r24
+ 443 0210 01F0      		breq .+2
+ 444 0212 00C0      		rjmp .L24
+ 445               	.LM80:
+ 446 0214 1196      		adiw r26,1
+ 447 0216 3196      		adiw r30,1
+ 448               	.LM81:
+ 449 0218 80E0      		ldi r24,hi8(bootBuffer+8)
+ 450 021a A030      		cpi r26,lo8(bootBuffer+8)
+ 451 021c B807      		cpc r27,r24
+ 452 021e 01F4      		brne .L27
+ 453               	.LM82:
+ 454 0220 FD01      		movw r30,r26
+ 455 0222 3196      		adiw r30,1
+ 456               	.LVL26:
+ 457               	.LM83:
+ 458 0224 9F01      		movw r18,r30
+ 459 0226 2F5F      		subi r18,lo8(-(1))
+ 460 0228 3F4F      		sbci r19,hi8(-(1))
+ 461               	.LVL27:
+ 462               	.LM84:
+ 463 022a 1196      		adiw r26,1
+ 464 022c EC90      		ld r14,X
+ 465 022e 1197      		sbiw r26,1
+ 466 0230 FF24      		clr r15
+ 467 0232 00E0      		ldi r16,lo8(0)
+ 468 0234 10E0      		ldi r17,hi8(0)
+ 469 0236 8701      		movw r16,r14
+ 470 0238 FF24      		clr r15
+ 471 023a EE24      		clr r14
+ 472 023c 8C91      		ld r24,X
+ 473 023e 90E0      		ldi r25,lo8(0)
+ 474 0240 A0E0      		ldi r26,lo8(0)
+ 475 0242 B0E0      		ldi r27,hi8(0)
+ 476 0244 B82F      		mov r27,r24
+ 477 0246 AA27      		clr r26
+ 478 0248 9927      		clr r25
+ 479 024a 8827      		clr r24
+ 480 024c E82A      		or r14,r24
+ 481 024e F92A      		or r15,r25
+ 482 0250 0A2B      		or r16,r26
+ 483 0252 1B2B      		or r17,r27
+ 484 0254 8181      		ldd r24,Z+1
+ 485 0256 90E0      		ldi r25,lo8(0)
+ 486 0258 A0E0      		ldi r26,lo8(0)
+ 487 025a B0E0      		ldi r27,hi8(0)
+ 488 025c BA2F      		mov r27,r26
+ 489 025e A92F      		mov r26,r25
+ 490 0260 982F      		mov r25,r24
+ 491 0262 8827      		clr r24
+ 492 0264 E82A      		or r14,r24
+ 493 0266 F92A      		or r15,r25
+ 494 0268 0A2B      		or r16,r26
+ 495 026a 1B2B      		or r17,r27
+ 496               	.LM85:
+ 497 026c F901      		movw r30,r18
+ 498 026e 3196      		adiw r30,1
+ 499               	.LVL28:
+ 500               	.LM86:
+ 501 0270 D901      		movw r26,r18
+ 502 0272 1196      		adiw r26,1
+ 503 0274 8C91      		ld r24,X
+ 504 0276 90E0      		ldi r25,lo8(0)
+ 505 0278 A0E0      		ldi r26,lo8(0)
+ 506 027a B0E0      		ldi r27,hi8(0)
+ 507 027c E82A      		or r14,r24
+ 508 027e F92A      		or r15,r25
+ 509 0280 0A2B      		or r16,r26
+ 510 0282 1B2B      		or r17,r27
+ 511 0284 E092 0000 		sts bootDataLength,r14
+ 512 0288 F092 0000 		sts (bootDataLength)+1,r15
+ 513 028c 0093 0000 		sts (bootDataLength)+2,r16
+ 514 0290 1093 0000 		sts (bootDataLength)+3,r17
+ 515               	.LM87:
+ 516 0294 3181      		ldd r19,Z+1
+ 517 0296 20E0      		ldi r18,lo8(0)
+ 518               	.LM88:
+ 519 0298 8281      		ldd r24,Z+2
+ 520 029a 90E0      		ldi r25,lo8(0)
+ 521 029c 822B      		or r24,r18
+ 522 029e 932B      		or r25,r19
+ 523 02a0 9093 0000 		sts (bootCrc)+1,r25
+ 524 02a4 8093 0000 		sts bootCrc,r24
+ 525               	.LBE41:
+ 526               	.LBE40:
+ 527               	.LBB42:
+ 528               	.LBB43:
+ 529               	.LM89:
+ 530 02a8 8FE0      		ldi r24,lo8(15)
+ 531 02aa 85B9      		out 37-32,r24
+ 532               	.LM90:
+ 533 02ac 8FEF      		ldi r24,lo8(-1)
+ 534 02ae 84B9      		out 36-32,r24
+ 535               	.LM91:
+ 536 02b0 5F9A      		sbi 43-32,7
+ 537               	.LM92:
+ 538 02b2 5F98      		cbi 43-32,7
+ 539               	.LBE43:
+ 540               	.LBE42:
+ 541               	.LBB44:
+ 542               	.LM93:
+ 543 02b4 212F      		mov r18,r17
+ 544 02b6 3327      		clr r19
+ 545 02b8 4427      		clr r20
+ 546 02ba 5527      		clr r21
+ 547 02bc 80E0      		ldi r24,lo8(0)
+ 548 02be 90E0      		ldi r25,hi8(0)
+ 549 02c0 622F      		mov r22,r18
+ 550 02c2 0E94 0000 		call UpdateCrc
+ 551               	.LVL29:
+ 552               	.LM94:
+ 553 02c6 9801      		movw r18,r16
+ 554 02c8 4427      		clr r20
+ 555 02ca 5527      		clr r21
+ 556 02cc 622F      		mov r22,r18
+ 557 02ce 0E94 0000 		call UpdateCrc
+ 558               	.LM95:
+ 559 02d2 5527      		clr r21
+ 560 02d4 412F      		mov r20,r17
+ 561 02d6 302F      		mov r19,r16
+ 562 02d8 2F2D      		mov r18,r15
+ 563 02da 622F      		mov r22,r18
+ 564 02dc 0E94 0000 		call UpdateCrc
+ 565               	.LM96:
+ 566 02e0 6E2D      		mov r22,r14
+ 567 02e2 0E94 0000 		call UpdateCrc
+ 568 02e6 5C01      		movw r10,r24
+ 569               	.LVL30:
+ 570 02e8 A1E0      		ldi r26,lo8(1)
+ 571 02ea CA2E      		mov r12,r26
+ 572 02ec D12C      		mov r13,__zero_reg__
+ 573               	.LVL31:
+ 574 02ee C0E0      		ldi r28,lo8(512)
+ 575 02f0 D2E0      		ldi r29,hi8(512)
+ 576               	.LVL32:
+ 577 02f2 EE24      		clr r14
+ 578 02f4 FF24      		clr r15
+ 579 02f6 8701      		movw r16,r14
+ 580               	.LVL33:
+ 581 02f8 00C0      		rjmp .L28
+ 582               	.L30:
+ 583               	.LBB45:
+ 584               	.LM97:
+ 585 02fa B2E0      		ldi r27,hi8(512)
+ 586 02fc C030      		cpi r28,lo8(512)
+ 587 02fe DB07      		cpc r29,r27
+ 588 0300 01F4      		brne .L29
+ 589               	.LBE45:
+ 590               	.LM98:
+ 591 0302 C601      		movw r24,r12
+ 592 0304 60E0      		ldi r22,lo8(bootBuffer)
+ 593 0306 70E0      		ldi r23,hi8(bootBuffer)
+ 594 0308 0E94 0000 		call GetSdBlock
+ 595               	.LBB46:
+ 596 030c 8823      		tst r24
+ 597 030e 01F4      		brne .+2
+ 598 0310 00C0      		rjmp .L24
+ 599               	.LM99:
+ 600 0312 0894      		sec
+ 601 0314 C11C      		adc r12,__zero_reg__
+ 602 0316 D11C      		adc r13,__zero_reg__
+ 603 0318 C0E0      		ldi r28,lo8(0)
+ 604 031a D0E0      		ldi r29,hi8(0)
+ 605               	.L29:
+ 606               	.LBE46:
+ 607               	.LM100:
+ 608 031c FE01      		movw r30,r28
+ 609 031e E050      		subi r30,lo8(-(bootBuffer))
+ 610 0320 F040      		sbci r31,hi8(-(bootBuffer))
+ 611 0322 C501      		movw r24,r10
+ 612 0324 6081      		ld r22,Z
+ 613 0326 0E94 0000 		call UpdateCrc
+ 614 032a 5C01      		movw r10,r24
+ 615               	.LBB47:
+ 616               	.LM101:
+ 617 032c 2196      		adiw r28,1
+ 618               	.LM102:
+ 619 032e 0894      		sec
+ 620 0330 E11C      		adc r14,__zero_reg__
+ 621 0332 F11C      		adc r15,__zero_reg__
+ 622 0334 011D      		adc r16,__zero_reg__
+ 623 0336 111D      		adc r17,__zero_reg__
+ 624               	.L28:
+ 625               	.LM103:
+ 626 0338 8091 0000 		lds r24,bootDataLength
+ 627 033c 9091 0000 		lds r25,(bootDataLength)+1
+ 628 0340 A091 0000 		lds r26,(bootDataLength)+2
+ 629 0344 B091 0000 		lds r27,(bootDataLength)+3
+ 630 0348 E816      		cp r14,r24
+ 631 034a F906      		cpc r15,r25
+ 632 034c 0A07      		cpc r16,r26
+ 633 034e 1B07      		cpc r17,r27
+ 634 0350 00F0      		brlo .L30
+ 635               	.LM104:
+ 636 0352 1091 0000 		lds r17,bootCrc
+ 637 0356 6091 0000 		lds r22,bootCrc+1
+ 638               	.LBE47:
+ 639 035a C501      		movw r24,r10
+ 640 035c 0E94 0000 		call UpdateCrc
+ 641               	.LM105:
+ 642 0360 612F      		mov r22,r17
+ 643 0362 0E94 0000 		call UpdateCrc
+ 644               	.LBB48:
+ 645               	.LM106:
+ 646 0366 892B      		or r24,r25
+ 647 0368 01F4      		brne .+2
+ 648 036a 00C0      		rjmp .L31
+ 649 036c 00C0      		rjmp .L24
+ 650               	.LVL34:
+ 651               	.L37:
+ 652               	.LBE48:
+ 653               	.LBE44:
+ 654               	.LM107:
+ 655 036e E2E0      		ldi r30,hi8(512)
+ 656 0370 C030      		cpi r28,lo8(512)
+ 657 0372 DE07      		cpc r29,r30
+ 658 0374 01F4      		brne .L42
+ 659               	.LM108:
+ 660 0376 C501      		movw r24,r10
+ 661 0378 60E0      		ldi r22,lo8(bootBuffer)
+ 662 037a 70E0      		ldi r23,hi8(bootBuffer)
+ 663 037c 0E94 0000 		call GetSdBlock
+ 664               	.LVL35:
+ 665 0380 8823      		tst r24
+ 666 0382 01F0      		breq .L42
+ 667               	.LM109:
+ 668 0384 9394      		inc r9
+ 669               	.LM110:
+ 670 0386 F7E0      		ldi r31,lo8(7)
+ 671 0388 F915      		cp r31,r9
+ 672 038a 00F4      		brsh .L33
+ 673 038c 9924      		clr r9
+ 674               	.L33:
+ 675               	.LM111:
+ 676 038e 0894      		sec
+ 677 0390 A11C      		adc r10,__zero_reg__
+ 678 0392 B11C      		adc r11,__zero_reg__
+ 679               	.LM112:
+ 680 0394 892D      		mov r24,r9
+ 681 0396 8295      		swap r24
+ 682 0398 880F      		lsl r24
+ 683 039a 807E      		andi r24,lo8(-32)
+ 684 039c 8F61      		ori r24,lo8(31)
+ 685               	.LBB49:
+ 686               	.LBB50:
+ 687               	.LM113:
+ 688 039e 85B9      		out 37-32,r24
+ 689               	.LM114:
+ 690 03a0 44B8      		out 36-32,r4
+ 691               	.LM115:
+ 692 03a2 5F9A      		sbi 43-32,7
+ 693               	.LM116:
+ 694 03a4 5F98      		cbi 43-32,7
+ 695 03a6 C0E0      		ldi r28,lo8(0)
+ 696 03a8 D0E0      		ldi r29,hi8(0)
+ 697               	.LVL36:
+ 698               	.L42:
+ 699               	.LBE50:
+ 700               	.LBE49:
+ 701               	.LM117:
+ 702 03aa F999      		sbic 63-32,1
+ 703 03ac 00C0      		rjmp .L42
+ 704 03ae 9701      		movw r18,r14
+ 705               	.LM118:
+ 706 03b0 F701      		movw r30,r14
+ 707               	.LVL37:
+ 708               	/* #APP */
+ 709               	 ;  410 "wtpa2bootloader.c" 1
+ 710 03b2 5092 5700 		sts 87, r5
+ 711 03b6 E895      		spm
+ 712               		
+ 713               	 ;  0 "" 2
+ 714               	/* #NOAPP */
+ 715               	.L34:
+ 716               	.LM119:
+ 717 03b8 07B6      		in __tmp_reg__,87-32
+ 718 03ba 00FC      		sbrc __tmp_reg__,0
+ 719 03bc 00C0      		rjmp .L34
+ 720 03be DE01      		movw r26,r28
+ 721 03c0 A050      		subi r26,lo8(-(bootBuffer))
+ 722 03c2 B040      		sbci r27,hi8(-(bootBuffer))
+ 723 03c4 F901      		movw r30,r18
+ 724               	.LM120:
+ 725 03c6 A901      		movw r20,r18
+ 726 03c8 4050      		subi r20,lo8(-(256))
+ 727 03ca 5F4F      		sbci r21,hi8(-(256))
+ 728               	.LVL38:
+ 729               	.L35:
+ 730               	.LM121:
+ 731 03cc 8C91      		ld r24,X
+ 732               	.LVL39:
+ 733 03ce 90E0      		ldi r25,lo8(0)
+ 734               	.LM122:
+ 735 03d0 1196      		adiw r26,1
+ 736 03d2 DC90      		ld r13,X
+ 737 03d4 1197      		sbiw r26,1
+ 738 03d6 CC24      		clr r12
+ 739               	.LVL40:
+ 740 03d8 8C29      		or r24,r12
+ 741 03da 9D29      		or r25,r13
+ 742               	.LVL41:
+ 743               	/* #APP */
+ 744               	 ;  417 "wtpa2bootloader.c" 1
+ 745 03dc 0C01      		movw  r0, r24
+ 746 03de 6092 5700 		sts 87, r6
+ 747 03e2 E895      		spm
+ 748 03e4 1124      		clr  r1
+ 749               		
+ 750               	 ;  0 "" 2
+ 751               	/* #NOAPP */
+ 752 03e6 1296      		adiw r26,2
+ 753 03e8 3296      		adiw r30,2
+ 754               	.LM123:
+ 755 03ea E417      		cp r30,r20
+ 756 03ec F507      		cpc r31,r21
+ 757 03ee 01F4      		brne .L35
+ 758 03f0 C050      		subi r28,lo8(-(256))
+ 759 03f2 DF4F      		sbci r29,hi8(-(256))
+ 760               	.LM124:
+ 761 03f4 F901      		movw r30,r18
+ 762               	/* #APP */
+ 763               	 ;  420 "wtpa2bootloader.c" 1
+ 764 03f6 7092 5700 		sts 87, r7
+ 765 03fa E895      		spm
+ 766               		
+ 767               	 ;  0 "" 2
+ 768               	/* #NOAPP */
+ 769               	.L36:
+ 770               	.LM125:
+ 771 03fc 07B6      		in __tmp_reg__,87-32
+ 772 03fe 00FC      		sbrc __tmp_reg__,0
+ 773 0400 00C0      		rjmp .L36
+ 774               	.LM126:
+ 775               	/* #APP */
+ 776               	 ;  422 "wtpa2bootloader.c" 1
+ 777 0402 8092 5700 		sts 87, r8
+ 778 0406 E895      		spm
+ 779               		
+ 780               	 ;  0 "" 2
+ 781               	.LM127:
+ 782               	/* #NOAPP */
+ 783 0408 80E0      		ldi r24,lo8(256)
+ 784 040a 91E0      		ldi r25,hi8(256)
+ 785 040c A0E0      		ldi r26,hlo8(256)
+ 786 040e B0E0      		ldi r27,hhi8(256)
+ 787               	.LVL42:
+ 788 0410 E80E      		add r14,r24
+ 789 0412 F91E      		adc r15,r25
+ 790 0414 0A1F      		adc r16,r26
+ 791 0416 1B1F      		adc r17,r27
+ 792               	.LVL43:
+ 793               	.L40:
+ 794               	.LM128:
+ 795 0418 8091 0000 		lds r24,bootDataLength
+ 796 041c 9091 0000 		lds r25,(bootDataLength)+1
+ 797 0420 A091 0000 		lds r26,(bootDataLength)+2
+ 798 0424 B091 0000 		lds r27,(bootDataLength)+3
+ 799 0428 E816      		cp r14,r24
+ 800 042a F906      		cpc r15,r25
+ 801 042c 0A07      		cpc r16,r26
+ 802 042e 1B07      		cpc r17,r27
+ 803 0430 00F4      		brsh .+2
+ 804 0432 00C0      		rjmp .L37
+ 805               	.LBB52:
+ 806               	.LBB53:
+ 807               	.LM129:
+ 808 0434 8FEF      		ldi r24,lo8(-1)
+ 809 0436 85B9      		out 37-32,r24
+ 810               	.LM130:
+ 811 0438 84B9      		out 36-32,r24
+ 812               	.LM131:
+ 813 043a 5F9A      		sbi 43-32,7
+ 814               	.LM132:
+ 815 043c 5F98      		cbi 43-32,7
+ 816               	.LVL44:
+ 817               	.L24:
+ 818               	.LBE53:
+ 819               	.LBE52:
+ 820               	.LM133:
+ 821 043e 0E94 0000 		call HandleSoftclock
+ 822               	.LVL45:
+ 823               	.LM134:
+ 824 0442 8091 0000 		lds r24,systemTicks
+ 825 0446 9091 0000 		lds r25,(systemTicks)+1
+ 826               	.LVL46:
+ 827               	.LM135:
+ 828 044a 7C01      		movw r14,r24
+ 829               	.LVL47:
+ 830 044c 00E0      		ldi r16,lo8(0)
+ 831 044e 10E0      		ldi r17,hi8(0)
+ 832 0450 84EC      		ldi r24,lo8(1220)
+ 833 0452 94E0      		ldi r25,hi8(1220)
+ 834 0454 A0E0      		ldi r26,hlo8(1220)
+ 835 0456 B0E0      		ldi r27,hhi8(1220)
+ 836               	.LVL48:
+ 837 0458 E80E      		add r14,r24
+ 838 045a F91E      		adc r15,r25
+ 839 045c 0A1F      		adc r16,r26
+ 840 045e 1B1F      		adc r17,r27
+ 841 0460 00C0      		rjmp .L38
+ 842               	.L39:
+ 843               	.LM136:
+ 844 0462 0E94 0000 		call HandleSoftclock
+ 845               	.L38:
+ 846               	.LM137:
+ 847 0466 8091 0000 		lds r24,systemTicks
+ 848 046a 9091 0000 		lds r25,(systemTicks)+1
+ 849 046e A0E0      		ldi r26,lo8(0)
+ 850 0470 B0E0      		ldi r27,hi8(0)
+ 851 0472 8E15      		cp r24,r14
+ 852 0474 9F05      		cpc r25,r15
+ 853 0476 A007      		cpc r26,r16
+ 854 0478 B107      		cpc r27,r17
+ 855 047a 00F0      		brlo .L39
+ 856               	.LVL49:
+ 857               	.L23:
+ 858               	.LM138:
+ 859 047c 0E94 0000 		call UnInitSdInterface
+ 860               	.LVL50:
+ 861               	.LBB54:
+ 862               	.LBB55:
+ 863               	.LM139:
+ 864 0480 15BC      		out 69-32,__zero_reg__
+ 865               	.LM140:
+ 866 0482 8091 6400 		lds r24,100
+ 867 0486 8062      		ori r24,lo8(32)
+ 868 0488 8093 6400 		sts 100,r24
+ 869               	.LBE55:
+ 870               	.LBE54:
+ 871               	.LM141:
+ 872               	/* #APP */
+ 873               	 ;  452 "wtpa2bootloader.c" 1
+ 874 048c 0C94 0000 		jmp 0000
+ 875               	 ;  0 "" 2
+ 876               	.LM142:
+ 877               	/* #NOAPP */
+ 878 0490 80E0      		ldi r24,lo8(0)
+ 879 0492 90E0      		ldi r25,hi8(0)
+ 880               	/* epilogue start */
+ 881 0494 DF91      		pop r29
+ 882 0496 CF91      		pop r28
+ 883               	.LVL51:
+ 884 0498 1F91      		pop r17
+ 885 049a 0F91      		pop r16
+ 886 049c FF90      		pop r15
+ 887 049e EF90      		pop r14
+ 888 04a0 DF90      		pop r13
+ 889 04a2 CF90      		pop r12
+ 890               	.LVL52:
+ 891 04a4 BF90      		pop r11
+ 892 04a6 AF90      		pop r10
+ 893               	.LVL53:
+ 894 04a8 9F90      		pop r9
+ 895               	.LVL54:
+ 896 04aa 8F90      		pop r8
+ 897 04ac 7F90      		pop r7
+ 898 04ae 6F90      		pop r6
+ 899 04b0 5F90      		pop r5
+ 900 04b2 4F90      		pop r4
+ 901 04b4 0895      		ret
+ 902               	.LVL55:
+ 903               	.L31:
+ 904               	.LBB56:
+ 905               	.LBB57:
+ 906               	.LM143:
+ 907 04b6 8FE1      		ldi r24,lo8(31)
+ 908 04b8 85B9      		out 37-32,r24
+ 909               	.LM144:
+ 910 04ba 8FEF      		ldi r24,lo8(-1)
+ 911 04bc 84B9      		out 36-32,r24
+ 912               	.LM145:
+ 913 04be 5F9A      		sbi 43-32,7
+ 914               	.LM146:
+ 915 04c0 5F98      		cbi 43-32,7
+ 916 04c2 EE24      		clr r14
+ 917 04c4 FF24      		clr r15
+ 918 04c6 8701      		movw r16,r14
+ 919               	.LVL56:
+ 920 04c8 C0E0      		ldi r28,lo8(512)
+ 921 04ca D2E0      		ldi r29,hi8(512)
+ 922               	.LVL57:
+ 923 04cc F1E0      		ldi r31,lo8(1)
+ 924 04ce AF2E      		mov r10,r31
+ 925 04d0 B12C      		mov r11,__zero_reg__
+ 926               	.LVL58:
+ 927 04d2 9924      		clr r9
+ 928               	.LVL59:
+ 929               	.LBE57:
+ 930               	.LBE56:
+ 931               	.LBB58:
+ 932               	.LBB51:
+ 933               	.LM147:
+ 934 04d4 4424      		clr r4
+ 935 04d6 4A94      		dec r4
+ 936               	.LBE51:
+ 937               	.LBE58:
+ 938               	.LM148:
+ 939 04d8 E3E0      		ldi r30,lo8(3)
+ 940 04da 5E2E      		mov r5,r30
+ 941               	.LM149:
+ 942 04dc 6624      		clr r6
+ 943 04de 6394      		inc r6
+ 944               	.LM150:
+ 945 04e0 75E0      		ldi r23,lo8(5)
+ 946 04e2 772E      		mov r7,r23
+ 947               	.LM151:
+ 948 04e4 61E1      		ldi r22,lo8(17)
+ 949 04e6 862E      		mov r8,r22
+ 950 04e8 00C0      		rjmp .L40
+ 951               	.LFE11:
+ 953               		.data
+ 956               	bootHeader:
+ 957 0000 57        		.byte	87
+ 958 0001 54        		.byte	84
+ 959 0002 50        		.byte	80
+ 960 0003 41        		.byte	65
+ 961 0004 42        		.byte	66
+ 962 0005 4F        		.byte	79
+ 963 0006 4F        		.byte	79
+ 964 0007 54        		.byte	84
+ 965               		.lcomm bootCrc,2
+ 966               		.lcomm bootDataLength,4
+ 967               		.lcomm bootBuffer,512
+ 968               		.comm systemTicks,2,1
+ 1017               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 wtpa2bootloader.c
+     /tmp/cc5dWiIN.s:2      *ABS*:0000003f __SREG__
+     /tmp/cc5dWiIN.s:3      *ABS*:0000003e __SP_H__
+     /tmp/cc5dWiIN.s:4      *ABS*:0000003d __SP_L__
+     /tmp/cc5dWiIN.s:5      *ABS*:00000034 __CCP__
+     /tmp/cc5dWiIN.s:6      *ABS*:00000000 __tmp_reg__
+     /tmp/cc5dWiIN.s:7      *ABS*:00000001 __zero_reg__
+     /tmp/cc5dWiIN.s:18     .text:00000000 HandleSoftclock
+                            *COM*:00000002 systemTicks
+     /tmp/cc5dWiIN.s:39     .text:0000001a UpdateCrc
+     /tmp/cc5dWiIN.s:90     .text:00000046 GetSdBlock
+     /tmp/cc5dWiIN.s:229    .text:00000122 main
+     /tmp/cc5dWiIN.s:966    .bss:00000006 bootBuffer
+     /tmp/cc5dWiIN.s:956    .data:00000000 bootHeader
+     /tmp/cc5dWiIN.s:965    .bss:00000002 bootDataLength
+                             .bss:00000000 bootCrc
+
+UNDEFINED SYMBOLS
+SdBeginSingleBlockRead
+TransferSdByte
+EndSdTransfer
+InitSdInterface
+SdHandshake
+UnInitSdInterface
+__do_copy_data
+__do_clear_bss

@@ -1,0 +1,12 @@
+Changelog for WTPA2 Firmware:
+TMB
+Sat Jul  9 14:12:29 EDT 2011
+----------------------------------
+
+0x10		--		First WTPA2 firmware in the world.  Only released on maybe 5-6 early "green" samplers.
+					Included all updates necessary to run new sampler hardware.  Initial uSD card initializing worked, and there was a buggy uSD sample loader that got commented out.
+					Also has much faster ISRs than WTPA1, and re-incorporates test modes lost in last WTPA1 FW.
+					Buttons s6 and s7 don't do anything yet.
+
+0x11		--		Sat Jul  9 14:19:05 EDT 2011 to ???
+					

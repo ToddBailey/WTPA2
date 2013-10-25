@@ -1,0 +1,93 @@
+   1               		.file	"softclock.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__CCP__  = 0x34
+   6               	__tmp_reg__ = 0
+   7               	__zero_reg__ = 1
+  15               	.Ltext0:
+  16               	.global	SetTimer
+  18               	SetTimer:
+  19               	.LFB3:
+  20               	.LM1:
+  21               	.LVL0:
+  22               	/* prologue: function */
+  23               	/* frame size = 0 */
+  24               	.LM2:
+  25 0000 E82F      		mov r30,r24
+  26 0002 F0E0      		ldi r31,lo8(0)
+  27 0004 8091 0000 		lds r24,systemTicks
+  28 0008 9091 0000 		lds r25,(systemTicks)+1
+  29               	.LVL1:
+  30 000c EE0F      		lsl r30
+  31 000e FF1F      		rol r31
+  32 0010 DF01      		movw r26,r30
+  33 0012 A050      		subi r26,lo8(-(entryTime))
+  34 0014 B040      		sbci r27,hi8(-(entryTime))
+  35 0016 8D93      		st X+,r24
+  36 0018 9C93      		st X,r25
+  37               	.LM3:
+  38 001a E050      		subi r30,lo8(-(delayTime))
+  39 001c F040      		sbci r31,hi8(-(delayTime))
+  40 001e 7183      		std Z+1,r23
+  41 0020 6083      		st Z,r22
+  42               	/* epilogue start */
+  43               	.LM4:
+  44 0022 0895      		ret
+  45               	.LFE3:
+  47               	.global	CheckTimer
+  49               	CheckTimer:
+  50               	.LFB4:
+  51               	.LM5:
+  52               	.LVL2:
+  53               	/* prologue: function */
+  54               	/* frame size = 0 */
+  55               	.LM6:
+  56 0024 2091 0000 		lds r18,systemTicks
+  57 0028 3091 0000 		lds r19,(systemTicks)+1
+  58 002c E82F      		mov r30,r24
+  59 002e F0E0      		ldi r31,lo8(0)
+  60 0030 40E0      		ldi r20,lo8(0)
+  61 0032 EE0F      		lsl r30
+  62 0034 FF1F      		rol r31
+  63 0036 DF01      		movw r26,r30
+  64 0038 A050      		subi r26,lo8(-(entryTime))
+  65 003a B040      		sbci r27,hi8(-(entryTime))
+  66 003c 8D91      		ld r24,X+
+  67 003e 9C91      		ld r25,X
+  68               	.LVL3:
+  69 0040 281B      		sub r18,r24
+  70 0042 390B      		sbc r19,r25
+  71 0044 E050      		subi r30,lo8(-(delayTime))
+  72 0046 F040      		sbci r31,hi8(-(delayTime))
+  73 0048 8081      		ld r24,Z
+  74 004a 9181      		ldd r25,Z+1
+  75 004c 2817      		cp r18,r24
+  76 004e 3907      		cpc r19,r25
+  77 0050 00F0      		brlo .L4
+  78 0052 41E0      		ldi r20,lo8(1)
+  79               	.L4:
+  80               	.LM7:
+  81 0054 842F      		mov r24,r20
+  82               	/* epilogue start */
+  83 0056 0895      		ret
+  84               	.LFE4:
+  86               		.lcomm entryTime,8
+  87               		.lcomm delayTime,8
+ 120               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 softclock.c
+     /tmp/ccyGLaaZ.s:2      *ABS*:0000003f __SREG__
+     /tmp/ccyGLaaZ.s:3      *ABS*:0000003e __SP_H__
+     /tmp/ccyGLaaZ.s:4      *ABS*:0000003d __SP_L__
+     /tmp/ccyGLaaZ.s:5      *ABS*:00000034 __CCP__
+     /tmp/ccyGLaaZ.s:6      *ABS*:00000000 __tmp_reg__
+     /tmp/ccyGLaaZ.s:7      *ABS*:00000001 __zero_reg__
+     /tmp/ccyGLaaZ.s:18     .text:00000000 SetTimer
+                             .bss:00000000 entryTime
+     /tmp/ccyGLaaZ.s:86     .bss:00000008 delayTime
+     /tmp/ccyGLaaZ.s:49     .text:00000024 CheckTimer
+
+UNDEFINED SYMBOLS
+systemTicks
+__do_clear_bss

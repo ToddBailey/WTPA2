@@ -1,0 +1,104 @@
+   1               		.file	"eeprom.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.global __do_copy_data
+   8               		.global __do_clear_bss
+  16               	.Ltext0:
+  17               	.global	EepromWrite
+  19               	EepromWrite:
+  20               	.LFB3:
+  21               	.LM1:
+  22               	.LVL0:
+  23               	/* prologue: function */
+  24               	/* frame size = 0 */
+  25 0000 9C01      		movw r18,r24
+  26               	.LVL1:
+  27               	.L2:
+  28               	.LM2:
+  29 0002 F999      		sbic 63-0x20,1
+  30 0004 00C0      		rjmp .L2
+  31               	.LM3:
+  32 0006 8FB7      		in r24,__SREG__
+  33               	.LVL2:
+  34               	.LM4:
+  35               	/* #APP */
+  36               	 ;  20 "eeprom.c" 1
+  37 0008 F894      		cli
+  38               	 ;  0 "" 2
+  39               	.LM5:
+  40               	/* #NOAPP */
+  41 000a 32BD      		out (65)+1-0x20,r19
+  42 000c 21BD      		out 65-0x20,r18
+  43               	.LM6:
+  44 000e 60BD      		out 64-0x20,r22
+  45               	.LM7:
+  46 0010 FA9A      		sbi 63-0x20,2
+  47               	.LM8:
+  48 0012 F99A      		sbi 63-0x20,1
+  49               	.LM9:
+  50 0014 8FBF      		out __SREG__,r24
+  51               	.LM10:
+  52 0016 12BC      		out (65)+1-0x20,__zero_reg__
+  53 0018 11BC      		out 65-0x20,__zero_reg__
+  54               	/* epilogue start */
+  55               	.LM11:
+  56 001a 0895      		ret
+  57               	.LFE3:
+  59               	.global	EepromRead
+  61               	EepromRead:
+  62               	.LFB4:
+  63               	.LM12:
+  64               	.LVL3:
+  65               	/* prologue: function */
+  66               	/* frame size = 0 */
+  67 001c 282F      		mov r18,r24
+  68               	.LVL4:
+  69               	.L6:
+  70               	.LM13:
+  71 001e F999      		sbic 63-0x20,1
+  72 0020 00C0      		rjmp .L6
+  73               	.LM14:
+  74 0022 8FB7      		in r24,__SREG__
+  75               	.LVL5:
+  76               	.LM15:
+  77               	/* #APP */
+  78               	 ;  40 "eeprom.c" 1
+  79 0024 F894      		cli
+  80               	 ;  0 "" 2
+  81               	.LM16:
+  82               	/* #NOAPP */
+  83 0026 30E0      		ldi r19,lo8(0)
+  84 0028 32BD      		out (65)+1-0x20,r19
+  85 002a 21BD      		out 65-0x20,r18
+  86               	.LVL6:
+  87               	.LM17:
+  88 002c F89A      		sbi 63-0x20,0
+  89               	.LM18:
+  90 002e 8FBF      		out __SREG__,r24
+  91               	.LM19:
+  92 0030 12BC      		out (65)+1-0x20,__zero_reg__
+  93 0032 11BC      		out 65-0x20,__zero_reg__
+  94               	.LM20:
+  95 0034 80B5      		in r24,64-0x20
+  96               	.LVL7:
+  97               	/* epilogue start */
+  98               	.LM21:
+  99 0036 0895      		ret
+ 100               	.LFE4:
+ 134               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 eeprom.c
+     /tmp/ccP7WqCN.s:2      *ABS*:0000003f __SREG__
+     /tmp/ccP7WqCN.s:3      *ABS*:0000003e __SP_H__
+     /tmp/ccP7WqCN.s:4      *ABS*:0000003d __SP_L__
+     /tmp/ccP7WqCN.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccP7WqCN.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccP7WqCN.s:19     .text:00000000 EepromWrite
+     /tmp/ccP7WqCN.s:61     .text:0000001c EepromRead
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

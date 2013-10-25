@@ -1,0 +1,2579 @@
+
+wtpa2bootloader.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000008  00800100  0000fb3a  00000bce  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         00000b3a  0000f000  0000f000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .bss          00000218  00800108  00800108  00000bd6  2**0
+                  ALLOC
+  3 .stab         000006cc  00000000  00000000  00000bd8  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  4 .stabstr      00000070  00000000  00000000  000012a4  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_aranges 00000060  00000000  00000000  00001314  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_pubnames 0000013b  00000000  00000000  00001374  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_info   00000b01  00000000  00000000  000014af  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_abbrev 000004d9  00000000  00000000  00001fb0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_line   00000d20  00000000  00000000  00002489  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_frame  00000130  00000000  00000000  000031ac  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_str    00000316  00000000  00000000  000032dc  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_loc    00000549  00000000  00000000  000035f2  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_ranges 000000e8  00000000  00000000  00003b3b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+0000f000 <__vectors>:
+    f000:	0c 94 3e 78 	jmp	0xf07c	; 0xf07c <__ctors_end>
+    f004:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f008:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f00c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f010:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f014:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f018:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f01c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f020:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f024:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f028:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f02c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f030:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f034:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f038:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f03c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f040:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f044:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f048:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f04c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f050:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f054:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f058:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f05c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f060:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f064:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f068:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f06c:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f070:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f074:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+    f078:	0c 94 5b 78 	jmp	0xf0b6	; 0xf0b6 <__bad_interrupt>
+
+0000f07c <__ctors_end>:
+    f07c:	11 24       	eor	r1, r1
+    f07e:	1f be       	out	0x3f, r1	; 63
+    f080:	cf ef       	ldi	r28, 0xFF	; 255
+    f082:	d0 e1       	ldi	r29, 0x10	; 16
+    f084:	de bf       	out	0x3e, r29	; 62
+    f086:	cd bf       	out	0x3d, r28	; 61
+
+0000f088 <__do_copy_data>:
+    f088:	11 e0       	ldi	r17, 0x01	; 1
+    f08a:	a0 e0       	ldi	r26, 0x00	; 0
+    f08c:	b1 e0       	ldi	r27, 0x01	; 1
+    f08e:	ea e3       	ldi	r30, 0x3A	; 58
+    f090:	fb ef       	ldi	r31, 0xFB	; 251
+    f092:	02 c0       	rjmp	.+4      	; 0xf098 <.do_copy_data_start>
+
+0000f094 <.do_copy_data_loop>:
+    f094:	05 90       	lpm	r0, Z+
+    f096:	0d 92       	st	X+, r0
+
+0000f098 <.do_copy_data_start>:
+    f098:	a8 30       	cpi	r26, 0x08	; 8
+    f09a:	b1 07       	cpc	r27, r17
+    f09c:	d9 f7       	brne	.-10     	; 0xf094 <.do_copy_data_loop>
+
+0000f09e <__do_clear_bss>:
+    f09e:	13 e0       	ldi	r17, 0x03	; 3
+    f0a0:	a8 e0       	ldi	r26, 0x08	; 8
+    f0a2:	b1 e0       	ldi	r27, 0x01	; 1
+    f0a4:	01 c0       	rjmp	.+2      	; 0xf0a8 <.do_clear_bss_start>
+
+0000f0a6 <.do_clear_bss_loop>:
+    f0a6:	1d 92       	st	X+, r1
+
+0000f0a8 <.do_clear_bss_start>:
+    f0a8:	a0 32       	cpi	r26, 0x20	; 32
+    f0aa:	b1 07       	cpc	r27, r17
+    f0ac:	e1 f7       	brne	.-8      	; 0xf0a6 <.do_clear_bss_loop>
+    f0ae:	0e 94 ee 78 	call	0xf1dc	; 0xf1dc <main>
+    f0b2:	0c 94 9b 7d 	jmp	0xfb36	; 0xfb36 <_exit>
+
+0000f0b6 <__bad_interrupt>:
+    f0b6:	0c 94 00 78 	jmp	0xf000	; 0xf000 <__vectors>
+
+0000f0ba <HandleSoftclock>:
+	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
+}
+
+void HandleSoftclock(void)
+{
+	if(TIFR0&(1<<TOV0))		// Got a timer overflow flag?
+    f0ba:	a8 9b       	sbis	0x15, 0	; 21
+    f0bc:	0a c0       	rjmp	.+20     	; 0xf0d2 <HandleSoftclock+0x18>
+	{
+		TIFR0 |= (1<<TOV0);		// Reset the flag (by writing a one).
+    f0be:	a8 9a       	sbi	0x15, 0	; 21
+		systemTicks++;			// Increment the system ticks.
+    f0c0:	80 91 1e 03 	lds	r24, 0x031E
+    f0c4:	90 91 1f 03 	lds	r25, 0x031F
+    f0c8:	01 96       	adiw	r24, 0x01	; 1
+    f0ca:	90 93 1f 03 	sts	0x031F, r25
+    f0ce:	80 93 1e 03 	sts	0x031E, r24
+    f0d2:	08 95       	ret
+
+0000f0d4 <UpdateCrc>:
+// NOTE -- Since this is CHECKING the CRC made by the boot image packer, we should run through all the relevant bytes and THEN run this function on the crc.  The result should be zero if everything is correct.
+{
+	unsigned char
+		i;
+
+	crc=crc^((unsigned int)inputByte<<8);	// Start by XORing the CRC with the byte shifted up
+    f0d4:	36 2f       	mov	r19, r22
+    f0d6:	20 e0       	ldi	r18, 0x00	; 0
+    f0d8:	28 27       	eor	r18, r24
+    f0da:	39 27       	eor	r19, r25
+    f0dc:	40 e0       	ldi	r20, 0x00	; 0
+
+	for(i=0;i<8;i++)			// Now go through and check the individual bits of the byte.  If the top bit is high, XOR it with the polynomial.  Otherwise move to the next bit.
+	{
+	    if (crc&0x8000)			// High bit of 16 bit value set?
+	    {
+	        crc=(crc<<1)^0x1021;	// Move the running CRC over and XOR it with the polynomial.  NOTE -- This polynomial is 4129 in decimal, and we'll see it if we have a file with a single binary 1 in it.
+    f0de:	61 e2       	ldi	r22, 0x21	; 33
+    f0e0:	70 e1       	ldi	r23, 0x10	; 16
+    f0e2:	c9 01       	movw	r24, r18
+    f0e4:	88 0f       	add	r24, r24
+    f0e6:	99 1f       	adc	r25, r25
+
+	crc=crc^((unsigned int)inputByte<<8);	// Start by XORing the CRC with the byte shifted up
+
+	for(i=0;i<8;i++)			// Now go through and check the individual bits of the byte.  If the top bit is high, XOR it with the polynomial.  Otherwise move to the next bit.
+	{
+	    if (crc&0x8000)			// High bit of 16 bit value set?
+    f0e8:	37 ff       	sbrs	r19, 7
+    f0ea:	04 c0       	rjmp	.+8      	; 0xf0f4 <UpdateCrc+0x20>
+	    {
+	        crc=(crc<<1)^0x1021;	// Move the running CRC over and XOR it with the polynomial.  NOTE -- This polynomial is 4129 in decimal, and we'll see it if we have a file with a single binary 1 in it.
+    f0ec:	9c 01       	movw	r18, r24
+    f0ee:	26 27       	eor	r18, r22
+    f0f0:	37 27       	eor	r19, r23
+    f0f2:	01 c0       	rjmp	.+2      	; 0xf0f6 <UpdateCrc+0x22>
+		}
+	    else
+	    {
+	        crc<<=1;				// Bit not set, just move checksum
+    f0f4:	9c 01       	movw	r18, r24
+	unsigned char
+		i;
+
+	crc=crc^((unsigned int)inputByte<<8);	// Start by XORing the CRC with the byte shifted up
+
+	for(i=0;i<8;i++)			// Now go through and check the individual bits of the byte.  If the top bit is high, XOR it with the polynomial.  Otherwise move to the next bit.
+    f0f6:	4f 5f       	subi	r20, 0xFF	; 255
+    f0f8:	48 30       	cpi	r20, 0x08	; 8
+    f0fa:	99 f7       	brne	.-26     	; 0xf0e2 <UpdateCrc+0xe>
+	        crc<<=1;				// Bit not set, just move checksum
+		}
+	}		
+
+	return(crc);
+}
+    f0fc:	c9 01       	movw	r24, r18
+    f0fe:	08 95       	ret
+
+0000f100 <GetSdBlock>:
+
+
+static bool GetSdBlock(unsigned int blockAddress, unsigned char *data)
+// Reads the block at the passed address into the passed array of bytes.
+// Returns false if the operation times out.
+{
+    f100:	af 92       	push	r10
+    f102:	bf 92       	push	r11
+    f104:	cf 92       	push	r12
+    f106:	df 92       	push	r13
+    f108:	ef 92       	push	r14
+    f10a:	ff 92       	push	r15
+    f10c:	0f 93       	push	r16
+    f10e:	1f 93       	push	r17
+    f110:	cf 93       	push	r28
+    f112:	df 93       	push	r29
+    f114:	6b 01       	movw	r12, r22
+		startTime,
+		i;
+	
+	success=true;		// Everything is OK so far
+
+	if(SdBeginSingleBlockRead(blockAddress)==true)		// Start reading at block...
+    f116:	a0 e0       	ldi	r26, 0x00	; 0
+    f118:	b0 e0       	ldi	r27, 0x00	; 0
+    f11a:	bc 01       	movw	r22, r24
+    f11c:	cd 01       	movw	r24, r26
+    f11e:	0e 94 62 7c 	call	0xf8c4	; 0xf8c4 <SdBeginSingleBlockRead>
+    f122:	81 30       	cpi	r24, 0x01	; 1
+    f124:	11 f0       	breq	.+4      	; 0xf12a <GetSdBlock+0x2a>
+    f126:	dd 24       	eor	r13, r13
+    f128:	44 c0       	rjmp	.+136    	; 0xf1b2 <GetSdBlock+0xb2>
+	{
+		// Wait for a data packet from the card.
+		startTime=systemTicks;		
+    f12a:	80 91 1e 03 	lds	r24, 0x031E
+    f12e:	90 91 1f 03 	lds	r25, 0x031F
+
+		while((systemTicks<(startTime+(SECOND/10)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+    f132:	7c 01       	movw	r14, r24
+    f134:	00 e0       	ldi	r16, 0x00	; 0
+    f136:	10 e0       	ldi	r17, 0x00	; 0
+    f138:	8a e7       	ldi	r24, 0x7A	; 122
+    f13a:	90 e0       	ldi	r25, 0x00	; 0
+    f13c:	a0 e0       	ldi	r26, 0x00	; 0
+    f13e:	b0 e0       	ldi	r27, 0x00	; 0
+    f140:	e8 0e       	add	r14, r24
+    f142:	f9 1e       	adc	r15, r25
+    f144:	0a 1f       	adc	r16, r26
+    f146:	1b 1f       	adc	r17, r27
+    f148:	02 c0       	rjmp	.+4      	; 0xf14e <GetSdBlock+0x4e>
+		{
+			HandleSoftclock();	// Kludgy
+    f14a:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+	if(SdBeginSingleBlockRead(blockAddress)==true)		// Start reading at block...
+	{
+		// Wait for a data packet from the card.
+		startTime=systemTicks;		
+
+		while((systemTicks<(startTime+(SECOND/10)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+    f14e:	80 91 1e 03 	lds	r24, 0x031E
+    f152:	90 91 1f 03 	lds	r25, 0x031F
+    f156:	a0 e0       	ldi	r26, 0x00	; 0
+    f158:	b0 e0       	ldi	r27, 0x00	; 0
+    f15a:	8e 15       	cp	r24, r14
+    f15c:	9f 05       	cpc	r25, r15
+    f15e:	a0 07       	cpc	r26, r16
+    f160:	b1 07       	cpc	r27, r17
+    f162:	28 f4       	brcc	.+10     	; 0xf16e <GetSdBlock+0x6e>
+    f164:	8f ef       	ldi	r24, 0xFF	; 255
+    f166:	0e 94 28 7b 	call	0xf650	; 0xf650 <TransferSdByte>
+    f16a:	8e 3f       	cpi	r24, 0xFE	; 254
+    f16c:	71 f7       	brne	.-36     	; 0xf14a <GetSdBlock+0x4a>
+		{
+			HandleSoftclock();	// Kludgy
+		}
+		if(systemTicks>(startTime+(SECOND/10)))		// Did we just time out?
+    f16e:	a0 90 1e 03 	lds	r10, 0x031E
+    f172:	b0 90 1f 03 	lds	r11, 0x031F
+    f176:	c0 e0       	ldi	r28, 0x00	; 0
+    f178:	d0 e0       	ldi	r29, 0x00	; 0
+			success=false;	
+		}
+
+		for(i=0;i<SD_BLOCK_LENGTH;i++)			// Get entire block
+		{
+			*data=TransferSdByte(DUMMY_BYTE);	// Read data into array we pointed to
+    f17a:	8f ef       	ldi	r24, 0xFF	; 255
+    f17c:	0e 94 28 7b 	call	0xf650	; 0xf650 <TransferSdByte>
+    f180:	d6 01       	movw	r26, r12
+    f182:	8d 93       	st	X+, r24
+    f184:	6d 01       	movw	r12, r26
+		if(systemTicks>(startTime+(SECOND/10)))		// Did we just time out?
+		{
+			success=false;	
+		}
+
+		for(i=0;i<SD_BLOCK_LENGTH;i++)			// Get entire block
+    f186:	21 96       	adiw	r28, 0x01	; 1
+    f188:	b2 e0       	ldi	r27, 0x02	; 2
+    f18a:	c0 30       	cpi	r28, 0x00	; 0
+    f18c:	db 07       	cpc	r29, r27
+    f18e:	a9 f7       	brne	.-22     	; 0xf17a <GetSdBlock+0x7a>
+    f190:	dd 24       	eor	r13, r13
+    f192:	c5 01       	movw	r24, r10
+    f194:	a0 e0       	ldi	r26, 0x00	; 0
+    f196:	b0 e0       	ldi	r27, 0x00	; 0
+    f198:	e8 16       	cp	r14, r24
+    f19a:	f9 06       	cpc	r15, r25
+    f19c:	0a 07       	cpc	r16, r26
+    f19e:	1b 07       	cpc	r17, r27
+    f1a0:	10 f0       	brcs	.+4      	; 0xf1a6 <GetSdBlock+0xa6>
+    f1a2:	dd 24       	eor	r13, r13
+    f1a4:	d3 94       	inc	r13
+		{
+			*data=TransferSdByte(DUMMY_BYTE);	// Read data into array we pointed to
+			data++;								// Next byte in array
+		}
+
+		TransferSdByte(DUMMY_BYTE);		// Get block CRC/Checksum whatever the SD card is using and ignore it
+    f1a6:	8f ef       	ldi	r24, 0xFF	; 255
+    f1a8:	0e 94 28 7b 	call	0xf650	; 0xf650 <TransferSdByte>
+		TransferSdByte(DUMMY_BYTE);
+    f1ac:	8f ef       	ldi	r24, 0xFF	; 255
+    f1ae:	0e 94 28 7b 	call	0xf650	; 0xf650 <TransferSdByte>
+	else
+	{
+		success=false;	// Error issuing read command
+	}
+
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f1b2:	80 91 c8 00 	lds	r24, 0x00C8
+    f1b6:	86 ff       	sbrs	r24, 6
+    f1b8:	fc cf       	rjmp	.-8      	; 0xf1b2 <GetSdBlock+0xb2>
+		;
+
+	EndSdTransfer();				// Bring CS high
+    f1ba:	0e 94 23 7b 	call	0xf646	; 0xf646 <EndSdTransfer>
+	TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+    f1be:	8f ef       	ldi	r24, 0xFF	; 255
+    f1c0:	0e 94 28 7b 	call	0xf650	; 0xf650 <TransferSdByte>
+
+	return(success);
+}
+    f1c4:	8d 2d       	mov	r24, r13
+    f1c6:	df 91       	pop	r29
+    f1c8:	cf 91       	pop	r28
+    f1ca:	1f 91       	pop	r17
+    f1cc:	0f 91       	pop	r16
+    f1ce:	ff 90       	pop	r15
+    f1d0:	ef 90       	pop	r14
+    f1d2:	df 90       	pop	r13
+    f1d4:	cf 90       	pop	r12
+    f1d6:	bf 90       	pop	r11
+    f1d8:	af 90       	pop	r10
+    f1da:	08 95       	ret
+
+0000f1dc <main>:
+
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+
+int main(void)
+{
+    f1dc:	4f 92       	push	r4
+    f1de:	5f 92       	push	r5
+    f1e0:	6f 92       	push	r6
+    f1e2:	7f 92       	push	r7
+    f1e4:	8f 92       	push	r8
+    f1e6:	9f 92       	push	r9
+    f1e8:	af 92       	push	r10
+    f1ea:	bf 92       	push	r11
+    f1ec:	cf 92       	push	r12
+    f1ee:	df 92       	push	r13
+    f1f0:	ef 92       	push	r14
+    f1f2:	ff 92       	push	r15
+    f1f4:	0f 93       	push	r16
+    f1f6:	1f 93       	push	r17
+    f1f8:	cf 93       	push	r28
+    f1fa:	df 93       	push	r29
+		currentBlock;
+
+	unsigned char
+		ledProgress;
+
+	cli();				// Bootloader has no interrupts
+    f1fc:	f8 94       	cli
+
+	// Set the DDRs to known state so they don't flop around.
+
+	DDRC=0xEF;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  Pins PC5-PC7 are unused now, so pull them low.
+    f1fe:	8f ee       	ldi	r24, 0xEF	; 239
+    f200:	87 b9       	out	0x07, r24	; 7
+	PORTC=0x08;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
+    f202:	88 e0       	ldi	r24, 0x08	; 8
+    f204:	88 b9       	out	0x08, r24	; 8
+	DDRD=0x80;			// PORTD is the UART (midi) the Flash interface (SPI) the ACLK input and the LED latch enable.  Make UART and Flash input for now and the rest make appropriate (LE is an output) .
+    f206:	80 e8       	ldi	r24, 0x80	; 128
+    f208:	8a b9       	out	0x0a, r24	; 10
+	PORTD=0x00;			// Drive the LE for the LEDs low and leave the rest floating.
+    f20a:	1b b8       	out	0x0b, r1	; 11
+	PORTA=0x06;			// OE and WE high, latch enables low, no pullup on AIN0, encoder now has hardware pullups.
+    f20c:	86 e0       	ldi	r24, 0x06	; 6
+    f20e:	82 b9       	out	0x02, r24	; 2
+	DDRA=0x3E;			// PORTA is digital outputs (latch strobe lines and OE/WE lines PA1-5), the analog in (on PA0) and the encoder inputs (PA6 and PA7)
+    f210:	8e e3       	ldi	r24, 0x3E	; 62
+    f212:	81 b9       	out	0x01, r24	; 1
+	DDRB=0xFF;			// Latch port to OP.
+    f214:	1f ef       	ldi	r17, 0xFF	; 255
+    f216:	14 b9       	out	0x04, r17	; 4
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f218:	15 b8       	out	0x05, r1	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f21a:	14 b9       	out	0x04, r17	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f21c:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f21e:	5f 98       	cbi	0x0b, 7	; 11
+// NOTE:  w/ 16-bit system ticks we can only time 214 seconds at this rate.
+
+// With /64 those times are 0.8192 mSecs and 53 seconds.  We did this for the sake of not missing encoder states.
+
+{
+	PRR&=~(1<<PRTIM0);	// Turn the TMR0 power on.
+    f220:	80 91 64 00 	lds	r24, 0x0064
+    f224:	8f 7d       	andi	r24, 0xDF	; 223
+    f226:	80 93 64 00 	sts	0x0064, r24
+	TIMSK0=0x00;		// Disable all Timer 0 associated interrupts.
+    f22a:	10 92 6e 00 	sts	0x006E, r1
+	TCCR0A=0;			// Normal Ports.
+    f22e:	14 bc       	out	0x24, r1	; 36
+	TCNT0=0;			// Initialize the counter to 0.
+    f230:	16 bc       	out	0x26, r1	; 38
+	TIFR0=0xFF;			// Clear the interrupt flags by writing ones.
+    f232:	15 bb       	out	0x15, r17	; 21
+	systemTicks=0;
+    f234:	10 92 1f 03 	sts	0x031F, r1
+    f238:	10 92 1e 03 	sts	0x031E, r1
+//	TCCR0B=0x04;		// Start the timer in Normal mode, prescaler at 1/256
+	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
+    f23c:	83 e0       	ldi	r24, 0x03	; 3
+    f23e:	85 bd       	out	0x25, r24	; 37
+	DDRA=0x3E;			// PORTA is digital outputs (latch strobe lines and OE/WE lines PA1-5), the analog in (on PA0) and the encoder inputs (PA6 and PA7)
+	DDRB=0xFF;			// Latch port to OP.
+
+	SetLeds(0x00);		// Init LEDs to off
+	InitSoftclock();	// Get timer ticking
+	InitSdInterface();	// Get ready to check card
+    f240:	0e 94 0c 7b 	call	0xf618	; 0xf618 <InitSdInterface>
+// Read inputs and make sure user is pressing the keys necessary to command a bootload.
+{
+	unsigned char
+		keyState;
+
+	LATCH_PORT=0xFF;			// @@@ Pullups here seem to make the bus turn around less of a mess.
+    f244:	15 b9       	out	0x05, r17	; 5
+	LATCH_DDR=0x00;				// Turn the data bus around (AVR's data port to inputs)
+    f246:	14 b8       	out	0x04, r1	; 4
+	PORTC&=~Om_SWITCH_LA;		// Enable switch latch outputs (OE Low)
+    f248:	43 98       	cbi	0x08, 3	; 8
+	...
+	asm volatile("nop"::);		
+	asm volatile("nop"::);		
+	asm volatile("nop"::);		
+	asm volatile("nop"::);		
+	asm volatile("nop"::);
+	keyState=~LATCH_INPUT;		// Grab new keystate and invert so that pressed keys are 1s
+    f256:	83 b1       	in	r24, 0x03	; 3
+    f258:	80 95       	com	r24
+	PORTC|=Om_SWITCH_LA;		// Tristate switch latch outputs (OE high)
+    f25a:	43 9a       	sbi	0x08, 3	; 8
+	LATCH_DDR=0xFF;				// Turn the data bus rightside up (AVR gots the bus)
+    f25c:	9f ef       	ldi	r25, 0xFF	; 255
+    f25e:	94 b9       	out	0x04, r25	; 4
+
+	if((keyState&(1<<7))&&(keyState&(1<<0)))
+    f260:	87 ff       	sbrs	r24, 7
+    f262:	69 c1       	rjmp	.+722    	; 0xf536 <main+0x35a>
+    f264:	80 ff       	sbrs	r24, 0
+    f266:	67 c1       	rjmp	.+718    	; 0xf536 <main+0x35a>
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f268:	81 e0       	ldi	r24, 0x01	; 1
+    f26a:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f26c:	94 b9       	out	0x04, r25	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f26e:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f270:	5f 98       	cbi	0x0b, 7	; 11
+	InitSdInterface();	// Get ready to check card
+	
+	if(CheckBootButtonsPressed()==true)	// User is pressing button combo
+	{
+		SetLeds(0x01);				// Turn on first LED
+		if(!(PINC&Im_CARD_DETECT))	// Check to see if a card is inserted
+    f272:	35 99       	sbic	0x06, 5	; 6
+    f274:	41 c1       	rjmp	.+642    	; 0xf4f8 <main+0x31c>
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f276:	83 e0       	ldi	r24, 0x03	; 3
+    f278:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f27a:	94 b9       	out	0x04, r25	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f27c:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f27e:	5f 98       	cbi	0x0b, 7	; 11
+    f280:	02 c0       	rjmp	.+4      	; 0xf286 <main+0xaa>
+		if(!(PINC&Im_CARD_DETECT))	// Check to see if a card is inserted
+		{
+			SetLeds(0x03);					// First two leds
+			while(systemTicks<(SECOND/2))	// Hang for half a second to make sure sd card has time to warm up
+			{
+				HandleSoftclock();			// Keep system clock moving
+    f282:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+	{
+		SetLeds(0x01);				// Turn on first LED
+		if(!(PINC&Im_CARD_DETECT))	// Check to see if a card is inserted
+		{
+			SetLeds(0x03);					// First two leds
+			while(systemTicks<(SECOND/2))	// Hang for half a second to make sure sd card has time to warm up
+    f286:	80 91 1e 03 	lds	r24, 0x031E
+    f28a:	90 91 1f 03 	lds	r25, 0x031F
+    f28e:	82 56       	subi	r24, 0x62	; 98
+    f290:	92 40       	sbci	r25, 0x02	; 2
+    f292:	b8 f3       	brcs	.-18     	; 0xf282 <main+0xa6>
+			{
+				HandleSoftclock();			// Keep system clock moving
+			}
+
+			if(SdHandshake()==true)	// Attempt to initialize and access card
+    f294:	0e 94 86 7c 	call	0xf90c	; 0xf90c <SdHandshake>
+    f298:	81 30       	cpi	r24, 0x01	; 1
+    f29a:	09 f0       	breq	.+2      	; 0xf29e <main+0xc2>
+    f29c:	2d c1       	rjmp	.+602    	; 0xf4f8 <main+0x31c>
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f29e:	87 e0       	ldi	r24, 0x07	; 7
+    f2a0:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f2a2:	8f ef       	ldi	r24, 0xFF	; 255
+    f2a4:	84 b9       	out	0x04, r24	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f2a6:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f2a8:	5f 98       	cbi	0x0b, 7	; 11
+			}
+
+			if(SdHandshake()==true)	// Attempt to initialize and access card
+			{
+				SetLeds(0x07);				// First three LEDs
+				if(GetSdBlock(0,bootBuffer)==true&&CheckBootHeader(bootBuffer)==true)	// Try to get the first block and see if header indicates a proper boot image
+    f2aa:	80 e0       	ldi	r24, 0x00	; 0
+    f2ac:	90 e0       	ldi	r25, 0x00	; 0
+    f2ae:	6e e0       	ldi	r22, 0x0E	; 14
+    f2b0:	71 e0       	ldi	r23, 0x01	; 1
+    f2b2:	0e 94 80 78 	call	0xf100	; 0xf100 <GetSdBlock>
+    f2b6:	81 30       	cpi	r24, 0x01	; 1
+    f2b8:	09 f0       	breq	.+2      	; 0xf2bc <main+0xe0>
+    f2ba:	1e c1       	rjmp	.+572    	; 0xf4f8 <main+0x31c>
+    f2bc:	e0 e0       	ldi	r30, 0x00	; 0
+    f2be:	f1 e0       	ldi	r31, 0x01	; 1
+    f2c0:	ae e0       	ldi	r26, 0x0E	; 14
+    f2c2:	b1 e0       	ldi	r27, 0x01	; 1
+		i;
+
+	// Check the first 8 characters of passed block, return false if one is wrong
+	for(i=0;i<8;i++)
+	{
+		if(*theBlock!=bootHeader[i])	// See if the character in the block matches our header
+    f2c4:	9c 91       	ld	r25, X
+    f2c6:	80 81       	ld	r24, Z
+    f2c8:	98 17       	cp	r25, r24
+    f2ca:	09 f0       	breq	.+2      	; 0xf2ce <main+0xf2>
+    f2cc:	15 c1       	rjmp	.+554    	; 0xf4f8 <main+0x31c>
+		{
+			return(false);				// Bail if we don't see these letters
+		}
+		theBlock++;
+    f2ce:	11 96       	adiw	r26, 0x01	; 1
+    f2d0:	31 96       	adiw	r30, 0x01	; 1
+{
+	unsigned char
+		i;
+
+	// Check the first 8 characters of passed block, return false if one is wrong
+	for(i=0;i<8;i++)
+    f2d2:	81 e0       	ldi	r24, 0x01	; 1
+    f2d4:	a6 31       	cpi	r26, 0x16	; 22
+    f2d6:	b8 07       	cpc	r27, r24
+    f2d8:	a9 f7       	brne	.-22     	; 0xf2c4 <main+0xe8>
+		theBlock++;
+	}
+
+	// Now get the 32-bit length of data (big endian byte order)
+	bootDataLength=(unsigned long)(*theBlock)<<24;
+	theBlock++;
+    f2da:	fd 01       	movw	r30, r26
+    f2dc:	31 96       	adiw	r30, 0x01	; 1
+	bootDataLength|=(unsigned long)(*theBlock)<<16;
+	theBlock++;
+    f2de:	9f 01       	movw	r18, r30
+    f2e0:	2f 5f       	subi	r18, 0xFF	; 255
+    f2e2:	3f 4f       	sbci	r19, 0xFF	; 255
+	bootDataLength|=(unsigned long)(*theBlock)<<8;
+    f2e4:	11 96       	adiw	r26, 0x01	; 1
+    f2e6:	ec 90       	ld	r14, X
+    f2e8:	11 97       	sbiw	r26, 0x01	; 1
+    f2ea:	ff 24       	eor	r15, r15
+    f2ec:	00 e0       	ldi	r16, 0x00	; 0
+    f2ee:	10 e0       	ldi	r17, 0x00	; 0
+    f2f0:	87 01       	movw	r16, r14
+    f2f2:	ff 24       	eor	r15, r15
+    f2f4:	ee 24       	eor	r14, r14
+    f2f6:	8c 91       	ld	r24, X
+    f2f8:	90 e0       	ldi	r25, 0x00	; 0
+    f2fa:	a0 e0       	ldi	r26, 0x00	; 0
+    f2fc:	b0 e0       	ldi	r27, 0x00	; 0
+    f2fe:	b8 2f       	mov	r27, r24
+    f300:	aa 27       	eor	r26, r26
+    f302:	99 27       	eor	r25, r25
+    f304:	88 27       	eor	r24, r24
+    f306:	e8 2a       	or	r14, r24
+    f308:	f9 2a       	or	r15, r25
+    f30a:	0a 2b       	or	r16, r26
+    f30c:	1b 2b       	or	r17, r27
+    f30e:	81 81       	ldd	r24, Z+1	; 0x01
+    f310:	90 e0       	ldi	r25, 0x00	; 0
+    f312:	a0 e0       	ldi	r26, 0x00	; 0
+    f314:	b0 e0       	ldi	r27, 0x00	; 0
+    f316:	ba 2f       	mov	r27, r26
+    f318:	a9 2f       	mov	r26, r25
+    f31a:	98 2f       	mov	r25, r24
+    f31c:	88 27       	eor	r24, r24
+    f31e:	e8 2a       	or	r14, r24
+    f320:	f9 2a       	or	r15, r25
+    f322:	0a 2b       	or	r16, r26
+    f324:	1b 2b       	or	r17, r27
+	theBlock++;
+    f326:	f9 01       	movw	r30, r18
+    f328:	31 96       	adiw	r30, 0x01	; 1
+	bootDataLength|=(unsigned long)*theBlock;
+    f32a:	d9 01       	movw	r26, r18
+    f32c:	11 96       	adiw	r26, 0x01	; 1
+    f32e:	8c 91       	ld	r24, X
+    f330:	90 e0       	ldi	r25, 0x00	; 0
+    f332:	a0 e0       	ldi	r26, 0x00	; 0
+    f334:	b0 e0       	ldi	r27, 0x00	; 0
+    f336:	e8 2a       	or	r14, r24
+    f338:	f9 2a       	or	r15, r25
+    f33a:	0a 2b       	or	r16, r26
+    f33c:	1b 2b       	or	r17, r27
+    f33e:	e0 92 0a 01 	sts	0x010A, r14
+    f342:	f0 92 0b 01 	sts	0x010B, r15
+    f346:	00 93 0c 01 	sts	0x010C, r16
+    f34a:	10 93 0d 01 	sts	0x010D, r17
+	theBlock++;
+
+	// Now get the 16-bit CRC (big endian byte order)
+	bootCrc=(unsigned int)(*theBlock)<<8;
+    f34e:	31 81       	ldd	r19, Z+1	; 0x01
+    f350:	20 e0       	ldi	r18, 0x00	; 0
+	theBlock++;
+	bootCrc|=(*theBlock);
+    f352:	82 81       	ldd	r24, Z+2	; 0x02
+    f354:	90 e0       	ldi	r25, 0x00	; 0
+    f356:	82 2b       	or	r24, r18
+    f358:	93 2b       	or	r25, r19
+    f35a:	90 93 09 01 	sts	0x0109, r25
+    f35e:	80 93 08 01 	sts	0x0108, r24
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f362:	8f e0       	ldi	r24, 0x0F	; 15
+    f364:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f366:	8f ef       	ldi	r24, 0xFF	; 255
+    f368:	84 b9       	out	0x04, r24	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f36a:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f36c:	5f 98       	cbi	0x0b, 7	; 11
+	bootDataIndex=0;					// Start with first data bytes
+	runningCrc=0;						// CRC must be 0 to start (see Xmodem CRC rules)
+	blockDataIndex=SD_BLOCK_LENGTH;		// Haven't read in a new block
+	currentBlock=1;						// Boot data begins in block one (header is in block 0)
+	
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>24)&0xFF));	// Begin CRC with byte count of boot data
+    f36e:	21 2f       	mov	r18, r17
+    f370:	33 27       	eor	r19, r19
+    f372:	44 27       	eor	r20, r20
+    f374:	55 27       	eor	r21, r21
+    f376:	80 e0       	ldi	r24, 0x00	; 0
+    f378:	90 e0       	ldi	r25, 0x00	; 0
+    f37a:	62 2f       	mov	r22, r18
+    f37c:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>16)&0xFF));	
+    f380:	98 01       	movw	r18, r16
+    f382:	44 27       	eor	r20, r20
+    f384:	55 27       	eor	r21, r21
+    f386:	62 2f       	mov	r22, r18
+    f388:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>8)&0xFF));	
+    f38c:	55 27       	eor	r21, r21
+    f38e:	41 2f       	mov	r20, r17
+    f390:	30 2f       	mov	r19, r16
+    f392:	2f 2d       	mov	r18, r15
+    f394:	62 2f       	mov	r22, r18
+    f396:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+	runningCrc=UpdateCrc(runningCrc,(bootDataLength&0xFF));
+    f39a:	6e 2d       	mov	r22, r14
+    f39c:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+    f3a0:	5c 01       	movw	r10, r24
+    f3a2:	a1 e0       	ldi	r26, 0x01	; 1
+    f3a4:	ca 2e       	mov	r12, r26
+    f3a6:	d1 2c       	mov	r13, r1
+    f3a8:	c0 e0       	ldi	r28, 0x00	; 0
+    f3aa:	d2 e0       	ldi	r29, 0x02	; 2
+    f3ac:	ee 24       	eor	r14, r14
+    f3ae:	ff 24       	eor	r15, r15
+    f3b0:	87 01       	movw	r16, r14
+    f3b2:	1f c0       	rjmp	.+62     	; 0xf3f2 <main+0x216>
+
+	while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left to input into the CRC
+	{
+		if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
+    f3b4:	b2 e0       	ldi	r27, 0x02	; 2
+    f3b6:	c0 30       	cpi	r28, 0x00	; 0
+    f3b8:	db 07       	cpc	r29, r27
+    f3ba:	69 f4       	brne	.+26     	; 0xf3d6 <main+0x1fa>
+		{
+			if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
+    f3bc:	c6 01       	movw	r24, r12
+    f3be:	6e e0       	ldi	r22, 0x0E	; 14
+    f3c0:	71 e0       	ldi	r23, 0x01	; 1
+    f3c2:	0e 94 80 78 	call	0xf100	; 0xf100 <GetSdBlock>
+    f3c6:	88 23       	and	r24, r24
+    f3c8:	09 f4       	brne	.+2      	; 0xf3cc <main+0x1f0>
+    f3ca:	96 c0       	rjmp	.+300    	; 0xf4f8 <main+0x31c>
+			{
+				currentBlock++;				// Point at the next block
+    f3cc:	08 94       	sec
+    f3ce:	c1 1c       	adc	r12, r1
+    f3d0:	d1 1c       	adc	r13, r1
+    f3d2:	c0 e0       	ldi	r28, 0x00	; 0
+    f3d4:	d0 e0       	ldi	r29, 0x00	; 0
+			{
+				return(false);								// Bail; read error
+			}
+		}
+
+		runningCrc=UpdateCrc(runningCrc,*((&bootBuffer[0])+blockDataIndex));	// Update CRC with the next byte in this block
+    f3d6:	fe 01       	movw	r30, r28
+    f3d8:	e2 5f       	subi	r30, 0xF2	; 242
+    f3da:	fe 4f       	sbci	r31, 0xFE	; 254
+    f3dc:	c5 01       	movw	r24, r10
+    f3de:	60 81       	ld	r22, Z
+    f3e0:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+    f3e4:	5c 01       	movw	r10, r24
+		blockDataIndex++;														// Now point at next byte in block
+    f3e6:	21 96       	adiw	r28, 0x01	; 1
+		bootDataIndex++;														// Keep track of running count of bytes
+    f3e8:	08 94       	sec
+    f3ea:	e1 1c       	adc	r14, r1
+    f3ec:	f1 1c       	adc	r15, r1
+    f3ee:	01 1d       	adc	r16, r1
+    f3f0:	11 1d       	adc	r17, r1
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>24)&0xFF));	// Begin CRC with byte count of boot data
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>16)&0xFF));	
+	runningCrc=UpdateCrc(runningCrc,((bootDataLength>>8)&0xFF));	
+	runningCrc=UpdateCrc(runningCrc,(bootDataLength&0xFF));
+
+	while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left to input into the CRC
+    f3f2:	80 91 0a 01 	lds	r24, 0x010A
+    f3f6:	90 91 0b 01 	lds	r25, 0x010B
+    f3fa:	a0 91 0c 01 	lds	r26, 0x010C
+    f3fe:	b0 91 0d 01 	lds	r27, 0x010D
+    f402:	e8 16       	cp	r14, r24
+    f404:	f9 06       	cpc	r15, r25
+    f406:	0a 07       	cpc	r16, r26
+    f408:	1b 07       	cpc	r17, r27
+    f40a:	a0 f2       	brcs	.-88     	; 0xf3b4 <main+0x1d8>
+	}
+
+	// At this point we've calculated the CRC from the data length and all the data bytes.
+	// When update the calculated CRC with the passed CRC, the result should be 0
+	
+	runningCrc=UpdateCrc(runningCrc,((bootCrc>>8)&0xFF));	
+    f40c:	10 91 08 01 	lds	r17, 0x0108
+    f410:	60 91 09 01 	lds	r22, 0x0109
+    f414:	c5 01       	movw	r24, r10
+    f416:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+	runningCrc=UpdateCrc(runningCrc,(bootCrc&0xFF));
+    f41a:	61 2f       	mov	r22, r17
+    f41c:	0e 94 6a 78 	call	0xf0d4	; 0xf0d4 <UpdateCrc>
+	
+	if(runningCrc==0)
+    f420:	89 2b       	or	r24, r25
+    f422:	09 f4       	brne	.+2      	; 0xf426 <main+0x24a>
+    f424:	a5 c0       	rjmp	.+330    	; 0xf570 <main+0x394>
+    f426:	68 c0       	rjmp	.+208    	; 0xf4f8 <main+0x31c>
+						currentBlock=1;						// Boot data begins in block one (header is in block 0)
+						ledProgress=0;						// No twinkles yet
+
+						while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left
+						{
+							if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
+    f428:	e2 e0       	ldi	r30, 0x02	; 2
+    f42a:	c0 30       	cpi	r28, 0x00	; 0
+    f42c:	de 07       	cpc	r29, r30
+    f42e:	d1 f4       	brne	.+52     	; 0xf464 <main+0x288>
+							{
+								if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
+    f430:	c5 01       	movw	r24, r10
+    f432:	6e e0       	ldi	r22, 0x0E	; 14
+    f434:	71 e0       	ldi	r23, 0x01	; 1
+    f436:	0e 94 80 78 	call	0xf100	; 0xf100 <GetSdBlock>
+    f43a:	88 23       	and	r24, r24
+    f43c:	99 f0       	breq	.+38     	; 0xf464 <main+0x288>
+								{
+									currentBlock++;				// Point at the next block
+									blockDataIndex=0;			// Point at first byte of this block
+
+									ledProgress++;				// Twinkle three high bits based on reading blocks
+    f43e:	93 94       	inc	r9
+									if(ledProgress>7)
+    f440:	f7 e0       	ldi	r31, 0x07	; 7
+    f442:	f9 15       	cp	r31, r9
+    f444:	08 f4       	brcc	.+2      	; 0xf448 <main+0x26c>
+    f446:	99 24       	eor	r9, r9
+						{
+							if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
+							{
+								if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
+								{
+									currentBlock++;				// Point at the next block
+    f448:	08 94       	sec
+    f44a:	a1 1c       	adc	r10, r1
+    f44c:	b1 1c       	adc	r11, r1
+									if(ledProgress>7)
+									{
+										ledProgress=0;
+									}
+
+									SetLeds(0x1F|(ledProgress<<5));
+    f44e:	89 2d       	mov	r24, r9
+    f450:	82 95       	swap	r24
+    f452:	88 0f       	add	r24, r24
+    f454:	80 7e       	andi	r24, 0xE0	; 224
+    f456:	8f 61       	ori	r24, 0x1F	; 31
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f458:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f45a:	44 b8       	out	0x04, r4	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f45c:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f45e:	5f 98       	cbi	0x0b, 7	; 11
+    f460:	c0 e0       	ldi	r28, 0x00	; 0
+    f462:	d0 e0       	ldi	r29, 0x00	; 0
+									// Bail; read error
+								}
+							}
+
+							// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
+    						eeprom_busy_wait();					// Make sure we're clear to erase
+    f464:	f9 99       	sbic	0x1f, 1	; 31
+    f466:	fe cf       	rjmp	.-4      	; 0xf464 <main+0x288>
+    f468:	97 01       	movw	r18, r14
+							boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
+    f46a:	f7 01       	movw	r30, r14
+    f46c:	50 92 57 00 	sts	0x0057, r5
+    f470:	e8 95       	spm
+    						boot_spm_busy_wait();      			// Wait until the memory is erased.
+    f472:	07 b6       	in	r0, 0x37	; 55
+    f474:	00 fc       	sbrc	r0, 0
+    f476:	fd cf       	rjmp	.-6      	; 0xf472 <main+0x296>
+    f478:	de 01       	movw	r26, r28
+    f47a:	a2 5f       	subi	r26, 0xF2	; 242
+    f47c:	be 4f       	sbci	r27, 0xFE	; 254
+    f47e:	f9 01       	movw	r30, r18
+
+							for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
+    f480:	a9 01       	movw	r20, r18
+    f482:	40 50       	subi	r20, 0x00	; 0
+    f484:	5f 4f       	sbci	r21, 0xFF	; 255
+							{
+								tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
+    f486:	8c 91       	ld	r24, X
+    f488:	90 e0       	ldi	r25, 0x00	; 0
+								tempWord|=(bootBuffer[blockDataIndex++])<<8;
+								boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
+    f48a:	11 96       	adiw	r26, 0x01	; 1
+    f48c:	dc 90       	ld	r13, X
+    f48e:	11 97       	sbiw	r26, 0x01	; 1
+    f490:	cc 24       	eor	r12, r12
+    f492:	8c 29       	or	r24, r12
+    f494:	9d 29       	or	r25, r13
+    f496:	0c 01       	movw	r0, r24
+    f498:	60 92 57 00 	sts	0x0057, r6
+    f49c:	e8 95       	spm
+    f49e:	11 24       	eor	r1, r1
+    f4a0:	12 96       	adiw	r26, 0x02	; 2
+    f4a2:	32 96       	adiw	r30, 0x02	; 2
+							// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
+    						eeprom_busy_wait();					// Make sure we're clear to erase
+							boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
+    						boot_spm_busy_wait();      			// Wait until the memory is erased.
+
+							for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
+    f4a4:	e4 17       	cp	r30, r20
+    f4a6:	f5 07       	cpc	r31, r21
+    f4a8:	71 f7       	brne	.-36     	; 0xf486 <main+0x2aa>
+    f4aa:	c0 50       	subi	r28, 0x00	; 0
+    f4ac:	df 4f       	sbci	r29, 0xFF	; 255
+								tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
+								tempWord|=(bootBuffer[blockDataIndex++])<<8;
+								boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
+							}
+
+							boot_page_write(bootDataIndex);			// Write the page from data in the page buffer.  This writes the flash page which _contains_ this passed address.
+    f4ae:	f9 01       	movw	r30, r18
+    f4b0:	70 92 57 00 	sts	0x0057, r7
+    f4b4:	e8 95       	spm
+							boot_spm_busy_wait();					// Wait for it to be done
+    f4b6:	07 b6       	in	r0, 0x37	; 55
+    f4b8:	00 fc       	sbrc	r0, 0
+    f4ba:	fd cf       	rjmp	.-6      	; 0xf4b6 <main+0x2da>
+							boot_rww_enable();						// Allow the application area to be read again
+    f4bc:	80 92 57 00 	sts	0x0057, r8
+    f4c0:	e8 95       	spm
+							
+							bootDataIndex+=SPM_PAGESIZE;			// Increment our absolute address by one page -- NOTE -- this is defined in BYTES, not words, so this is the right way to increment.
+    f4c2:	80 e0       	ldi	r24, 0x00	; 0
+    f4c4:	91 e0       	ldi	r25, 0x01	; 1
+    f4c6:	a0 e0       	ldi	r26, 0x00	; 0
+    f4c8:	b0 e0       	ldi	r27, 0x00	; 0
+    f4ca:	e8 0e       	add	r14, r24
+    f4cc:	f9 1e       	adc	r15, r25
+    f4ce:	0a 1f       	adc	r16, r26
+    f4d0:	1b 1f       	adc	r17, r27
+						bootDataIndex=0;					// Start with first data bytes
+						blockDataIndex=SD_BLOCK_LENGTH;		// Haven't read in a new block
+						currentBlock=1;						// Boot data begins in block one (header is in block 0)
+						ledProgress=0;						// No twinkles yet
+
+						while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left
+    f4d2:	80 91 0a 01 	lds	r24, 0x010A
+    f4d6:	90 91 0b 01 	lds	r25, 0x010B
+    f4da:	a0 91 0c 01 	lds	r26, 0x010C
+    f4de:	b0 91 0d 01 	lds	r27, 0x010D
+    f4e2:	e8 16       	cp	r14, r24
+    f4e4:	f9 06       	cpc	r15, r25
+    f4e6:	0a 07       	cpc	r16, r26
+    f4e8:	1b 07       	cpc	r17, r27
+    f4ea:	08 f4       	brcc	.+2      	; 0xf4ee <main+0x312>
+    f4ec:	9d cf       	rjmp	.-198    	; 0xf428 <main+0x24c>
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f4ee:	8f ef       	ldi	r24, 0xFF	; 255
+    f4f0:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f4f2:	84 b9       	out	0x04, r24	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f4f4:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f4f6:	5f 98       	cbi	0x0b, 7	; 11
+		}
+
+		// We were commanded to bootload and made it through some amount of bootloading.
+		// Wait for some period of time so user can see LED code and tell how far the boot loading process got
+
+		HandleSoftclock();
+    f4f8:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+		tempWord=systemTicks;
+    f4fc:	80 91 1e 03 	lds	r24, 0x031E
+    f500:	90 91 1f 03 	lds	r25, 0x031F
+		while(systemTicks<(tempWord+SECOND))	// Wait a bit for user to read bootloader status LEDs
+    f504:	7c 01       	movw	r14, r24
+    f506:	00 e0       	ldi	r16, 0x00	; 0
+    f508:	10 e0       	ldi	r17, 0x00	; 0
+    f50a:	84 ec       	ldi	r24, 0xC4	; 196
+    f50c:	94 e0       	ldi	r25, 0x04	; 4
+    f50e:	a0 e0       	ldi	r26, 0x00	; 0
+    f510:	b0 e0       	ldi	r27, 0x00	; 0
+    f512:	e8 0e       	add	r14, r24
+    f514:	f9 1e       	adc	r15, r25
+    f516:	0a 1f       	adc	r16, r26
+    f518:	1b 1f       	adc	r17, r27
+    f51a:	02 c0       	rjmp	.+4      	; 0xf520 <main+0x344>
+		{
+			HandleSoftclock();	// Kludgy
+    f51c:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+		// We were commanded to bootload and made it through some amount of bootloading.
+		// Wait for some period of time so user can see LED code and tell how far the boot loading process got
+
+		HandleSoftclock();
+		tempWord=systemTicks;
+		while(systemTicks<(tempWord+SECOND))	// Wait a bit for user to read bootloader status LEDs
+    f520:	80 91 1e 03 	lds	r24, 0x031E
+    f524:	90 91 1f 03 	lds	r25, 0x031F
+    f528:	a0 e0       	ldi	r26, 0x00	; 0
+    f52a:	b0 e0       	ldi	r27, 0x00	; 0
+    f52c:	8e 15       	cp	r24, r14
+    f52e:	9f 05       	cpc	r25, r15
+    f530:	a0 07       	cpc	r26, r16
+    f532:	b1 07       	cpc	r27, r17
+    f534:	98 f3       	brcs	.-26     	; 0xf51c <main+0x340>
+			HandleSoftclock();	// Kludgy
+		}
+	}
+
+	// Undo what we did to make the bootloader happen
+	UnInitSdInterface();
+    f536:	0e 94 fe 7a 	call	0xf5fc	; 0xf5fc <UnInitSdInterface>
+// Local Softclock Stuff
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+static void UnInitSoftclock(void)
+{
+	TCCR0B=0;			// Stop the timer
+    f53a:	15 bc       	out	0x25, r1	; 37
+	PRR|=(1<<PRTIM0);	// Turn the TMR0 power off.
+    f53c:	80 91 64 00 	lds	r24, 0x0064
+    f540:	80 62       	ori	r24, 0x20	; 32
+    f542:	80 93 64 00 	sts	0x0064, r24
+	UnInitSoftclock();
+
+	// Un init buttons 
+	// Un init LEDs
+	
+	asm volatile("jmp 0000");	// Jump to normal reset vector -- start application
+    f546:	0c 94 00 00 	jmp	0	; 0x0 <__heap_end>
+	return(0);					// Keep compiler quiet
+    f54a:	80 e0       	ldi	r24, 0x00	; 0
+    f54c:	90 e0       	ldi	r25, 0x00	; 0
+    f54e:	df 91       	pop	r29
+    f550:	cf 91       	pop	r28
+    f552:	1f 91       	pop	r17
+    f554:	0f 91       	pop	r16
+    f556:	ff 90       	pop	r15
+    f558:	ef 90       	pop	r14
+    f55a:	df 90       	pop	r13
+    f55c:	cf 90       	pop	r12
+    f55e:	bf 90       	pop	r11
+    f560:	af 90       	pop	r10
+    f562:	9f 90       	pop	r9
+    f564:	8f 90       	pop	r8
+    f566:	7f 90       	pop	r7
+    f568:	6f 90       	pop	r6
+    f56a:	5f 90       	pop	r5
+    f56c:	4f 90       	pop	r4
+    f56e:	08 95       	ret
+}
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+    f570:	8f e1       	ldi	r24, 0x1F	; 31
+    f572:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f574:	8f ef       	ldi	r24, 0xFF	; 255
+    f576:	84 b9       	out	0x04, r24	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+    f578:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.	
+    f57a:	5f 98       	cbi	0x0b, 7	; 11
+    f57c:	ee 24       	eor	r14, r14
+    f57e:	ff 24       	eor	r15, r15
+    f580:	87 01       	movw	r16, r14
+    f582:	c0 e0       	ldi	r28, 0x00	; 0
+    f584:	d2 e0       	ldi	r29, 0x02	; 2
+    f586:	f1 e0       	ldi	r31, 0x01	; 1
+    f588:	af 2e       	mov	r10, r31
+    f58a:	b1 2c       	mov	r11, r1
+    f58c:	99 24       	eor	r9, r9
+
+static void SetLeds(unsigned char mask)
+// Puts the passed mask onto the LEDs.  Used to show bootloader progress.
+{
+	LATCH_PORT=mask;				// Put passed data onto bus.
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+    f58e:	44 24       	eor	r4, r4
+    f590:	4a 94       	dec	r4
+								}
+							}
+
+							// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
+    						eeprom_busy_wait();					// Make sure we're clear to erase
+							boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
+    f592:	e3 e0       	ldi	r30, 0x03	; 3
+    f594:	5e 2e       	mov	r5, r30
+
+							for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
+							{
+								tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
+								tempWord|=(bootBuffer[blockDataIndex++])<<8;
+								boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
+    f596:	66 24       	eor	r6, r6
+    f598:	63 94       	inc	r6
+							}
+
+							boot_page_write(bootDataIndex);			// Write the page from data in the page buffer.  This writes the flash page which _contains_ this passed address.
+    f59a:	75 e0       	ldi	r23, 0x05	; 5
+    f59c:	77 2e       	mov	r7, r23
+							boot_spm_busy_wait();					// Wait for it to be done
+							boot_rww_enable();						// Allow the application area to be read again
+    f59e:	61 e1       	ldi	r22, 0x11	; 17
+    f5a0:	86 2e       	mov	r8, r22
+    f5a2:	97 cf       	rjmp	.-210    	; 0xf4d2 <main+0x2f6>
+
+0000f5a4 <SetTimer>:
+}
+*/
+void SetTimer(unsigned char timerNum, unsigned int ticks_to_wait)
+// Sets a software timer with an entry time and an amount of time before it expires.
+{
+	entryTime[timerNum]=systemTicks;
+    f5a4:	e8 2f       	mov	r30, r24
+    f5a6:	f0 e0       	ldi	r31, 0x00	; 0
+    f5a8:	80 91 1e 03 	lds	r24, 0x031E
+    f5ac:	90 91 1f 03 	lds	r25, 0x031F
+    f5b0:	ee 0f       	add	r30, r30
+    f5b2:	ff 1f       	adc	r31, r31
+    f5b4:	df 01       	movw	r26, r30
+    f5b6:	a2 5f       	subi	r26, 0xF2	; 242
+    f5b8:	bc 4f       	sbci	r27, 0xFC	; 252
+    f5ba:	8d 93       	st	X+, r24
+    f5bc:	9c 93       	st	X, r25
+	delayTime[timerNum]=ticks_to_wait;
+    f5be:	ea 5e       	subi	r30, 0xEA	; 234
+    f5c0:	fc 4f       	sbci	r31, 0xFC	; 252
+    f5c2:	71 83       	std	Z+1, r23	; 0x01
+    f5c4:	60 83       	st	Z, r22
+}
+    f5c6:	08 95       	ret
+
+0000f5c8 <CheckTimer>:
+
+unsigned char CheckTimer(unsigned char timerNum)
+// If the current system time MINUS the entry time is greater than (or equal to) the amount of ticks we're supposed to wait, we've waited long enough.  Return true.
+// Ie, return true if the time is up, and false if it isn't.
+{	
+	if((systemTicks-entryTime[timerNum])>=delayTime[timerNum])
+    f5c8:	20 91 1e 03 	lds	r18, 0x031E
+    f5cc:	30 91 1f 03 	lds	r19, 0x031F
+    f5d0:	e8 2f       	mov	r30, r24
+    f5d2:	f0 e0       	ldi	r31, 0x00	; 0
+    f5d4:	40 e0       	ldi	r20, 0x00	; 0
+    f5d6:	ee 0f       	add	r30, r30
+    f5d8:	ff 1f       	adc	r31, r31
+    f5da:	df 01       	movw	r26, r30
+    f5dc:	a2 5f       	subi	r26, 0xF2	; 242
+    f5de:	bc 4f       	sbci	r27, 0xFC	; 252
+    f5e0:	8d 91       	ld	r24, X+
+    f5e2:	9c 91       	ld	r25, X
+    f5e4:	28 1b       	sub	r18, r24
+    f5e6:	39 0b       	sbc	r19, r25
+    f5e8:	ea 5e       	subi	r30, 0xEA	; 234
+    f5ea:	fc 4f       	sbci	r31, 0xFC	; 252
+    f5ec:	80 81       	ld	r24, Z
+    f5ee:	91 81       	ldd	r25, Z+1	; 0x01
+    f5f0:	28 17       	cp	r18, r24
+    f5f2:	39 07       	cpc	r19, r25
+    f5f4:	08 f0       	brcs	.+2      	; 0xf5f8 <CheckTimer+0x30>
+    f5f6:	41 e0       	ldi	r20, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+    f5f8:	84 2f       	mov	r24, r20
+    f5fa:	08 95       	ret
+
+0000f5fc <UnInitSdInterface>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void UnInitSdInterface(void)
+{
+	DDRD&=~(Om_SD_CS|Om_SD_CLK);	// Flash specific outputs back to inputs.
+    f5fc:	8a b1       	in	r24, 0x0a	; 10
+    f5fe:	8f 7c       	andi	r24, 0xCF	; 207
+    f600:	8a b9       	out	0x0a, r24	; 10
+	PORTD|=(Om_SD_CS|Om_SD_CLK);	// Pullup pins so they don't float
+    f602:	8b b1       	in	r24, 0x0b	; 11
+    f604:	80 63       	ori	r24, 0x30	; 48
+    f606:	8b b9       	out	0x0b, r24	; 11
+	UCSR1B=0;						// Disable transmission / reception
+    f608:	10 92 c9 00 	sts	0x00C9, r1
+	PRR|=(1<<PRUSART1);				// Power off the UART.	
+    f60c:	e4 e6       	ldi	r30, 0x64	; 100
+    f60e:	f0 e0       	ldi	r31, 0x00	; 0
+    f610:	80 81       	ld	r24, Z
+    f612:	80 61       	ori	r24, 0x10	; 16
+    f614:	80 83       	st	Z, r24
+}
+    f616:	08 95       	ret
+
+0000f618 <InitSdInterface>:
+// Because the command sequence which initializes the SD card needs CS to be high (CMD is what the card thinks, SPI not yet active) we exit with CS high.
+// SD cards prefer SPI mode 0, although they can apparently work OK in mode 3.
+// All instructions, addresses, and data are transferred with the most significant bit (MSb) first.
+// We're starting with SCK = (Fosc / 4) or 5MHz with a 20MHz crystal.
+{
+	PRR&=~(1<<PRUSART1);				// Power on the UART.
+    f618:	e4 e6       	ldi	r30, 0x64	; 100
+    f61a:	f0 e0       	ldi	r31, 0x00	; 0
+    f61c:	80 81       	ld	r24, Z
+    f61e:	8f 7e       	andi	r24, 0xEF	; 239
+    f620:	80 83       	st	Z, r24
+	UBRR1=0;							// The baud rate register must be 0 when the transmitter is enabled.
+    f622:	ec ec       	ldi	r30, 0xCC	; 204
+    f624:	f0 e0       	ldi	r31, 0x00	; 0
+    f626:	11 82       	std	Z+1, r1	; 0x01
+    f628:	10 82       	st	Z, r1
+	DDRD|=(Om_SD_CLK);					// Set the XCK1 (normally the UART external clock, now the SCK out) to an output -- since the MSPIM can only be an SPI Master (and that's what we want).
+    f62a:	54 9a       	sbi	0x0a, 4	; 10
+	UCSR1C=((1<<UMSEL11) | (1<<UMSEL10));	// Set the USART to MPSIM mode, SPI mode 0, MSB first.
+    f62c:	80 ec       	ldi	r24, 0xC0	; 192
+    f62e:	80 93 ca 00 	sts	0x00CA, r24
+	UCSR1B=((1<<RXEN1)|(1<<TXEN1)); 	// Enable the transmitter and receiver.
+    f632:	88 e1       	ldi	r24, 0x18	; 24
+    f634:	80 93 c9 00 	sts	0x00C9, r24
+	UBRR1=1;							// According to the datasheet this should be "5MBaud" or a 5MHz clock.  NOTE:  The baud rate must be set properly AFTER the transmitter is enabled but before the first transmission.
+    f638:	81 e0       	ldi	r24, 0x01	; 1
+    f63a:	90 e0       	ldi	r25, 0x00	; 0
+    f63c:	91 83       	std	Z+1, r25	; 0x01
+    f63e:	80 83       	st	Z, r24
+//	UBRR1=99;							// 100kHz clock for testing
+
+	DDRD|=Om_SD_CS;			// CS pin to output.
+    f640:	55 9a       	sbi	0x0a, 5	; 10
+	PORTD|=Om_SD_CS;		// And start with CS low.
+    f642:	5d 9a       	sbi	0x0b, 5	; 11
+}
+    f644:	08 95       	ret
+
+0000f646 <EndSdTransfer>:
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f646:	5d 9a       	sbi	0x0b, 5	; 11
+}
+    f648:	08 95       	ret
+
+0000f64a <StartSdTransfer>:
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f64a:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    f64c:	5d 98       	cbi	0x0b, 5	; 11
+}
+    f64e:	08 95       	ret
+
+0000f650 <TransferSdByte>:
+// Slow and careful transfers; checks both send and receive buffers and waits until they're ready to move on.
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+    f650:	98 2f       	mov	r25, r24
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f652:	80 91 c8 00 	lds	r24, 0x00C8
+    f656:	85 ff       	sbrs	r24, 5
+    f658:	fc cf       	rjmp	.-8      	; 0xf652 <TransferSdByte+0x2>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f65a:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f65e:	80 91 c8 00 	lds	r24, 0x00C8
+    f662:	87 ff       	sbrs	r24, 7
+    f664:	fc cf       	rjmp	.-8      	; 0xf65e <TransferSdByte+0xe>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f666:	80 91 ce 00 	lds	r24, 0x00CE
+}
+    f66a:	08 95       	ret
+
+0000f66c <SendDummyByte>:
+
+static void SendDummyByte(void)
+// Needed to sync the card in some weird cases
+{
+	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    f66c:	80 91 c8 00 	lds	r24, 0x00C8
+    f670:	80 64       	ori	r24, 0x40	; 64
+    f672:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f676:	80 91 c8 00 	lds	r24, 0x00C8
+    f67a:	85 ff       	sbrs	r24, 5
+    f67c:	fc cf       	rjmp	.-8      	; 0xf676 <SendDummyByte+0xa>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f67e:	8f ef       	ldi	r24, 0xFF	; 255
+    f680:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f684:	80 91 c8 00 	lds	r24, 0x00C8
+    f688:	87 ff       	sbrs	r24, 7
+    f68a:	fc cf       	rjmp	.-8      	; 0xf684 <SendDummyByte+0x18>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f68c:	80 91 ce 00 	lds	r24, 0x00CE
+static void SendDummyByte(void)
+// Needed to sync the card in some weird cases
+{
+	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+	TransferSdByte(0xFF);	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f690:	80 91 c8 00 	lds	r24, 0x00C8
+    f694:	86 ff       	sbrs	r24, 6
+    f696:	fc cf       	rjmp	.-8      	; 0xf690 <SendDummyByte+0x24>
+		;
+}
+    f698:	08 95       	ret
+
+0000f69a <SendSdCommand>:
+unsigned char SendSdCommand(unsigned char cmdIndex,unsigned long argument)
+// Sends out your standard 6-byte SD command.  Uses the passed index and argument.
+// Will append CRC when necessary or leave it blank if not.
+// This function will always assert CS, since it's needed to give a command, however frequently it is necessary to leave CS low for a transfer, so the function exits with CS still asserted.
+// That means the caller must remember to bring it high again when they're done.
+{
+    f69a:	1f 93       	push	r17
+    f69c:	28 2f       	mov	r18, r24
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f69e:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    f6a0:	5d 98       	cbi	0x0b, 5	; 11
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f6a2:	80 91 c8 00 	lds	r24, 0x00C8
+    f6a6:	85 ff       	sbrs	r24, 5
+    f6a8:	fc cf       	rjmp	.-8      	; 0xf6a2 <SendSdCommand+0x8>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f6aa:	8f ef       	ldi	r24, 0xFF	; 255
+    f6ac:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f6b0:	80 91 c8 00 	lds	r24, 0x00C8
+    f6b4:	87 ff       	sbrs	r24, 7
+    f6b6:	fc cf       	rjmp	.-8      	; 0xf6b0 <SendSdCommand+0x16>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f6b8:	80 91 ce 00 	lds	r24, 0x00CE
+		tmpCrc;
+
+	StartSdTransfer();		// Assert CS
+	TransferSdByte(0xFF);	// Initial pad to make sure card is in the correct state for the command.
+
+	if(cmdIndex&0x80)	// We mark an ACMD with a 1 in bit 7 (no commands have this; the start bit is always zero).  Therefor this is an ACMD, so send CMD55 first
+    f6bc:	27 ff       	sbrs	r18, 7
+    f6be:	7a c0       	rjmp	.+244    	; 0xf7b4 <SendSdCommand+0x11a>
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f6c0:	80 91 c8 00 	lds	r24, 0x00C8
+    f6c4:	85 ff       	sbrs	r24, 5
+    f6c6:	fc cf       	rjmp	.-8      	; 0xf6c0 <SendSdCommand+0x26>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f6c8:	87 e7       	ldi	r24, 0x77	; 119
+    f6ca:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f6ce:	80 91 c8 00 	lds	r24, 0x00C8
+    f6d2:	87 ff       	sbrs	r24, 7
+    f6d4:	fc cf       	rjmp	.-8      	; 0xf6ce <SendSdCommand+0x34>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f6d6:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f6da:	80 91 c8 00 	lds	r24, 0x00C8
+    f6de:	85 ff       	sbrs	r24, 5
+    f6e0:	fc cf       	rjmp	.-8      	; 0xf6da <SendSdCommand+0x40>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f6e2:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f6e6:	80 91 c8 00 	lds	r24, 0x00C8
+    f6ea:	87 ff       	sbrs	r24, 7
+    f6ec:	fc cf       	rjmp	.-8      	; 0xf6e6 <SendSdCommand+0x4c>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f6ee:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f6f2:	80 91 c8 00 	lds	r24, 0x00C8
+    f6f6:	85 ff       	sbrs	r24, 5
+    f6f8:	fc cf       	rjmp	.-8      	; 0xf6f2 <SendSdCommand+0x58>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f6fa:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f6fe:	80 91 c8 00 	lds	r24, 0x00C8
+    f702:	87 ff       	sbrs	r24, 7
+    f704:	fc cf       	rjmp	.-8      	; 0xf6fe <SendSdCommand+0x64>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f706:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f70a:	80 91 c8 00 	lds	r24, 0x00C8
+    f70e:	85 ff       	sbrs	r24, 5
+    f710:	fc cf       	rjmp	.-8      	; 0xf70a <SendSdCommand+0x70>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f712:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f716:	80 91 c8 00 	lds	r24, 0x00C8
+    f71a:	87 ff       	sbrs	r24, 7
+    f71c:	fc cf       	rjmp	.-8      	; 0xf716 <SendSdCommand+0x7c>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f71e:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f722:	80 91 c8 00 	lds	r24, 0x00C8
+    f726:	85 ff       	sbrs	r24, 5
+    f728:	fc cf       	rjmp	.-8      	; 0xf722 <SendSdCommand+0x88>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f72a:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f72e:	80 91 c8 00 	lds	r24, 0x00C8
+    f732:	87 ff       	sbrs	r24, 7
+    f734:	fc cf       	rjmp	.-8      	; 0xf72e <SendSdCommand+0x94>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f736:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f73a:	80 91 c8 00 	lds	r24, 0x00C8
+    f73e:	85 ff       	sbrs	r24, 5
+    f740:	fc cf       	rjmp	.-8      	; 0xf73a <SendSdCommand+0xa0>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f742:	81 e0       	ldi	r24, 0x01	; 1
+    f744:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f748:	80 91 c8 00 	lds	r24, 0x00C8
+    f74c:	87 ff       	sbrs	r24, 7
+    f74e:	fc cf       	rjmp	.-8      	; 0xf748 <SendSdCommand+0xae>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f750:	80 91 ce 00 	lds	r24, 0x00CE
+    f754:	9a e0       	ldi	r25, 0x0A	; 10
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f756:	3f ef       	ldi	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f758:	80 91 c8 00 	lds	r24, 0x00C8
+    f75c:	85 ff       	sbrs	r24, 5
+    f75e:	fc cf       	rjmp	.-8      	; 0xf758 <SendSdCommand+0xbe>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f760:	30 93 ce 00 	sts	0x00CE, r19
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f764:	80 91 c8 00 	lds	r24, 0x00C8
+    f768:	87 ff       	sbrs	r24, 7
+    f76a:	fc cf       	rjmp	.-8      	; 0xf764 <SendSdCommand+0xca>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f76c:	10 91 ce 00 	lds	r17, 0x00CE
+		i=10;		// Give the SD card a 10 byte timeout in which to respond.
+		do			
+		{
+			response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+		}
+		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.		
+    f770:	1f 3f       	cpi	r17, 0xFF	; 255
+    f772:	11 f4       	brne	.+4      	; 0xf778 <SendSdCommand+0xde>
+    f774:	91 50       	subi	r25, 0x01	; 1
+    f776:	81 f7       	brne	.-32     	; 0xf758 <SendSdCommand+0xbe>
+
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    f778:	80 91 c8 00 	lds	r24, 0x00C8
+    f77c:	80 64       	ori	r24, 0x40	; 64
+    f77e:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f782:	80 91 c8 00 	lds	r24, 0x00C8
+    f786:	85 ff       	sbrs	r24, 5
+    f788:	fc cf       	rjmp	.-8      	; 0xf782 <SendSdCommand+0xe8>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f78a:	8f ef       	ldi	r24, 0xFF	; 255
+    f78c:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f790:	80 91 c8 00 	lds	r24, 0x00C8
+    f794:	87 ff       	sbrs	r24, 7
+    f796:	fc cf       	rjmp	.-8      	; 0xf790 <SendSdCommand+0xf6>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f798:	80 91 ce 00 	lds	r24, 0x00CE
+		}
+		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.		
+
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(0xFF);		//	@@@ -- SOME CARDS NEED THIS.  See notes.
+		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f79c:	80 91 c8 00 	lds	r24, 0x00C8
+    f7a0:	86 ff       	sbrs	r24, 6
+    f7a2:	fc cf       	rjmp	.-8      	; 0xf79c <SendSdCommand+0x102>
+			;
+
+		if(response>1)				// Something wrong?
+    f7a4:	12 30       	cpi	r17, 0x02	; 2
+    f7a6:	10 f0       	brcs	.+4      	; 0xf7ac <SendSdCommand+0x112>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f7a8:	5d 9a       	sbi	0x0b, 5	; 11
+    f7aa:	89 c0       	rjmp	.+274    	; 0xf8be <SendSdCommand+0x224>
+    f7ac:	5d 9a       	sbi	0x0b, 5	; 11
+			EndSdTransfer();	// Bring CS high
+			return(response);	// ACMD preambe returned something weird.  Bail.
+		}
+
+		EndSdTransfer();	// Bring CS high
+		cmdIndex&=0x7F;		// Handled ACMD, so get rid of leading marker bit
+    f7ae:	2f 77       	andi	r18, 0x7F	; 127
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f7b0:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    f7b2:	5d 98       	cbi	0x0b, 5	; 11
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f7b4:	80 91 c8 00 	lds	r24, 0x00C8
+    f7b8:	85 ff       	sbrs	r24, 5
+    f7ba:	fc cf       	rjmp	.-8      	; 0xf7b4 <SendSdCommand+0x11a>
+		StartSdTransfer();	// Assert CS
+	}
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+    f7bc:	82 2f       	mov	r24, r18
+    f7be:	80 64       	ori	r24, 0x40	; 64
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f7c0:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f7c4:	80 91 c8 00 	lds	r24, 0x00C8
+    f7c8:	87 ff       	sbrs	r24, 7
+    f7ca:	fc cf       	rjmp	.-8      	; 0xf7c4 <SendSdCommand+0x12a>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f7cc:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f7d0:	80 91 c8 00 	lds	r24, 0x00C8
+    f7d4:	85 ff       	sbrs	r24, 5
+    f7d6:	fc cf       	rjmp	.-8      	; 0xf7d0 <SendSdCommand+0x136>
+	}
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+    f7d8:	87 2f       	mov	r24, r23
+    f7da:	99 27       	eor	r25, r25
+    f7dc:	aa 27       	eor	r26, r26
+    f7de:	bb 27       	eor	r27, r27
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f7e0:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f7e4:	80 91 c8 00 	lds	r24, 0x00C8
+    f7e8:	87 ff       	sbrs	r24, 7
+    f7ea:	fc cf       	rjmp	.-8      	; 0xf7e4 <SendSdCommand+0x14a>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f7ec:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f7f0:	80 91 c8 00 	lds	r24, 0x00C8
+    f7f4:	85 ff       	sbrs	r24, 5
+    f7f6:	fc cf       	rjmp	.-8      	; 0xf7f0 <SendSdCommand+0x156>
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
+    f7f8:	cb 01       	movw	r24, r22
+    f7fa:	aa 27       	eor	r26, r26
+    f7fc:	bb 27       	eor	r27, r27
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f7fe:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f802:	80 91 c8 00 	lds	r24, 0x00C8
+    f806:	87 ff       	sbrs	r24, 7
+    f808:	fc cf       	rjmp	.-8      	; 0xf802 <SendSdCommand+0x168>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f80a:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f80e:	80 91 c8 00 	lds	r24, 0x00C8
+    f812:	85 ff       	sbrs	r24, 5
+    f814:	fc cf       	rjmp	.-8      	; 0xf80e <SendSdCommand+0x174>
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
+	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
+    f816:	bb 27       	eor	r27, r27
+    f818:	a7 2f       	mov	r26, r23
+    f81a:	96 2f       	mov	r25, r22
+    f81c:	85 2f       	mov	r24, r21
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f81e:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f822:	80 91 c8 00 	lds	r24, 0x00C8
+    f826:	87 ff       	sbrs	r24, 7
+    f828:	fc cf       	rjmp	.-8      	; 0xf822 <SendSdCommand+0x188>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f82a:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f82e:	80 91 c8 00 	lds	r24, 0x00C8
+    f832:	85 ff       	sbrs	r24, 5
+    f834:	fc cf       	rjmp	.-8      	; 0xf82e <SendSdCommand+0x194>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f836:	40 93 ce 00 	sts	0x00CE, r20
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f83a:	80 91 c8 00 	lds	r24, 0x00C8
+    f83e:	87 ff       	sbrs	r24, 7
+    f840:	fc cf       	rjmp	.-8      	; 0xf83a <SendSdCommand+0x1a0>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f842:	80 91 ce 00 	lds	r24, 0x00CE
+	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
+	TransferSdByte((unsigned char)argument);			// LSB of argument
+	
+	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
+
+	if(cmdIndex==CMD0)	// except here where we actually need a real CRC
+    f846:	22 23       	and	r18, r18
+    f848:	11 f4       	brne	.+4      	; 0xf84e <SendSdCommand+0x1b4>
+    f84a:	95 e9       	ldi	r25, 0x95	; 149
+    f84c:	05 c0       	rjmp	.+10     	; 0xf858 <SendSdCommand+0x1be>
+	{
+		tmpCrc=0x95;
+	}
+	if(cmdIndex==CMD8)	// and here where we actually need a real CRC
+    f84e:	28 30       	cpi	r18, 0x08	; 8
+    f850:	11 f4       	brne	.+4      	; 0xf856 <SendSdCommand+0x1bc>
+    f852:	97 e8       	ldi	r25, 0x87	; 135
+    f854:	01 c0       	rjmp	.+2      	; 0xf858 <SendSdCommand+0x1be>
+    f856:	91 e0       	ldi	r25, 0x01	; 1
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f858:	80 91 c8 00 	lds	r24, 0x00C8
+    f85c:	85 ff       	sbrs	r24, 5
+    f85e:	fc cf       	rjmp	.-8      	; 0xf858 <SendSdCommand+0x1be>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f860:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f864:	80 91 c8 00 	lds	r24, 0x00C8
+    f868:	87 ff       	sbrs	r24, 7
+    f86a:	fc cf       	rjmp	.-8      	; 0xf864 <SendSdCommand+0x1ca>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f86c:	80 91 ce 00 	lds	r24, 0x00CE
+	
+	TransferSdByte(tmpCrc);		// Send the CRC7 byte
+	
+	// Now handle a response.
+	
+	if(cmdIndex==CMD12)	// This is a stop transmission command -- one byte of padding comes in before the real response.
+    f870:	2c 30       	cpi	r18, 0x0C	; 12
+    f872:	69 f4       	brne	.+26     	; 0xf88e <SendSdCommand+0x1f4>
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f874:	80 91 c8 00 	lds	r24, 0x00C8
+    f878:	85 ff       	sbrs	r24, 5
+    f87a:	fc cf       	rjmp	.-8      	; 0xf874 <SendSdCommand+0x1da>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f87c:	8f ef       	ldi	r24, 0xFF	; 255
+    f87e:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f882:	80 91 c8 00 	lds	r24, 0x00C8
+    f886:	87 ff       	sbrs	r24, 7
+    f888:	fc cf       	rjmp	.-8      	; 0xf882 <SendSdCommand+0x1e8>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f88a:	80 91 ce 00 	lds	r24, 0x00CE
+    f88e:	9a e0       	ldi	r25, 0x0A	; 10
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f890:	3f ef       	ldi	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f892:	80 91 c8 00 	lds	r24, 0x00C8
+    f896:	85 ff       	sbrs	r24, 5
+    f898:	fc cf       	rjmp	.-8      	; 0xf892 <SendSdCommand+0x1f8>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f89a:	30 93 ce 00 	sts	0x00CE, r19
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f89e:	80 91 c8 00 	lds	r24, 0x00C8
+    f8a2:	87 ff       	sbrs	r24, 7
+    f8a4:	fc cf       	rjmp	.-8      	; 0xf89e <SendSdCommand+0x204>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f8a6:	10 91 ce 00 	lds	r17, 0x00CE
+	
+	do			
+	{
+		response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+	}
+	while((response==0xFF)&&--i);				// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.
+    f8aa:	1f 3f       	cpi	r17, 0xFF	; 255
+    f8ac:	11 f4       	brne	.+4      	; 0xf8b2 <SendSdCommand+0x218>
+    f8ae:	91 50       	subi	r25, 0x01	; 1
+    f8b0:	81 f7       	brne	.-32     	; 0xf892 <SendSdCommand+0x1f8>
+
+// If we're not a command which has a multi-byte response, put in an extra 0xFF here.
+	if(cmdIndex!=CMD8&&cmdIndex!=CMD58)		// Add post-command padding.  We add this pad byte manually to commands with a longer-than-one-byte response.
+    f8b2:	28 30       	cpi	r18, 0x08	; 8
+    f8b4:	21 f0       	breq	.+8      	; 0xf8be <SendSdCommand+0x224>
+    f8b6:	2a 33       	cpi	r18, 0x3A	; 58
+    f8b8:	11 f0       	breq	.+4      	; 0xf8be <SendSdCommand+0x224>
+	{
+		SendDummyByte();	
+    f8ba:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+	}
+
+	return(response);		// Will be 0xFF if we timed out.  This should almost always be 0 or 1.
+}
+    f8be:	81 2f       	mov	r24, r17
+    f8c0:	1f 91       	pop	r17
+    f8c2:	08 95       	ret
+
+0000f8c4 <SdBeginSingleBlockRead>:
+// Send the command.  Get the response from the SD card (no errors)
+// SD card waits some number of bytes with DATA OUT high, then the SD card sends the data token (0xFE) followed by the block, followed by a 2-byte CRC which we throw out.
+// NOTE -- per the SD spec, this delay before timeout can be as long as 100mSec worst case.  If (TAAC + NSAC) are less, then that sum is the worst case.  A qucik troll on the internet shows the slowest cards people polled at 40mS, some at 5, 1.5, or 1mSec, and a lot at 500uSec.
+// These are all based on TAAC and not NSAC (which always seems to be 0).
+// Either way, best to open with this command, then do your polling for the data token somewhere else since it could be a lot of time.  If we were ballers we would check the access speeds...
+{
+    f8c4:	ab 01       	movw	r20, r22
+    f8c6:	bc 01       	movw	r22, r24
+	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate the block addy into the byte addy
+
+	if(SendSdCommand(CMD17,theBlock)==0)	// If we send the command and get the correct response...
+    f8c8:	e9 e0       	ldi	r30, 0x09	; 9
+    f8ca:	44 0f       	add	r20, r20
+    f8cc:	55 1f       	adc	r21, r21
+    f8ce:	66 1f       	adc	r22, r22
+    f8d0:	77 1f       	adc	r23, r23
+    f8d2:	ea 95       	dec	r30
+    f8d4:	d1 f7       	brne	.-12     	; 0xf8ca <SdBeginSingleBlockRead+0x6>
+    f8d6:	81 e1       	ldi	r24, 0x11	; 17
+    f8d8:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    f8dc:	90 e0       	ldi	r25, 0x00	; 0
+    f8de:	88 23       	and	r24, r24
+    f8e0:	09 f4       	brne	.+2      	; 0xf8e4 <SdBeginSingleBlockRead+0x20>
+    f8e2:	91 e0       	ldi	r25, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+    f8e4:	89 2f       	mov	r24, r25
+    f8e6:	08 95       	ret
+
+0000f8e8 <SdBeginSingleBlockWrite>:
+
+bool SdBeginSingleBlockWrite(unsigned long theBlock)
+// Opens up the SD card for a single block write, starting at the beginning of the passed block.
+// Returns false if something goes wrong.  Otherwise, we exit ready to write bytes to the block.
+{
+    f8e8:	ab 01       	movw	r20, r22
+    f8ea:	bc 01       	movw	r22, r24
+	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate the block addy into the byte addy
+
+	if(SendSdCommand(CMD24,theBlock)==0)	// If we send the command and get the correct response...
+    f8ec:	f9 e0       	ldi	r31, 0x09	; 9
+    f8ee:	44 0f       	add	r20, r20
+    f8f0:	55 1f       	adc	r21, r21
+    f8f2:	66 1f       	adc	r22, r22
+    f8f4:	77 1f       	adc	r23, r23
+    f8f6:	fa 95       	dec	r31
+    f8f8:	d1 f7       	brne	.-12     	; 0xf8ee <SdBeginSingleBlockWrite+0x6>
+    f8fa:	88 e1       	ldi	r24, 0x18	; 24
+    f8fc:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    f900:	90 e0       	ldi	r25, 0x00	; 0
+    f902:	88 23       	and	r24, r24
+    f904:	09 f4       	brne	.+2      	; 0xf908 <SdBeginSingleBlockWrite+0x20>
+    f906:	91 e0       	ldi	r25, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+    f908:	89 2f       	mov	r24, r25
+    f90a:	08 95       	ret
+
+0000f90c <SdHandshake>:
+// Tries to talk to the inserted SD card and set up an SPI interface.
+// Since this is a micro SD slot, we don't need to support MMC cards (they wouldn't fit in the slot).
+// We also do not support SDHC, since it costs more, we have orders of magnitude more storage than necessary as is, and the interface is a BIT different.  Could fix this if people whine.
+// Returns true if we successfully initialize the all the stuff we need to do to talk to the card.
+// NOTE -- this process takes time, and will hang operation for hundreds of milliseconds on a successful call.
+{
+    f90c:	df 93       	push	r29
+    f90e:	cf 93       	push	r28
+    f910:	00 d0       	rcall	.+0      	; 0xf912 <SdHandshake+0x6>
+    f912:	00 d0       	rcall	.+0      	; 0xf914 <SdHandshake+0x8>
+    f914:	cd b7       	in	r28, 0x3d	; 61
+    f916:	de b7       	in	r29, 0x3e	; 62
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f918:	5d 9a       	sbi	0x0b, 5	; 11
+    f91a:	90 e0       	ldi	r25, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f91c:	2f ef       	ldi	r18, 0xFF	; 255
+	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS must be high.  ChaN suggest MOSI stays high too which makes sense.
+
+	EndSdTransfer();	// Bring CS high
+	for(i=0;i<20;i++)
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    f91e:	80 91 c8 00 	lds	r24, 0x00C8
+    f922:	80 64       	ori	r24, 0x40	; 64
+    f924:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f928:	80 91 c8 00 	lds	r24, 0x00C8
+    f92c:	85 ff       	sbrs	r24, 5
+    f92e:	fc cf       	rjmp	.-8      	; 0xf928 <SdHandshake+0x1c>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f930:	20 93 ce 00 	sts	0x00CE, r18
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f934:	80 91 c8 00 	lds	r24, 0x00C8
+    f938:	87 ff       	sbrs	r24, 7
+    f93a:	fc cf       	rjmp	.-8      	; 0xf934 <SdHandshake+0x28>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f93c:	80 91 ce 00 	lds	r24, 0x00CE
+		cardValid;	// Is this a micro SD card or some random bit of plastic and silicon?
+
+	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS must be high.  ChaN suggest MOSI stays high too which makes sense.
+
+	EndSdTransfer();	// Bring CS high
+	for(i=0;i<20;i++)
+    f940:	9f 5f       	subi	r25, 0xFF	; 255
+    f942:	94 31       	cpi	r25, 0x14	; 20
+    f944:	61 f7       	brne	.-40     	; 0xf91e <SdHandshake+0x12>
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(DUMMY_BYTE);	// Transfer ten dummy bytes (80 clocks).
+	}	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f946:	80 91 c8 00 	lds	r24, 0x00C8
+    f94a:	86 ff       	sbrs	r24, 6
+    f94c:	fc cf       	rjmp	.-8      	; 0xf946 <SdHandshake+0x3a>
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f94e:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    f950:	5d 98       	cbi	0x0b, 5	; 11
+    f952:	20 e0       	ldi	r18, 0x00	; 0
+    f954:	30 e0       	ldi	r19, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f956:	9f ef       	ldi	r25, 0xFF	; 255
+	// Thu Jul 28 14:15:53 EDT 2011	-- Totally just experienced this hang, and understand this now.
+
+	StartSdTransfer();						
+	for(n=0;n<SD_BLOCK_LENGTH;n++)
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    f958:	80 91 c8 00 	lds	r24, 0x00C8
+    f95c:	80 64       	ori	r24, 0x40	; 64
+    f95e:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f962:	80 91 c8 00 	lds	r24, 0x00C8
+    f966:	85 ff       	sbrs	r24, 5
+    f968:	fc cf       	rjmp	.-8      	; 0xf962 <SdHandshake+0x56>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f96a:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f96e:	80 91 c8 00 	lds	r24, 0x00C8
+    f972:	87 ff       	sbrs	r24, 7
+    f974:	fc cf       	rjmp	.-8      	; 0xf96e <SdHandshake+0x62>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f976:	80 91 ce 00 	lds	r24, 0x00CE
+
+	// Jacked from SD Fat lib, which suggests doing the following to prevent "re-init hang from cards in partial read".  Makes sense.
+	// Thu Jul 28 14:15:53 EDT 2011	-- Totally just experienced this hang, and understand this now.
+
+	StartSdTransfer();						
+	for(n=0;n<SD_BLOCK_LENGTH;n++)
+    f97a:	2f 5f       	subi	r18, 0xFF	; 255
+    f97c:	3f 4f       	sbci	r19, 0xFF	; 255
+    f97e:	82 e0       	ldi	r24, 0x02	; 2
+    f980:	20 30       	cpi	r18, 0x00	; 0
+    f982:	38 07       	cpc	r19, r24
+    f984:	49 f7       	brne	.-46     	; 0xf958 <SdHandshake+0x4c>
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(0xFF);	
+	}
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f986:	80 91 c8 00 	lds	r24, 0x00C8
+    f98a:	86 ff       	sbrs	r24, 6
+    f98c:	fc cf       	rjmp	.-8      	; 0xf986 <SdHandshake+0x7a>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f98e:	5d 9a       	sbi	0x0b, 5	; 11
+		;
+	EndSdTransfer();
+
+	// Should be in "idle mode" now.  Set SPI mode by asserting the CS and sending CMD 0.
+	cardValid=false;			// Card not valid until we say it is.	
+	SendSdCommand(CMD0,0);		// Send first time for good measure, also to make sure onboard pullups get to where they need to be.
+    f990:	80 e0       	ldi	r24, 0x00	; 0
+    f992:	40 e0       	ldi	r20, 0x00	; 0
+    f994:	50 e0       	ldi	r21, 0x00	; 0
+    f996:	60 e0       	ldi	r22, 0x00	; 0
+    f998:	70 e0       	ldi	r23, 0x00	; 0
+    f99a:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    f99e:	80 91 c8 00 	lds	r24, 0x00C8
+    f9a2:	86 ff       	sbrs	r24, 6
+    f9a4:	fc cf       	rjmp	.-8      	; 0xf99e <SdHandshake+0x92>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f9a6:	5d 9a       	sbi	0x0b, 5	; 11
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+		;
+	EndSdTransfer();
+
+	// Send CMD0 again, actually check response now.
+	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, keep going.
+    f9a8:	80 e0       	ldi	r24, 0x00	; 0
+    f9aa:	40 e0       	ldi	r20, 0x00	; 0
+    f9ac:	50 e0       	ldi	r21, 0x00	; 0
+    f9ae:	60 e0       	ldi	r22, 0x00	; 0
+    f9b0:	70 e0       	ldi	r23, 0x00	; 0
+    f9b2:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    f9b6:	81 30       	cpi	r24, 0x01	; 1
+    f9b8:	09 f0       	breq	.+2      	; 0xf9bc <SdHandshake+0xb0>
+    f9ba:	b4 c0       	rjmp	.+360    	; 0xfb24 <SdHandshake+0x218>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    f9bc:	5d 9a       	sbi	0x0b, 5	; 11
+	// Send CMD0 again, actually check response now.
+	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, keep going.
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+    f9be:	88 e0       	ldi	r24, 0x08	; 8
+    f9c0:	4a ea       	ldi	r20, 0xAA	; 170
+    f9c2:	51 e0       	ldi	r21, 0x01	; 1
+    f9c4:	60 e0       	ldi	r22, 0x00	; 0
+    f9c6:	70 e0       	ldi	r23, 0x00	; 0
+    f9c8:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    f9cc:	81 30       	cpi	r24, 0x01	; 1
+    f9ce:	09 f0       	breq	.+2      	; 0xf9d2 <SdHandshake+0xc6>
+    f9d0:	76 c0       	rjmp	.+236    	; 0xfabe <SdHandshake+0x1b2>
+    f9d2:	fe 01       	movw	r30, r28
+    f9d4:	31 96       	adiw	r30, 0x01	; 1
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f9d6:	9f ef       	ldi	r25, 0xFF	; 255
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+    f9d8:	9e 01       	movw	r18, r28
+    f9da:	2b 5f       	subi	r18, 0xFB	; 251
+    f9dc:	3f 4f       	sbci	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    f9de:	80 91 c8 00 	lds	r24, 0x00C8
+    f9e2:	85 ff       	sbrs	r24, 5
+    f9e4:	fc cf       	rjmp	.-8      	; 0xf9de <SdHandshake+0xd2>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    f9e6:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    f9ea:	80 91 c8 00 	lds	r24, 0x00C8
+    f9ee:	87 ff       	sbrs	r24, 7
+    f9f0:	fc cf       	rjmp	.-8      	; 0xf9ea <SdHandshake+0xde>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    f9f2:	80 91 ce 00 	lds	r24, 0x00CE
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+			{
+				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+    f9f6:	81 93       	st	Z+, r24
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+    f9f8:	e2 17       	cp	r30, r18
+    f9fa:	f3 07       	cpc	r31, r19
+    f9fc:	81 f7       	brne	.-32     	; 0xf9de <SdHandshake+0xd2>
+			{
+				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+			}
+
+			SendDummyByte();		// Send extra FF after multibyte response. 
+    f9fe:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fa02:	5d 9a       	sbi	0x0b, 5	; 11
+			}
+
+			SendDummyByte();		// Send extra FF after multibyte response. 
+			EndSdTransfer();		// Bring CS high
+
+			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it can't)
+    fa04:	8b 81       	ldd	r24, Y+3	; 0x03
+    fa06:	81 30       	cpi	r24, 0x01	; 1
+    fa08:	09 f0       	breq	.+2      	; 0xfa0c <SdHandshake+0x100>
+    fa0a:	8c c0       	rjmp	.+280    	; 0xfb24 <SdHandshake+0x218>
+    fa0c:	8c 81       	ldd	r24, Y+4	; 0x04
+    fa0e:	8a 3a       	cpi	r24, 0xAA	; 170
+    fa10:	09 f0       	breq	.+2      	; 0xfa14 <SdHandshake+0x108>
+    fa12:	88 c0       	rjmp	.+272    	; 0xfb24 <SdHandshake+0x218>
+			{				
+				SetTimer(TIMER_SD,SECOND);
+    fa14:	83 e0       	ldi	r24, 0x03	; 3
+    fa16:	64 ec       	ldi	r22, 0xC4	; 196
+    fa18:	74 e0       	ldi	r23, 0x04	; 4
+    fa1a:	0e 94 d2 7a 	call	0xf5a4	; 0xf5a4 <SetTimer>
+    fa1e:	03 c0       	rjmp	.+6      	; 0xfa26 <SdHandshake+0x11a>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fa20:	5d 9a       	sbi	0x0b, 5	; 11
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go (0 is the result once the card is done initializing, takes a long time (we give it a second per the SD spec))
+				{
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+					HandleSoftclock();	// Keep the timer timing.
+    fa22:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+
+			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it can't)
+			{				
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go (0 is the result once the card is done initializing, takes a long time (we give it a second per the SD spec))
+    fa26:	83 e0       	ldi	r24, 0x03	; 3
+    fa28:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    fa2c:	88 23       	and	r24, r24
+    fa2e:	49 f4       	brne	.+18     	; 0xfa42 <SdHandshake+0x136>
+    fa30:	89 ea       	ldi	r24, 0xA9	; 169
+    fa32:	40 e0       	ldi	r20, 0x00	; 0
+    fa34:	50 e0       	ldi	r21, 0x00	; 0
+    fa36:	60 e0       	ldi	r22, 0x00	; 0
+    fa38:	70 e0       	ldi	r23, 0x00	; 0
+    fa3a:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    fa3e:	88 23       	and	r24, r24
+    fa40:	79 f7       	brne	.-34     	; 0xfa20 <SdHandshake+0x114>
+				{
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+					HandleSoftclock();	// Keep the timer timing.
+				}		
+				
+				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+    fa42:	83 e0       	ldi	r24, 0x03	; 3
+    fa44:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    fa48:	88 23       	and	r24, r24
+    fa4a:	31 f0       	breq	.+12     	; 0xfa58 <SdHandshake+0x14c>
+    fa4c:	6b c0       	rjmp	.+214    	; 0xfb24 <SdHandshake+0x218>
+				{
+					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think we might need to do this even though we throw out the results.
+					{
+						SendDummyByte();		// Send extra FF (it's busy)
+    fa4e:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+						HandleSoftclock();	// Keep the timer timing.
+    fa52:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fa56:	5d 9a       	sbi	0x0b, 5	; 11
+					HandleSoftclock();	// Keep the timer timing.
+				}		
+				
+				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+				{
+					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think we might need to do this even though we throw out the results.
+    fa58:	83 e0       	ldi	r24, 0x03	; 3
+    fa5a:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    fa5e:	88 23       	and	r24, r24
+    fa60:	49 f4       	brne	.+18     	; 0xfa74 <SdHandshake+0x168>
+    fa62:	8a e3       	ldi	r24, 0x3A	; 58
+    fa64:	40 e0       	ldi	r20, 0x00	; 0
+    fa66:	50 e0       	ldi	r21, 0x00	; 0
+    fa68:	60 e0       	ldi	r22, 0x00	; 0
+    fa6a:	70 e0       	ldi	r23, 0x00	; 0
+    fa6c:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    fa70:	88 23       	and	r24, r24
+    fa72:	69 f7       	brne	.-38     	; 0xfa4e <SdHandshake+0x142>
+					{
+						SendDummyByte();		// Send extra FF (it's busy)
+						HandleSoftclock();	// Keep the timer timing.
+						EndSdTransfer();		// Bring CS high.
+					}
+					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+    fa74:	83 e0       	ldi	r24, 0x03	; 3
+    fa76:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    fa7a:	88 23       	and	r24, r24
+    fa7c:	09 f0       	breq	.+2      	; 0xfa80 <SdHandshake+0x174>
+    fa7e:	52 c0       	rjmp	.+164    	; 0xfb24 <SdHandshake+0x218>
+    fa80:	90 e0       	ldi	r25, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    fa82:	2f ef       	ldi	r18, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    fa84:	80 91 c8 00 	lds	r24, 0x00C8
+    fa88:	85 ff       	sbrs	r24, 5
+    fa8a:	fc cf       	rjmp	.-8      	; 0xfa84 <SdHandshake+0x178>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    fa8c:	20 93 ce 00 	sts	0x00CE, r18
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    fa90:	80 91 c8 00 	lds	r24, 0x00C8
+    fa94:	87 ff       	sbrs	r24, 7
+    fa96:	fc cf       	rjmp	.-8      	; 0xfa90 <SdHandshake+0x184>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    fa98:	80 91 ce 00 	lds	r24, 0x00CE
+						HandleSoftclock();	// Keep the timer timing.
+						EndSdTransfer();		// Bring CS high.
+					}
+					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+					{
+						for(i=0;i<4;i++)						// This is an "R3" response, so we need to grab four more bytes.
+    fa9c:	9f 5f       	subi	r25, 0xFF	; 255
+    fa9e:	94 30       	cpi	r25, 0x04	; 4
+    faa0:	89 f7       	brne	.-30     	; 0xfa84 <SdHandshake+0x178>
+						{
+							ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+						}
+
+						SendDummyByte();			// Send extra FF after multibyte response. 
+    faa2:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    faa6:	5d 9a       	sbi	0x0b, 5	; 11
+						}
+
+						SendDummyByte();			// Send extra FF after multibyte response. 
+						EndSdTransfer();			// Bring CS high.
+
+						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+    faa8:	80 e1       	ldi	r24, 0x10	; 16
+    faaa:	40 e0       	ldi	r20, 0x00	; 0
+    faac:	52 e0       	ldi	r21, 0x02	; 2
+    faae:	60 e0       	ldi	r22, 0x00	; 0
+    fab0:	70 e0       	ldi	r23, 0x00	; 0
+    fab2:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fab6:	5d 9a       	sbi	0x0b, 5	; 11
+						SendDummyByte();			// Send extra FF after multibyte response. 
+						EndSdTransfer();			// Bring CS high.
+
+						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+						EndSdTransfer();						// Bring CS high.
+						SendDummyByte();						
+    fab8:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+    fabc:	31 c0       	rjmp	.+98     	; 0xfb20 <SdHandshake+0x214>
+				}
+			}
+		}
+		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
+		{
+			SendDummyByte();					// Send extra FF after multibyte response. 
+    fabe:	0e 94 36 7b 	call	0xf66c	; 0xf66c <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fac2:	5d 9a       	sbi	0x0b, 5	; 11
+		}
+		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
+		{
+			SendDummyByte();					// Send extra FF after multibyte response. 
+			EndSdTransfer();					// Bring CS high
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+    fac4:	89 ea       	ldi	r24, 0xA9	; 169
+    fac6:	40 e0       	ldi	r20, 0x00	; 0
+    fac8:	50 e0       	ldi	r21, 0x00	; 0
+    faca:	60 e0       	ldi	r22, 0x00	; 0
+    facc:	70 e0       	ldi	r23, 0x00	; 0
+    face:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    fad2:	82 30       	cpi	r24, 0x02	; 2
+    fad4:	38 f5       	brcc	.+78     	; 0xfb24 <SdHandshake+0x218>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fad6:	5d 9a       	sbi	0x0b, 5	; 11
+			SendDummyByte();					// Send extra FF after multibyte response. 
+			EndSdTransfer();					// Bring CS high
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+			{
+				EndSdTransfer();			// Bring CS high.
+				SetTimer(TIMER_SD,SECOND);
+    fad8:	83 e0       	ldi	r24, 0x03	; 3
+    fada:	64 ec       	ldi	r22, 0xC4	; 196
+    fadc:	74 e0       	ldi	r23, 0x04	; 4
+    fade:	0e 94 d2 7a 	call	0xf5a4	; 0xf5a4 <SetTimer>
+    fae2:	03 c0       	rjmp	.+6      	; 0xfaea <SdHandshake+0x1de>
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go 
+				{
+					HandleSoftclock();	// Keep the timer timing.
+    fae4:	0e 94 5d 78 	call	0xf0ba	; 0xf0ba <HandleSoftclock>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fae8:	5d 9a       	sbi	0x0b, 5	; 11
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+			{
+				EndSdTransfer();			// Bring CS high.
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go 
+    faea:	83 e0       	ldi	r24, 0x03	; 3
+    faec:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    faf0:	88 23       	and	r24, r24
+    faf2:	49 f4       	brne	.+18     	; 0xfb06 <SdHandshake+0x1fa>
+    faf4:	89 ea       	ldi	r24, 0xA9	; 169
+    faf6:	40 e0       	ldi	r20, 0x00	; 0
+    faf8:	50 e0       	ldi	r21, 0x00	; 0
+    fafa:	60 e0       	ldi	r22, 0x00	; 0
+    fafc:	70 e0       	ldi	r23, 0x00	; 0
+    fafe:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+    fb02:	88 23       	and	r24, r24
+    fb04:	79 f7       	brne	.-34     	; 0xfae4 <SdHandshake+0x1d8>
+				{
+					HandleSoftclock();	// Keep the timer timing.
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+				}		
+
+				if(!(CheckTimer(TIMER_SD)))		// Initialized!
+    fb06:	83 e0       	ldi	r24, 0x03	; 3
+    fb08:	0e 94 e4 7a 	call	0xf5c8	; 0xf5c8 <CheckTimer>
+    fb0c:	88 23       	and	r24, r24
+    fb0e:	51 f4       	brne	.+20     	; 0xfb24 <SdHandshake+0x218>
+				{
+					SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+    fb10:	80 e1       	ldi	r24, 0x10	; 16
+    fb12:	40 e0       	ldi	r20, 0x00	; 0
+    fb14:	52 e0       	ldi	r21, 0x02	; 2
+    fb16:	60 e0       	ldi	r22, 0x00	; 0
+    fb18:	70 e0       	ldi	r23, 0x00	; 0
+    fb1a:	0e 94 4d 7b 	call	0xf69a	; 0xf69a <SendSdCommand>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    fb1e:	5d 9a       	sbi	0x0b, 5	; 11
+    fb20:	81 e0       	ldi	r24, 0x01	; 1
+    fb22:	01 c0       	rjmp	.+2      	; 0xfb26 <SdHandshake+0x21a>
+    fb24:	80 e0       	ldi	r24, 0x00	; 0
+    fb26:	5d 9a       	sbi	0x0b, 5	; 11
+		}
+	}
+
+	EndSdTransfer();	// Bring CS high
+	return(cardValid);	// Report success or failure of initialization -- fails on timeout or bad response.  Bad response is an invalid card or no card, timeout means card didn't initialize (which might mean it's high capacity).
+}
+    fb28:	0f 90       	pop	r0
+    fb2a:	0f 90       	pop	r0
+    fb2c:	0f 90       	pop	r0
+    fb2e:	0f 90       	pop	r0
+    fb30:	cf 91       	pop	r28
+    fb32:	df 91       	pop	r29
+    fb34:	08 95       	ret
+
+0000fb36 <_exit>:
+    fb36:	f8 94       	cli
+
+0000fb38 <__stop_program>:
+    fb38:	ff cf       	rjmp	.-2      	; 0xfb38 <__stop_program>

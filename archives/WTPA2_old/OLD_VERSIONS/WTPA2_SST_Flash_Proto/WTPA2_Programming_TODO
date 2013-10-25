@@ -1,0 +1,260 @@
+WTPA2 TODO LIST for code:
+================================
+TMB
+Tue Jul  6 19:47:50 EDT 2010
+
+
+To Function:
+==============
+Switch reading code	-- done Wed Jul  7 17:45:48 EDT 2010  -- Really done: Wed Sep  1 22:15:30 EDT 2010
+RAM addressing code -- done Mon Sep  6 17:17:44 EDT 2010
+Flash addressing code	-- Wed Sep 15 16:14:51 EDT 2010 Initial flash read write done and tested
+						-- Thu Sep 16 23:38:44 EDT 2010 Done
+Encoder reading code -- @@@ Note, this doesn't mean just porting the pot code, since there are probably more intuitive ways for the encoder to work.
+						NOTE: MIDI should update the encoder value.
+						Thu Sep  2 17:45:31 EDT 2010 -- Done, as far as porting goes
+Remove old pot code -- done Thu Sep  2 17:46:04 EDT 2010
+Fix associated "Bad Reads" code that throws out reads after switching ADC channels -- done Thu Sep  2 17:46:04 EDT 2010
+Put any unused pins to known state (could use extra pins to time ISRs and stuff) -- done Wed Jul  7 17:45:48 EDT 2010
+Where is LATCH bus initialized (in MAIN) -- done Wed Jul  7 17:45:48 EDT 2010
+Make sure any routines end with the AVR in charge of the bus -- done Wed Jul  7 17:45:48 EDT 2010
+Make sure that the switch latch / OE pin doesn't get stepped on by writing the three RAM bits that aren't on a latch -- done Wed Jul  7 17:55:46 EDT 2010
+Make sure bus turn around times are correct for new RAM chip -- Done Fri Sep 17 14:38:18 EDT 2010
+
+To Fly (there are lots of threads about this on the forum):
+=============================================================
+Reintroduce test mode -- Done: Wed Sep  1 22:33:44 EDT 2010
+Make out of RAM LED into something useful (maybe realtime indicator?)
+@@@ do we need the &0xFF in the addressing in the ISRs?  I think not. --Done Fri Sep 17 14:38:05 EDT 2010
+
+@@@ Fix the ISR start/stop functions so that references to "theClock" aren't dumb -- Done Sat Sep 18 18:31:30 EDT 2010
+
+Retrieve anything else cool we traded for space in the last FW update, see:
+-- Divided AudioHandler routines into bank-specific routines for ISR speed BUT
+	--> this means we are way over memory.  So, got rid of intro sequence, debug mode, all sawtooth stuff, removed some timer functions, changed MIDI handling (don't recognize bytes we don't use anyway), changed LED blink functions (all blink times the same)
+	--> Also kilt the random number init code.  Changed pinning in multiply-output mode.
+	Thu Sep  2 17:47:12 EDT 2010 -- got back debug, sawtooth, intro seq
+
+*** New buffer-based non-ISR RAM access (for ISR speed)
+
+-- Make better match with new encoder based controls, like include MIDI update or maybe change sensitivity, or whatevs.
+-- New Summing (subtractive, maybe ABS?)
+-- "Copy" samples from bank to bank
+-- Parameter control adjusts parameter as long as keys are held
+-- Level triggered sampling -- threshold adjustable, level indicator?
+-- "Finish playing MIDI note regardless of NOTE_OFF".  MIDI Play mode adjustment -- IE this would play an entire sample even if a user tapped a pad on a drum trigger.
+-- Allow granulated playback to go backwards and also trigger once.
+-- Fix granularizing to allow use on trimmed samples
+-- Add the ability to MIDI trigger analog clock.
+-- Allow individual grains to be played back via MIDI
+-- Allow replacement in overdubbing
+-- Allow for grains to be random sizes
+-- Save edited sample over OG sample, or bounce to the other bank
+
+Reverb and delay functions
+More granularity (we have more RAM now)
+MIDI firmware updating
+ADSR which applies to volume or bit depth or whatever else.  A "parameter" adsr I guess.
+
+Re-saving samples with effects or edits applied.
+Manipulation of individual bits
+From Glitched:
+
+-- Accept MIDI clock IN (and/or voltage trigger IN and/or "tap tempo" IN) to allow for BPM-synced effects
+-->The granulizer effect would benefit most from this (tempo-synced re-arranging of sample slices). The effect would have two parameters: "amount" and "clock division".
+-->"Map slices to keyboard" could be be based on the "clock division".
+-->"Random grain length" could also refer to the MIDI clock source to make random, yet quantized lengths.
+
+-- Realtime manipulation of the 8 bits. (This has been discussed before.)
+-->Separate midi CCs could control each bit's state.
+
+Multiplication of banks could allow parameter control (of volume or whatever, as above) which might be cooler than the current multiply (which sux).
+Granularizing as non-random, but rather a sequenced thing.  IE, MIDI note ons from 0-127 play that grain -- this could be a MIDI clock thing too.
+
+GOOD IDEA -- have a realtime mode that uses the sample as some kind of controller for whatever is being done in realtime.  Sample data modulates realtime data.  Or VV.
+			-- VV: realtime input gates or triggers samples.
+			
+--> Allow RC clock in MIDI mode, also allow internal clock in caveman mode.  Allows separate pitch per channel.
+--> load samples from flash consecutively until we fill up RAM?
+
+ISR speed ideas:
+------------------
+Sun Sep 12 13:20:42 EDT 2010
+Inserted some clocking code (toggle a pin on ISR entrance and exit)
+See what Olivier has to say, he's right about most stuff.
+On jitter:
+The first JitterTemp calculation can be precalculated (doesn't change much) and left in RAM and saves us a LONG MULTIPLY every time!
+Therefore, jitterTemp/JITTER_VALUE_MAX can be precalculated too.
+
+Note that get RNG code gets called from the main loop and thus might get called by the jitter function with the same number if the ISR happens more than once a loop.
+We could inline it...
+Also, does it need to be a long int?  Probably not.
+RNG gets used in granular biz also.
+
+Thu Sep 16 23:18:31 EDT 2010
+Overdub while granularity is on?
+
+Fri Sep 17 16:21:38 EDT 2010
+On ISRs -- the fastest we can go on playback with the old best WTPA1 style ISR (only a few little tweaks from last time, still using interrupt handler, two audio handlers) is 11.4uS on playback with the address update code entirely removed.
+So to get faster than that means fixing the "interrupt handler" stuff.
+Operating normally (bank0 only, no effects) it averages 16.3uS
+Interestingly, in normal granular playback it's 14uS and change because of the way the loop works.
+I'm thinking of trying to eliminate the branch and instead have one var called "nextJump" then comparing the current addy to next jump, and if they aren't equal, just incrementing the address.
+If the reverse flag is set, we then decrement the address by 2.  Or something like that.
+nextJump is calculated from the main loop for each sample bank.
+
+Can you clean up mainline speed at all?  Do you need to?
+Interestingly, the main loop (normal caveman mode, no MIDI) takes about 43-44uS to complete.  This is about 23kHz, which is our fastest sampling rate.
+Be nice if it was half that, but.
+Interestingly also:
+MIDI bytes come in at 3kHz, so MIDI _messages_ come in at like 1kHz, which means we'd have to screw the pooch real bad to mess that up.
+
+
+
+OK, the following code:
+
+		if(bankStates[BANK_0].currentAddress==daNextJump)
+		{
+			bankStates[BANK_0].currentAddress=daNextJumpPrime;
+		}
+		else if(!bankStates[BANK_0].sampleDirection)
+		{
+			bankStates[BANK_0].currentAddress--;
+		}
+		else
+		{
+			bankStates[BANK_0].currentAddress++;
+		}
+
+clocks in at 14.2uS.
+The variation:
+
+		if(bankStates[BANK_0].currentAddress==daNextJump)
+		{
+			bankStates[BANK_0].currentAddress=daNextJumpPrime;
+		}
+		else
+		{
+			bankStates[BANK_0].currentAddress++;
+		}
+		
+		if(bankStates[BANK_0].sampleDirection==false)
+		{
+			bankStates[BANK_0].currentAddress-=2;
+		}
+
+Is more like 13.75uS and is 14 bytes longer.
+One to grow on....
+
+
+Fri Sep 17 18:17:14 EDT 2010
+You know, the fastest way to do this would be to have callbacks which are just assigned directly to the interrupt vectors and tailored to the exact function, like:
+
+ISR(TIMER1_CAPT_vect)
+{
+	ExtIntCallback0();	// Do all the audio work.
+	ExtIntCallback1();
+}
+
+ISR(TIMER1_COMPA_vect)
+{
+	ClkIntCallback0();
+}
+
+ISR(TIMER1_COMPB_vect)
+{
+	ClkIntCallback1();
+}
+
+Where the callbacks were set to functions that were like:
+
+Bank0_Playback_Granular_Reverse_Sum();
+
+Or maybe just:
+Bank0_Playback_Granular_Reverse();
+
+
+and the ISR had a callback after called:
+UpdateOutputCallback()
+Which handled the summing.
+
+The combos for bank 0 would be like:
+
+Bank0_Realtime()
+Bank0_Record()
+Bank0_Playback_Sequential_Forward()
+Bank0_Playback_Sequential_Reverse()
+Bank0_Playback_Granular_Forward()
+Bank0_Playback_Granular_Reverse()
+Bank0_Overdub_Sequential_Forward()
+Bank0_Overdub_Sequential_Reverse()
+Bank0_Overdub_Granular_Forward()
+Bank0_Overdub_Granular_Reverse()
+
+Fri Sep 17 18:51:48 EDT 2010
+Maybe this isn't as good as the jump, actually.
+
+@@@ NOTE:  The way you're doing half speed won't work if there are IRQs going off at different rates.  You'll get some weird frequency division but it won't be half.  You'd need three
+flip flops the way it is now.
+NOTE:  Try seeing if updating the dac every cycle (instead of every time the dac byte changes) puts any more noise in the system.  I bet it doesn't and it would be faster.
+Pretty sure there's a way to get rid of "interrupt handler" entirely.
+In addition to getting rid of the call I think this can get rid of the switch(isrType) stuff as well as the if(CLK_NTERNAL....) stuff also.
+Can process the type-specific isr stuff in its own vector and update a global with the output byte.  Something will have to zero them when not in use but it might be mainline or some other clever biz.
+Finally, would need to update the output everytime an isr got called (or at least every time a non-record got called).
+This might be the only tricky part.
+Perhaps a call to a function which points at the type of recombination specified.
+
+
+Sun Sep 19 11:30:55 EDT 2010
+dacByte can be a local variable in the output routines.
+Make sure the compiler inlines the dac output stuff.
+
+Sun Sep 19 11:36:14 EDT 2010
+Latch enables on the ADC PORT are:
+DAC LE
+RAM addressing LEs
+OE
+WE
+(in other words, the important ones)
+So, try to do RAM updates when the ADC is idle.  If you can....
+OK, the sample and hold happens in the ADC 1.5 adc clock cycles (at an adc clock of 312.5 kHz (wtpa's current clock rate) this is 4.8uS after we set the flag which is
+probably RIGHT in the middle of the memory accesss!!! 
+
+Sun Sep 19 13:13:59 EDT 2010
+HOLY SHIT.  Moving the start of the ADC read to the end of the ISR (in the old version of the code) TOTALLY ELIMINATED THE NOISE PROBLEM.
+RTFM FTW!
+
+Sun Sep 19 13:14:53 EDT 2010
+Removed unnecessary tri-stating ram settings, write disables
+
+Sun Sep 19 13:32:26 EDT 2010
+Since the DAC code is common, could we just update it from the main loop?  Seems hinkey.
+
+Sun Sep 19 14:22:00 EDT 2010
+Actually, best way to do it is probably READ the value at the start of whatever and then wait until the end to begin a new conversion.
+Better still, read it when needed (wait as long as you can) so you waste less time.  Fastest conversions happen when you don't wait to start a new one.
+Pretty sure it's OK to write ADSC to 1 if it's already 1 (won't restart a conversion in progress)
+
+Sun Sep 19 14:46:28 EDT 2010
+---> might want to try handling accounting for both ext clock interrupts (checking a flag and clearing it to keep from leaving this code then an extra branch to an ISR when the clocks are synced) -- or not.
+---> is there a way to keep from vectoring to the PCINT vect on a falling edge?  just cap, resistor, diode :-)
+
+Sun Sep 19 14:48:31 EDT 2010
+On compilation of new code (combinations are now func pointers, no switch statement, vectors no longer call HandleInterrupts(), outputs not voided in isrs, removed checks to see if the ISRs
+being vectored to are the ones we need to use, removed check to see which ext interrupt bank is being updated when ext interrupt triggers, changed the way ADC data gets passed.
+
+Bytes written to flash in old code: 21344
+Bytes in new version				21266
+New time in playback:				12.29uS (down from 16.3)
+"" "" granular play:				10.4uS!
+
+Further speed gains might be gained from:
+1.)  Breaking UpdateAudioChannelx into callbacks
+2.)  Changing the way addresses get resolved (see above -- no bigass branch based on function, computed jumps instead)
+
+NOTE:  Recording seems to get fucked much above 18 kHz with the new routines.  Check that shit out.  NOTE:  ISR execution drops to 12.0 uS in playback when it does...?
+Changed adc polling, now seems to get fucked at certain frequencies but not others.
+
+OK -- not polling the ADC to see if it's done and re-setting the GO flag seems to be the problem
+Moreover, I can confirm that there is a sampling frequency above which audio quality seems to decline (and it's about 21kHz).  This may be ADC related (I bet it is).
+OK -- hauling the ADC's sample rate up to 48kHz seems to have solved this.  As far as I can tell there is no loss in audio quality.

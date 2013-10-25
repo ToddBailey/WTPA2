@@ -1,0 +1,4288 @@
+
+WTPA.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         00001440  00000000  00000000  00000074  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .bss          000002f6  00800100  00800100  000014b4  2**0
+                  ALLOC
+  2 .stab         000006cc  00000000  00000000  000014b4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  3 .stabstr      00000070  00000000  00000000  00001b80  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  4 .debug_aranges 000000c0  00000000  00000000  00001bf0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_pubnames 00000385  00000000  00000000  00001cb0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_info   000015e4  00000000  00000000  00002035  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_abbrev 00000878  00000000  00000000  00003619  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_line   00001803  00000000  00000000  00003e91  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_frame  000002a0  00000000  00000000  00005694  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_str    00000ac7  00000000  00000000  00005934  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_loc    00000577  00000000  00000000  000063fb  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_ranges 00000130  00000000  00000000  00006972  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+       0:	0c 94 3e 00 	jmp	0x7c	; 0x7c <__ctors_end>
+       4:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+       8:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+       c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      10:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      14:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      18:	0c 94 bc 01 	jmp	0x378	; 0x378 <__vector_6>
+      1c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      20:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      24:	0c 94 da 01 	jmp	0x3b4	; 0x3b4 <__vector_9>
+      28:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      2c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      30:	0c 94 47 01 	jmp	0x28e	; 0x28e <__vector_12>
+      34:	0c 94 c6 01 	jmp	0x38c	; 0x38c <__vector_13>
+      38:	0c 94 d0 01 	jmp	0x3a0	; 0x3a0 <__vector_14>
+      3c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      40:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      44:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      48:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      4c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      50:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      54:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      58:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      5c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      60:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      64:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      68:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      6c:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      70:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      74:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+      78:	0c 94 50 00 	jmp	0xa0	; 0xa0 <__bad_interrupt>
+
+0000007c <__ctors_end>:
+      7c:	11 24       	eor	r1, r1
+      7e:	1f be       	out	0x3f, r1	; 63
+      80:	cf ef       	ldi	r28, 0xFF	; 255
+      82:	d0 e1       	ldi	r29, 0x10	; 16
+      84:	de bf       	out	0x3e, r29	; 62
+      86:	cd bf       	out	0x3d, r28	; 61
+
+00000088 <__do_clear_bss>:
+      88:	13 e0       	ldi	r17, 0x03	; 3
+      8a:	a0 e0       	ldi	r26, 0x00	; 0
+      8c:	b1 e0       	ldi	r27, 0x01	; 1
+      8e:	01 c0       	rjmp	.+2      	; 0x92 <.do_clear_bss_start>
+
+00000090 <.do_clear_bss_loop>:
+      90:	1d 92       	st	X+, r1
+
+00000092 <.do_clear_bss_start>:
+      92:	a6 3f       	cpi	r26, 0xF6	; 246
+      94:	b1 07       	cpc	r27, r17
+      96:	e1 f7       	brne	.-8      	; 0x90 <.do_clear_bss_loop>
+      98:	0e 94 19 02 	call	0x432	; 0x432 <main>
+      9c:	0c 94 1e 0a 	jmp	0x143c	; 0x143c <_exit>
+
+000000a0 <__bad_interrupt>:
+      a0:	0c 94 e4 01 	jmp	0x3c8	; 0x3c8 <__vector_default>
+
+000000a4 <PlaySample>:
+static struct channelStruct dmcChannels[4];
+
+// Find an open channel and direct it to start playing a sample
+// We might need to disable interrupts before we do this
+static void PlaySample(unsigned long sampleNumber)
+{
+      a4:	cf 92       	push	r12
+      a6:	df 92       	push	r13
+      a8:	ef 92       	push	r14
+      aa:	ff 92       	push	r15
+      ac:	0f 93       	push	r16
+      ae:	1f 93       	push	r17
+      b0:	6b 01       	movw	r12, r22
+      b2:	7c 01       	movw	r14, r24
+	cli();
+      b4:	f8 94       	cli
+      b6:	a9 e3       	ldi	r26, 0x39	; 57
+      b8:	b3 e0       	ldi	r27, 0x03	; 3
+      ba:	40 e0       	ldi	r20, 0x00	; 0
+      bc:	50 e0       	ldi	r21, 0x00	; 0
+	for(unsigned char i=0; i < 4; i++)
+	{
+		if(dmcChannels[i].isPlaying == 0)
+      be:	8c 91       	ld	r24, X
+      c0:	88 23       	and	r24, r24
+      c2:	b1 f5       	brne	.+108    	; 0x130 <PlaySample+0x8c>
+		{
+			dmcChannels[i].isPlaying = 1;							// Let UpdateChannel() know to start playing
+      c4:	9a 01       	movw	r18, r20
+      c6:	22 0f       	add	r18, r18
+      c8:	33 1f       	adc	r19, r19
+      ca:	24 0f       	add	r18, r20
+      cc:	35 1f       	adc	r19, r21
+      ce:	22 0f       	add	r18, r18
+      d0:	33 1f       	adc	r19, r19
+      d2:	22 0f       	add	r18, r18
+      d4:	33 1f       	adc	r19, r19
+      d6:	89 01       	movw	r16, r18
+      d8:	02 5d       	subi	r16, 0xD2	; 210
+      da:	1c 4f       	sbci	r17, 0xFC	; 252
+      dc:	81 e0       	ldi	r24, 0x01	; 1
+      de:	f8 01       	movw	r30, r16
+      e0:	83 87       	std	Z+11, r24	; 0x0b
+			dmcChannels[i].currentAddress = (sampleNumber << 12);   // Which 4K sample? (* 4096)
+      e2:	b7 01       	movw	r22, r14
+      e4:	a6 01       	movw	r20, r12
+      e6:	ac e0       	ldi	r26, 0x0C	; 12
+      e8:	44 0f       	add	r20, r20
+      ea:	55 1f       	adc	r21, r21
+      ec:	66 1f       	adc	r22, r22
+      ee:	77 1f       	adc	r23, r23
+      f0:	aa 95       	dec	r26
+      f2:	d1 f7       	brne	.-12     	; 0xe8 <PlaySample+0x44>
+      f4:	40 83       	st	Z, r20
+      f6:	51 83       	std	Z+1, r21	; 0x01
+      f8:	62 83       	std	Z+2, r22	; 0x02
+      fa:	73 83       	std	Z+3, r23	; 0x03
+			dmcChannels[i].endAddress = (dmcChannels[i].currentAddress + sampleLength[sampleNumber]); //*4096	// Use the whole bank for now - until I figure out to index
+      fc:	2e 5c       	subi	r18, 0xCE	; 206
+      fe:	3c 4f       	sbci	r19, 0xFC	; 252
+     100:	f6 01       	movw	r30, r12
+     102:	ee 0f       	add	r30, r30
+     104:	ff 1f       	adc	r31, r31
+     106:	ee 0f       	add	r30, r30
+     108:	ff 1f       	adc	r31, r31
+     10a:	ea 5d       	subi	r30, 0xDA	; 218
+     10c:	fe 4f       	sbci	r31, 0xFE	; 254
+     10e:	80 81       	ld	r24, Z
+     110:	91 81       	ldd	r25, Z+1	; 0x01
+     112:	a2 81       	ldd	r26, Z+2	; 0x02
+     114:	b3 81       	ldd	r27, Z+3	; 0x03
+     116:	84 0f       	add	r24, r20
+     118:	95 1f       	adc	r25, r21
+     11a:	a6 1f       	adc	r26, r22
+     11c:	b7 1f       	adc	r27, r23
+     11e:	f9 01       	movw	r30, r18
+     120:	80 83       	st	Z, r24
+     122:	91 83       	std	Z+1, r25	; 0x01
+     124:	a2 83       	std	Z+2, r26	; 0x02
+     126:	b3 83       	std	Z+3, r27	; 0x03
+			//dmcChannels[i].endAddress = (dmcChannels[i].currentAddress + 0x400);
+			// DEBUG play all of RAM
+			//dmcChannels[i].endAddress = 0x80000;
+			
+			// Reset our other parameters
+			dmcChannels[i].bitIndex = 0;
+     128:	f8 01       	movw	r30, r16
+     12a:	11 86       	std	Z+9, r1	; 0x09
+			dmcChannels[i].deltaTrack = 0;
+     12c:	12 86       	std	Z+10, r1	; 0x0a
+     12e:	06 c0       	rjmp	.+12     	; 0x13c <PlaySample+0x98>
+			break;
+     130:	4f 5f       	subi	r20, 0xFF	; 255
+     132:	5f 4f       	sbci	r21, 0xFF	; 255
+     134:	1c 96       	adiw	r26, 0x0c	; 12
+// Find an open channel and direct it to start playing a sample
+// We might need to disable interrupts before we do this
+static void PlaySample(unsigned long sampleNumber)
+{
+	cli();
+	for(unsigned char i=0; i < 4; i++)
+     136:	44 30       	cpi	r20, 0x04	; 4
+     138:	51 05       	cpc	r21, r1
+     13a:	09 f6       	brne	.-126    	; 0xbe <PlaySample+0x1a>
+			break;
+		}
+		
+		// Else we're all busy - take a hike kid.
+	}
+	sei();
+     13c:	78 94       	sei
+}
+     13e:	1f 91       	pop	r17
+     140:	0f 91       	pop	r16
+     142:	ff 90       	pop	r15
+     144:	ef 90       	pop	r14
+     146:	df 90       	pop	r13
+     148:	cf 90       	pop	r12
+     14a:	08 95       	ret
+
+0000014c <UpdateChannel>:
+// 2) Counter is reset - clocked by (~22KHz?) drives out a single bit at a time
+// 3) Waveform DAC adjusts a fixed amount based on the bit (0=-x / 1=+x)
+// 4) When counter has reached 8 and the buffer is exhausted address is incremented and the sample IRQ (fetch byte) is triggered again
+// 5) Internal counter keeps track of length and ends if not in "loop mode"
+static signed char UpdateChannel(unsigned char i)
+{
+     14c:	cf 93       	push	r28
+     14e:	df 93       	push	r29
+
+	if(dmcChannels[i].isPlaying == 1)
+     150:	68 2f       	mov	r22, r24
+     152:	70 e0       	ldi	r23, 0x00	; 0
+     154:	fb 01       	movw	r30, r22
+     156:	ee 0f       	add	r30, r30
+     158:	ff 1f       	adc	r31, r31
+     15a:	e6 0f       	add	r30, r22
+     15c:	f7 1f       	adc	r31, r23
+     15e:	ee 0f       	add	r30, r30
+     160:	ff 1f       	adc	r31, r31
+     162:	ee 0f       	add	r30, r30
+     164:	ff 1f       	adc	r31, r31
+     166:	e2 5d       	subi	r30, 0xD2	; 210
+     168:	fc 4f       	sbci	r31, 0xFC	; 252
+     16a:	83 85       	ldd	r24, Z+11	; 0x0b
+     16c:	81 30       	cpi	r24, 0x01	; 1
+     16e:	09 f0       	breq	.+2      	; 0x172 <UpdateChannel+0x26>
+     170:	82 c0       	rjmp	.+260    	; 0x276 <UpdateChannel+0x12a>
+	{
+		if (((ReadRAM(dmcChannels[i].currentAddress) >> dmcChannels[i].bitIndex) & 0x01) == 0)		// Right shift register driven by an 8-bit counter - only interested in a single bit
+     172:	80 81       	ld	r24, Z
+     174:	91 81       	ldd	r25, Z+1	; 0x01
+     176:	a2 81       	ldd	r26, Z+2	; 0x02
+     178:	b3 81       	ldd	r27, Z+3	; 0x03
+{
+	static unsigned char
+		temp;
+	
+	// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
+	LATCH_PORT=(address);				// Put the LSB of the address on the latch.
+     17a:	85 b9       	out	0x05, r24	; 5
+	PORTA|=(Om_RAM_L_ADR_LA);			// Strobe it to the latch output...
+     17c:	13 9a       	sbi	0x02, 3	; 2
+	PORTA&=~(Om_RAM_L_ADR_LA);			// ...Keep it there.
+     17e:	13 98       	cbi	0x02, 3	; 2
+	
+	LATCH_PORT=(address>>8);			// Put the middle byte of the address on the latch.
+     180:	29 2f       	mov	r18, r25
+     182:	3a 2f       	mov	r19, r26
+     184:	4b 2f       	mov	r20, r27
+     186:	55 27       	eor	r21, r21
+     188:	25 b9       	out	0x05, r18	; 5
+	PORTA|=(Om_RAM_H_ADR_LA);			// Strobe it to the latch output...
+     18a:	14 9a       	sbi	0x02, 4	; 2
+	PORTA&=~(Om_RAM_H_ADR_LA);			// ...Keep it there.
+     18c:	14 98       	cbi	0x02, 4	; 2
+	
+	PORTC=((0x88|((address>>16)&0x07)));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+     18e:	cd 01       	movw	r24, r26
+     190:	aa 27       	eor	r26, r26
+     192:	bb 27       	eor	r27, r27
+     194:	87 70       	andi	r24, 0x07	; 7
+     196:	88 68       	ori	r24, 0x88	; 136
+     198:	88 b9       	out	0x08, r24	; 8
+	
+	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
+     19a:	14 b8       	out	0x04, r1	; 4
+	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
+     19c:	12 98       	cbi	0x02, 2	; 2
+	
+	// NOP(s) here?
+	asm volatile("nop"::);				// Just in case the RAM needs to settle down
+     19e:	00 00       	nop
+	asm volatile("nop"::);
+     1a0:	00 00       	nop
+	
+	// Finish getting the byte from RAM.
+	
+	temp=LATCH_INPUT;					// Get the byte from this address in RAM.
+     1a2:	83 b1       	in	r24, 0x03	; 3
+     1a4:	80 93 1f 01 	sts	0x011F, r24
+	PORTA|=(Om_RAM_OE);					// Tristate the RAM.
+     1a8:	12 9a       	sbi	0x02, 2	; 2
+	LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
+     1aa:	2f ef       	ldi	r18, 0xFF	; 255
+     1ac:	24 b9       	out	0x04, r18	; 4
+static signed char UpdateChannel(unsigned char i)
+{
+
+	if(dmcChannels[i].isPlaying == 1)
+	{
+		if (((ReadRAM(dmcChannels[i].currentAddress) >> dmcChannels[i].bitIndex) & 0x01) == 0)		// Right shift register driven by an 8-bit counter - only interested in a single bit
+     1ae:	90 e0       	ldi	r25, 0x00	; 0
+     1b0:	fb 01       	movw	r30, r22
+     1b2:	ee 0f       	add	r30, r30
+     1b4:	ff 1f       	adc	r31, r31
+     1b6:	e6 0f       	add	r30, r22
+     1b8:	f7 1f       	adc	r31, r23
+     1ba:	ee 0f       	add	r30, r30
+     1bc:	ff 1f       	adc	r31, r31
+     1be:	ee 0f       	add	r30, r30
+     1c0:	ff 1f       	adc	r31, r31
+     1c2:	e2 5d       	subi	r30, 0xD2	; 210
+     1c4:	fc 4f       	sbci	r31, 0xFC	; 252
+     1c6:	01 84       	ldd	r0, Z+9	; 0x09
+     1c8:	02 c0       	rjmp	.+4      	; 0x1ce <UpdateChannel+0x82>
+     1ca:	95 95       	asr	r25
+     1cc:	87 95       	ror	r24
+     1ce:	0a 94       	dec	r0
+     1d0:	e2 f7       	brpl	.-8      	; 0x1ca <UpdateChannel+0x7e>
+     1d2:	80 fd       	sbrc	r24, 0
+     1d4:	03 c0       	rjmp	.+6      	; 0x1dc <UpdateChannel+0x90>
+		{
+			dmcChannels[i].deltaTrack -= 1;	   // Apply delta change
+     1d6:	82 85       	ldd	r24, Z+10	; 0x0a
+     1d8:	81 50       	subi	r24, 0x01	; 1
+     1da:	02 c0       	rjmp	.+4      	; 0x1e0 <UpdateChannel+0x94>
+		}
+		else 
+		{
+			dmcChannels[i].deltaTrack += 1;
+     1dc:	82 85       	ldd	r24, Z+10	; 0x0a
+     1de:	8f 5f       	subi	r24, 0xFF	; 255
+     1e0:	82 87       	std	Z+10, r24	; 0x0a
+		}
+		
+		dmcChannels[i].bitIndex++;				// Increment counter
+     1e2:	fb 01       	movw	r30, r22
+     1e4:	ee 0f       	add	r30, r30
+     1e6:	ff 1f       	adc	r31, r31
+     1e8:	e6 0f       	add	r30, r22
+     1ea:	f7 1f       	adc	r31, r23
+     1ec:	ee 0f       	add	r30, r30
+     1ee:	ff 1f       	adc	r31, r31
+     1f0:	ee 0f       	add	r30, r30
+     1f2:	ff 1f       	adc	r31, r31
+     1f4:	e2 5d       	subi	r30, 0xD2	; 210
+     1f6:	fc 4f       	sbci	r31, 0xFC	; 252
+     1f8:	81 85       	ldd	r24, Z+9	; 0x09
+     1fa:	8f 5f       	subi	r24, 0xFF	; 255
+     1fc:	81 87       	std	Z+9, r24	; 0x09
+		
+		if(dmcChannels[i].bitIndex == 8)		// If we've shifted out 8 bits fetch a new byte and reset counter
+     1fe:	88 30       	cpi	r24, 0x08	; 8
+     200:	61 f4       	brne	.+24     	; 0x21a <UpdateChannel+0xce>
+		{
+			dmcChannels[i].bitIndex = 0;
+     202:	11 86       	std	Z+9, r1	; 0x09
+			dmcChannels[i].currentAddress++;
+     204:	80 81       	ld	r24, Z
+     206:	91 81       	ldd	r25, Z+1	; 0x01
+     208:	a2 81       	ldd	r26, Z+2	; 0x02
+     20a:	b3 81       	ldd	r27, Z+3	; 0x03
+     20c:	01 96       	adiw	r24, 0x01	; 1
+     20e:	a1 1d       	adc	r26, r1
+     210:	b1 1d       	adc	r27, r1
+     212:	80 83       	st	Z, r24
+     214:	91 83       	std	Z+1, r25	; 0x01
+     216:	a2 83       	std	Z+2, r26	; 0x02
+     218:	b3 83       	std	Z+3, r27	; 0x03
+		}
+		
+		if(dmcChannels[i].currentAddress == dmcChannels[i].endAddress)	// Did we reach the end?
+     21a:	fb 01       	movw	r30, r22
+     21c:	ee 0f       	add	r30, r30
+     21e:	ff 1f       	adc	r31, r31
+     220:	e6 0f       	add	r30, r22
+     222:	f7 1f       	adc	r31, r23
+     224:	ee 0f       	add	r30, r30
+     226:	ff 1f       	adc	r31, r31
+     228:	ee 0f       	add	r30, r30
+     22a:	ff 1f       	adc	r31, r31
+     22c:	ef 01       	movw	r28, r30
+     22e:	c2 5d       	subi	r28, 0xD2	; 210
+     230:	dc 4f       	sbci	r29, 0xFC	; 252
+     232:	ee 5c       	subi	r30, 0xCE	; 206
+     234:	fc 4f       	sbci	r31, 0xFC	; 252
+     236:	28 81       	ld	r18, Y
+     238:	39 81       	ldd	r19, Y+1	; 0x01
+     23a:	4a 81       	ldd	r20, Y+2	; 0x02
+     23c:	5b 81       	ldd	r21, Y+3	; 0x03
+     23e:	80 81       	ld	r24, Z
+     240:	91 81       	ldd	r25, Z+1	; 0x01
+     242:	a2 81       	ldd	r26, Z+2	; 0x02
+     244:	b3 81       	ldd	r27, Z+3	; 0x03
+     246:	28 17       	cp	r18, r24
+     248:	39 07       	cpc	r19, r25
+     24a:	4a 07       	cpc	r20, r26
+     24c:	5b 07       	cpc	r21, r27
+     24e:	31 f4       	brne	.+12     	; 0x25c <UpdateChannel+0x110>
+		{
+			dmcChannels[i].currentAddress = 0;							// If so, reset parameters and free the channel
+     250:	18 82       	st	Y, r1
+     252:	19 82       	std	Y+1, r1	; 0x01
+     254:	1a 82       	std	Y+2, r1	; 0x02
+     256:	1b 82       	std	Y+3, r1	; 0x03
+			dmcChannels[i].bitIndex = 0;
+     258:	19 86       	std	Y+9, r1	; 0x09
+			//dmcChannels[i].deltaTrack = 0;
+			dmcChannels[i].isPlaying = 0;
+     25a:	1b 86       	std	Y+11, r1	; 0x0b
+     25c:	fb 01       	movw	r30, r22
+     25e:	ee 0f       	add	r30, r30
+     260:	ff 1f       	adc	r31, r31
+     262:	e6 0f       	add	r30, r22
+     264:	f7 1f       	adc	r31, r23
+     266:	ee 0f       	add	r30, r30
+     268:	ff 1f       	adc	r31, r31
+     26a:	ee 0f       	add	r30, r30
+     26c:	ff 1f       	adc	r31, r31
+     26e:	e2 5d       	subi	r30, 0xD2	; 210
+     270:	fc 4f       	sbci	r31, 0xFC	; 252
+		{
+			dmcChannels[i].deltaTrack++;
+		}
+// @@@ don't we need to return this? --TMB
+	}
+}
+     272:	82 85       	ldd	r24, Z+10	; 0x0a
+     274:	09 c0       	rjmp	.+18     	; 0x288 <UpdateChannel+0x13c>
+	}
+	
+	else 
+	{
+		// Else the channel is inactive, if it's not already 0 then let's gently put it there
+		if(dmcChannels[i].deltaTrack > 0)
+     276:	82 85       	ldd	r24, Z+10	; 0x0a
+     278:	18 16       	cp	r1, r24
+     27a:	14 f4       	brge	.+4      	; 0x280 <UpdateChannel+0x134>
+		{
+			dmcChannels[i].deltaTrack--;
+     27c:	81 50       	subi	r24, 0x01	; 1
+     27e:	03 c0       	rjmp	.+6      	; 0x286 <UpdateChannel+0x13a>
+		}
+		else if(dmcChannels[i].deltaTrack < 0)
+     280:	88 23       	and	r24, r24
+     282:	11 f0       	breq	.+4      	; 0x288 <UpdateChannel+0x13c>
+		{
+			dmcChannels[i].deltaTrack++;
+     284:	8f 5f       	subi	r24, 0xFF	; 255
+     286:	82 87       	std	Z+10, r24	; 0x0a
+		}
+// @@@ don't we need to return this? --TMB
+	}
+}
+     288:	df 91       	pop	r29
+     28a:	cf 91       	pop	r28
+     28c:	08 95       	ret
+
+0000028e <__vector_12>:
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+ISR(TIMER1_CAPT_vect)
+// The vector triggered by an external clock edge and associated with Bank0
+{
+     28e:	1f 92       	push	r1
+     290:	0f 92       	push	r0
+     292:	0f b6       	in	r0, 0x3f	; 63
+     294:	0f 92       	push	r0
+     296:	11 24       	eor	r1, r1
+     298:	df 92       	push	r13
+     29a:	ef 92       	push	r14
+     29c:	ff 92       	push	r15
+     29e:	0f 93       	push	r16
+     2a0:	1f 93       	push	r17
+     2a2:	2f 93       	push	r18
+     2a4:	3f 93       	push	r19
+     2a6:	4f 93       	push	r20
+     2a8:	5f 93       	push	r21
+     2aa:	6f 93       	push	r22
+     2ac:	7f 93       	push	r23
+     2ae:	8f 93       	push	r24
+     2b0:	9f 93       	push	r25
+     2b2:	af 93       	push	r26
+     2b4:	bf 93       	push	r27
+     2b6:	ef 93       	push	r30
+     2b8:	ff 93       	push	r31
+		sum0;				// Temporary variables for saturated adds, multiplies, other math.
+
+	unsigned char
+		output;			// What to put on the DAC
+	
+	sum0=UpdateChannel(0)+UpdateChannel(1)+UpdateChannel(2)+UpdateChannel(3);	// Sum everything that might be involved in our output waveform:
+     2ba:	80 e0       	ldi	r24, 0x00	; 0
+     2bc:	0e 94 a6 00 	call	0x14c	; 0x14c <UpdateChannel>
+     2c0:	e8 2e       	mov	r14, r24
+     2c2:	81 e0       	ldi	r24, 0x01	; 1
+     2c4:	0e 94 a6 00 	call	0x14c	; 0x14c <UpdateChannel>
+     2c8:	d8 2e       	mov	r13, r24
+     2ca:	82 e0       	ldi	r24, 0x02	; 2
+     2cc:	0e 94 a6 00 	call	0x14c	; 0x14c <UpdateChannel>
+     2d0:	08 2f       	mov	r16, r24
+     2d2:	83 e0       	ldi	r24, 0x03	; 3
+     2d4:	0e 94 a6 00 	call	0x14c	; 0x14c <UpdateChannel>
+     2d8:	2d 2d       	mov	r18, r13
+     2da:	33 27       	eor	r19, r19
+     2dc:	27 fd       	sbrc	r18, 7
+     2de:	30 95       	com	r19
+     2e0:	ff 24       	eor	r15, r15
+     2e2:	e7 fc       	sbrc	r14, 7
+     2e4:	f0 94       	com	r15
+     2e6:	2e 0d       	add	r18, r14
+     2e8:	3f 1d       	adc	r19, r15
+     2ea:	11 27       	eor	r17, r17
+     2ec:	07 fd       	sbrc	r16, 7
+     2ee:	10 95       	com	r17
+     2f0:	20 0f       	add	r18, r16
+     2f2:	31 1f       	adc	r19, r17
+     2f4:	99 27       	eor	r25, r25
+     2f6:	87 fd       	sbrc	r24, 7
+     2f8:	90 95       	com	r25
+     2fa:	28 0f       	add	r18, r24
+     2fc:	39 1f       	adc	r19, r25
+     2fe:	8f ef       	ldi	r24, 0xFF	; 255
+     300:	20 38       	cpi	r18, 0x80	; 128
+     302:	38 07       	cpc	r19, r24
+     304:	14 f4       	brge	.+4      	; 0x30a <__vector_12+0x7c>
+     306:	20 e8       	ldi	r18, 0x80	; 128
+     308:	3f ef       	ldi	r19, 0xFF	; 255
+	}
+	else if(sum0<-128)		// Pin low.
+	{
+		sum0=-128;
+	}
+	output=(signed char)sum0;	// Cast back to 8 bits.
+     30a:	c9 01       	movw	r24, r18
+     30c:	20 38       	cpi	r18, 0x80	; 128
+     30e:	31 05       	cpc	r19, r1
+     310:	14 f0       	brlt	.+4      	; 0x316 <__vector_12+0x88>
+     312:	8f e7       	ldi	r24, 0x7F	; 127
+     314:	90 e0       	ldi	r25, 0x00	; 0
+	output^=(0x80);				// Make unsigned again (shift 0 up to 128, -127 up to 0, etc)
+     316:	98 2f       	mov	r25, r24
+     318:	90 58       	subi	r25, 0x80	; 128
+
+	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+     31a:	80 91 5e 03 	lds	r24, 0x035E
+     31e:	98 17       	cp	r25, r24
+     320:	29 f0       	breq	.+10     	; 0x32c <__vector_12+0x9e>
+	{
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+     322:	8f ef       	ldi	r24, 0xFF	; 255
+     324:	84 b9       	out	0x04, r24	; 4
+
+		LATCH_PORT=output;		// Put the output on the output latch's input.
+     326:	95 b9       	out	0x05, r25	; 5
+		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+     328:	15 9a       	sbi	0x02, 5	; 2
+		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+     32a:	15 98       	cbi	0x02, 5	; 2
+	}
+
+	lastDacByte=output;		// Flag this byte has having been spit out last time.
+     32c:	90 93 5e 03 	sts	0x035E, r25
+
+ISR(TIMER1_CAPT_vect)
+// The vector triggered by an external clock edge and associated with Bank0
+{
+	OutputAudio();				// Let's do this thang
+	if(!(ADCSRA&(1<<ADSC)))		// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+     330:	80 91 7a 00 	lds	r24, 0x007A
+     334:	86 fd       	sbrc	r24, 6
+     336:	0a c0       	rjmp	.+20     	; 0x34c <__vector_12+0xbe>
+	{
+		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
+     338:	80 91 79 00 	lds	r24, 0x0079
+     33c:	80 58       	subi	r24, 0x80	; 128
+     33e:	80 93 20 01 	sts	0x0120, r24
+		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
+     342:	80 91 7a 00 	lds	r24, 0x007A
+     346:	80 64       	ori	r24, 0x40	; 64
+     348:	80 93 7a 00 	sts	0x007A, r24
+	}
+}
+     34c:	ff 91       	pop	r31
+     34e:	ef 91       	pop	r30
+     350:	bf 91       	pop	r27
+     352:	af 91       	pop	r26
+     354:	9f 91       	pop	r25
+     356:	8f 91       	pop	r24
+     358:	7f 91       	pop	r23
+     35a:	6f 91       	pop	r22
+     35c:	5f 91       	pop	r21
+     35e:	4f 91       	pop	r20
+     360:	3f 91       	pop	r19
+     362:	2f 91       	pop	r18
+     364:	1f 91       	pop	r17
+     366:	0f 91       	pop	r16
+     368:	ff 90       	pop	r15
+     36a:	ef 90       	pop	r14
+     36c:	df 90       	pop	r13
+     36e:	0f 90       	pop	r0
+     370:	0f be       	out	0x3f, r0	; 63
+     372:	0f 90       	pop	r0
+     374:	1f 90       	pop	r1
+     376:	18 95       	reti
+
+00000378 <__vector_6>:
+
+ISR(PCINT2_vect)
+// The vector triggered by a pin change and associated with Bank1
+// It's on PC4
+{
+     378:	1f 92       	push	r1
+     37a:	0f 92       	push	r0
+     37c:	0f b6       	in	r0, 0x3f	; 63
+     37e:	0f 92       	push	r0
+     380:	11 24       	eor	r1, r1
+	
+}
+     382:	0f 90       	pop	r0
+     384:	0f be       	out	0x3f, r0	; 63
+     386:	0f 90       	pop	r0
+     388:	1f 90       	pop	r1
+     38a:	18 95       	reti
+
+0000038c <__vector_13>:
+
+ISR(TIMER1_COMPA_vect)
+// The bank0 internal timer vectors here on an interrupt.
+{
+     38c:	1f 92       	push	r1
+     38e:	0f 92       	push	r0
+     390:	0f b6       	in	r0, 0x3f	; 63
+     392:	0f 92       	push	r0
+     394:	11 24       	eor	r1, r1
+	
+}
+     396:	0f 90       	pop	r0
+     398:	0f be       	out	0x3f, r0	; 63
+     39a:	0f 90       	pop	r0
+     39c:	1f 90       	pop	r1
+     39e:	18 95       	reti
+
+000003a0 <__vector_14>:
+
+ISR(TIMER1_COMPB_vect)
+// The interrupt associated with bank1 when it's using internal interrupts goes here.
+{
+     3a0:	1f 92       	push	r1
+     3a2:	0f 92       	push	r0
+     3a4:	0f b6       	in	r0, 0x3f	; 63
+     3a6:	0f 92       	push	r0
+     3a8:	11 24       	eor	r1, r1
+	
+}
+     3aa:	0f 90       	pop	r0
+     3ac:	0f be       	out	0x3f, r0	; 63
+     3ae:	0f 90       	pop	r0
+     3b0:	1f 90       	pop	r1
+     3b2:	18 95       	reti
+
+000003b4 <__vector_9>:
+
+ISR(TIMER2_COMPA_vect)
+// Serves exclusively to make our gay intro happen
+// As far as the PWM goes, this should happen as often as possible.
+{
+     3b4:	1f 92       	push	r1
+     3b6:	0f 92       	push	r0
+     3b8:	0f b6       	in	r0, 0x3f	; 63
+     3ba:	0f 92       	push	r0
+     3bc:	11 24       	eor	r1, r1
+	
+}
+     3be:	0f 90       	pop	r0
+     3c0:	0f be       	out	0x3f, r0	; 63
+     3c2:	0f 90       	pop	r0
+     3c4:	1f 90       	pop	r1
+     3c6:	18 95       	reti
+
+000003c8 <__vector_default>:
+
+ISR(__vector_default)
+{
+     3c8:	1f 92       	push	r1
+     3ca:	0f 92       	push	r0
+     3cc:	0f b6       	in	r0, 0x3f	; 63
+     3ce:	0f 92       	push	r0
+     3d0:	11 24       	eor	r1, r1
+    //  This means a bug happened.  Some interrupt that shouldn't have generated an interrupt went here, the default interrupt vector.
+	//	printf("Buggy Interrupt Generated!  Flags = ");
+	//  printf("*****put interrupt register values here****");
+}
+     3d2:	0f 90       	pop	r0
+     3d4:	0f be       	out	0x3f, r0	; 63
+     3d6:	0f 90       	pop	r0
+     3d8:	1f 90       	pop	r1
+     3da:	18 95       	reti
+
+000003dc <WriteLedLatch>:
+// This and the switch handler are the only mainline (non IRQ) code that messes with the databus.
+{
+	unsigned char
+		sreg;
+
+	sreg=SREG;	// Store global interrupt state
+     3dc:	9f b7       	in	r25, 0x3f	; 63
+	cli();		// Clear global interrupts (so we don't get an audio interrupt while messing with OE and WE)
+     3de:	f8 94       	cli
+
+	LATCH_PORT=theMask;				// Put passed data onto bus.
+     3e0:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+     3e2:	8f ef       	ldi	r24, 0xFF	; 255
+     3e4:	84 b9       	out	0x04, r24	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+     3e6:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.
+     3e8:	5f 98       	cbi	0x0b, 7	; 11
+
+	SREG=sreg;						// Restore interrupts.
+     3ea:	9f bf       	out	0x3f, r25	; 63
+}
+     3ec:	08 95       	ret
+
+000003ee <HandleSoftclock>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void HandleSoftclock(void)
+{
+	if(TIFR0&(1<<TOV0))		// Got a timer overflow flag?
+     3ee:	a8 9b       	sbis	0x15, 0	; 21
+     3f0:	0a c0       	rjmp	.+20     	; 0x406 <HandleSoftclock+0x18>
+	{
+		TIFR0 |= (1<<TOV0);		// Reset the flag (by writing a one).
+     3f2:	a8 9a       	sbi	0x15, 0	; 21
+		systemTicks++;			// Increment the system ticks.
+     3f4:	80 91 c0 03 	lds	r24, 0x03C0
+     3f8:	90 91 c1 03 	lds	r25, 0x03C1
+     3fc:	01 96       	adiw	r24, 0x01	; 1
+     3fe:	90 93 c1 03 	sts	0x03C1, r25
+     402:	80 93 c0 03 	sts	0x03C0, r24
+     406:	08 95       	ret
+
+00000408 <ShowFailure>:
+}
+*/
+// Crappy function to indicate that something has failed in absence of a printf
+// Don't leave this function (while 1) since we're not interested in going further
+static void ShowFailure(unsigned char pattern)
+{	
+     408:	1f 93       	push	r17
+     40a:	18 2f       	mov	r17, r24
+	cli();						// Why bother... it's all over..
+     40c:	f8 94       	cli
+	
+	WriteLedLatch(pattern);		
+     40e:	81 2f       	mov	r24, r17
+     410:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+	while(1)				
+	{
+		SetTimer(TIMER_SD,(SECOND/2));
+     414:	83 e0       	ldi	r24, 0x03	; 3
+     416:	62 e6       	ldi	r22, 0x62	; 98
+     418:	72 e0       	ldi	r23, 0x02	; 2
+     41a:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+     41e:	02 c0       	rjmp	.+4      	; 0x424 <ShowFailure+0x1c>
+		while (!CheckTimer(TIMER_SD))
+		{
+			HandleSoftclock();
+     420:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+	
+	WriteLedLatch(pattern);		
+	while(1)				
+	{
+		SetTimer(TIMER_SD,(SECOND/2));
+		while (!CheckTimer(TIMER_SD))
+     424:	83 e0       	ldi	r24, 0x03	; 3
+     426:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+     42a:	88 23       	and	r24, r24
+     42c:	c9 f3       	breq	.-14     	; 0x420 <ShowFailure+0x18>
+		{
+			HandleSoftclock();
+		}
+		pattern ^= 0xFF;		// Toggle LEDs to absolutely dazzle the user
+     42e:	10 95       	com	r17
+     430:	ee cf       	rjmp	.-36     	; 0x40e <ShowFailure+0x6>
+
+00000432 <main>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+int main(void)
+// Initialize this mess.
+{
+     432:	8f 92       	push	r8
+     434:	9f 92       	push	r9
+     436:	af 92       	push	r10
+     438:	bf 92       	push	r11
+     43a:	cf 92       	push	r12
+     43c:	df 92       	push	r13
+     43e:	ef 92       	push	r14
+     440:	ff 92       	push	r15
+     442:	0f 93       	push	r16
+     444:	1f 93       	push	r17
+     446:	cf 93       	push	r28
+     448:	df 93       	push	r29
+	PRR=0xFF;			// Power off everything, let the initialization routines turn on modules you need.
+     44a:	2f ef       	ldi	r18, 0xFF	; 255
+     44c:	20 93 64 00 	sts	0x0064, r18
+	MCUCR&=~(1<<PUD);	// Globally enable pullups (we need them for the encoder)
+     450:	85 b7       	in	r24, 0x35	; 53
+     452:	8f 7e       	andi	r24, 0xEF	; 239
+     454:	85 bf       	out	0x35, r24	; 53
+
+	// Set the DDRs for all RAM, DAC, latch related pins here.  Any non-SFR related IO pin gets initialized here.  ADC and anything else with a specific init routine will be intialized separately.
+
+	DDRC=0xEF;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  Pins PC5-PC7 are unused now, so pull them low.
+     456:	8f ee       	ldi	r24, 0xEF	; 239
+     458:	87 b9       	out	0x07, r24	; 7
+	PORTC=0x08;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
+     45a:	88 e0       	ldi	r24, 0x08	; 8
+     45c:	88 b9       	out	0x08, r24	; 8
+
+	DDRD=0x80;			// PORTD is the UART (midi) the Flash interface (SPI) the ACLK input and the LED latch enable.  Make UART and Flash input for now and the rest make appropriate (LE is an output) .
+     45e:	90 e8       	ldi	r25, 0x80	; 128
+     460:	9a b9       	out	0x0a, r25	; 10
+	PORTD=0x00;			// Drive the LE for the LEDs low and leave the rest floating.
+     462:	1b b8       	out	0x0b, r1	; 11
+	
+	PORTA=0x06;			// OE and WE high, latch enables low, no pullup on AIN0, encoder now has hardware pullups.
+     464:	86 e0       	ldi	r24, 0x06	; 6
+     466:	82 b9       	out	0x02, r24	; 2
+	DDRA=0x3E;			// PORTA is digital outputs (latch strobe lines and OE/WE lines PA1-5), the analog in (on PA0) and the encoder inputs (PA6 and PA7)
+     468:	8e e3       	ldi	r24, 0x3E	; 62
+     46a:	81 b9       	out	0x01, r24	; 1
+
+	DDRB=0xFF;			// Latch port to OP.
+     46c:	24 b9       	out	0x04, r18	; 4
+	LATCH_PORT=128;		// And set it equal to midscale for the DAC.
+     46e:	95 b9       	out	0x05, r25	; 5
+
+	// Set the DAC to midscale to avoid pops on the first interrupt call.
+	PORTA|=(Om_RAM_OE);		// Tristate the RAM.
+     470:	12 9a       	sbi	0x02, 2	; 2
+	LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+     472:	24 b9       	out	0x04, r18	; 4
+	PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the dacByte on the 373's output...
+     474:	15 9a       	sbi	0x02, 5	; 2
+	PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+     476:	15 98       	cbi	0x02, 5	; 2
+
+
+static void InitAdc(void)
+// Note, we don't set up the Adc to trigger on anything right away.
+{
+	PRR&=~(1<<PRADC);		// Turn the ADC power on (clear the bit to power on).
+     478:	80 91 64 00 	lds	r24, 0x0064
+     47c:	8e 7f       	andi	r24, 0xFE	; 254
+     47e:	80 93 64 00 	sts	0x0064, r24
+	ADMUX = 0x60; 			// 0110 0000.  AVCC is the reference (w/ ext cap), left justify the result, start with ADC0 as the channel.  The ADC always wants to see a cap at AREF if the internal references or VCC are used.
+     482:	80 e6       	ldi	r24, 0x60	; 96
+     484:	80 93 7c 00 	sts	0x007C, r24
+	DIDR0 = 0x01;			// Disable the digital input for ADC0.
+     488:	81 e0       	ldi	r24, 0x01	; 1
+     48a:	80 93 7e 00 	sts	0x007E, r24
+	ADCSRA = 0x95;			// 1001 0101 (prescaler to 32 = ~48kHz sample rate, (64 = 24kHz).  Enable the ADC, no autotrigger or interrupts. (For ex: at 8MHz sysclk and 1/64, ADC clock = 125kHz, normal conversion ~= 10kHz (13 samples per conversion).  According to the datasheet, to get max resolution from the converter, the ADC clock must be between 50 and 200kHz.)
+     48e:	85 e9       	ldi	r24, 0x95	; 149
+     490:	80 93 7a 00 	sts	0x007A, r24
+//	ADCSRA = 0x96;			// 1001 0110 (prescaler to 64 = ~24kHz sample rate, (32 = 48kHz).  Enable the ADC, no autotrigger or interrupts. (For ex: at 8MHz sysclk and 1/64, ADC clock = 125kHz, normal conversion ~= 10kHz (13 samples per conversion).  According to the datasheet, to get max resolution from the converter, the ADC clock must be between 50 and 200kHz.)
+	ADCSRA |= (1<<ADSC);  	// Start the first conversion to initialize the ADC.
+     494:	80 91 7a 00 	lds	r24, 0x007A
+     498:	80 64       	ori	r24, 0x40	; 64
+     49a:	80 93 7a 00 	sts	0x007A, r24
+
+static void InitSampleClock(void)
+// Get TMR1 ready to generate some equal temperament, or as equal as I can do (for MIDI)
+// Or just turn it on so we can use the Input Capture pin to generate interrupts for the external clock (for the loop sampler).
+{
+	PRR&=~(1<<PRTIM1);	// Turn the TMR1 power on.
+     49e:	80 91 64 00 	lds	r24, 0x0064
+     4a2:	87 7f       	andi	r24, 0xF7	; 247
+     4a4:	80 93 64 00 	sts	0x0064, r24
+	TIMSK1=0x00;		// Disable all Timer 1 associated interrupts.
+     4a8:	10 92 6f 00 	sts	0x006F, r1
+	OCR1A=65535;		// Set the compare register arbitrarily
+     4ac:	8f ef       	ldi	r24, 0xFF	; 255
+     4ae:	9f ef       	ldi	r25, 0xFF	; 255
+     4b0:	90 93 89 00 	sts	0x0089, r25
+     4b4:	80 93 88 00 	sts	0x0088, r24
+	OCR1B=65535;		// Set the compare register arbitrarily
+     4b8:	90 93 8b 00 	sts	0x008B, r25
+     4bc:	80 93 8a 00 	sts	0x008A, r24
+	TCCR1A=0;			// Normal Ports.
+     4c0:	10 92 80 00 	sts	0x0080, r1
+	TCCR1B=0;			// Stop the timer.
+     4c4:	10 92 81 00 	sts	0x0081, r1
+	TCNT1=0;			// Initialize the counter to 0.
+     4c8:	10 92 85 00 	sts	0x0085, r1
+     4cc:	10 92 84 00 	sts	0x0084, r1
+	TIFR1=0xFF;			// Clear the interrupt flags by writing ones.
+     4d0:	26 bb       	out	0x16, r18	; 22
+	
+	// Bank 0 is based on Input Capture interrupts (rising edge from the sample clock oscillator)
+	TCCR1B|=(1<<ICES1);		// Trigger on a rising edge.
+     4d2:	80 91 81 00 	lds	r24, 0x0081
+     4d6:	80 64       	ori	r24, 0x40	; 64
+     4d8:	80 93 81 00 	sts	0x0081, r24
+	TIFR1|=(1<<ICF1);		// Clear Input Capture interrupt flag.
+     4dc:	b5 9a       	sbi	0x16, 5	; 22
+	TIMSK1|=(1<<ICIE1);		// Enable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
+     4de:	80 91 6f 00 	lds	r24, 0x006F
+     4e2:	80 62       	ori	r24, 0x20	; 32
+     4e4:	80 93 6f 00 	sts	0x006F, r24
+	
+	// Bank1 is based on PC4's pin change interrupt (PCINT20, which is associated with PC interrupt 2)
+	PCIFR|=(1<<PCIF2);		// Clear any pending interrupts hanging around.
+     4e8:	da 9a       	sbi	0x1b, 2	; 27
+	PCICR=(1<<PCIE2);		// Enable the pin change interrupt for PORTC.
+     4ea:	84 e0       	ldi	r24, 0x04	; 4
+     4ec:	80 93 68 00 	sts	0x0068, r24
+	PCMSK2=0x10;			// PORTC pin 4 generates interrupt
+     4f0:	80 e1       	ldi	r24, 0x10	; 16
+     4f2:	80 93 6d 00 	sts	0x006D, r24
+// NOTE:  w/ 16-bit system ticks we can only time 214 seconds at this rate.
+
+// With /64 those times are 0.8192 mSecs and 53 seconds.  We did this for the sake of not missing encoder states.
+
+{
+	PRR&=~(1<<PRTIM0);	// Turn the TMR0 power on.
+     4f6:	80 91 64 00 	lds	r24, 0x0064
+     4fa:	8f 7d       	andi	r24, 0xDF	; 223
+     4fc:	80 93 64 00 	sts	0x0064, r24
+	TIMSK0=0x00;		// Disable all Timer 0 associated interrupts.
+     500:	10 92 6e 00 	sts	0x006E, r1
+	TCCR0A=0;			// Normal Ports.
+     504:	14 bc       	out	0x24, r1	; 36
+	TCNT0=0;			// Initialize the counter to 0.
+     506:	16 bc       	out	0x26, r1	; 38
+	TIFR0=0xFF;			// Clear the interrupt flags by writing ones.
+     508:	25 bb       	out	0x15, r18	; 21
+	systemTicks=0;
+     50a:	10 92 c1 03 	sts	0x03C1, r1
+     50e:	10 92 c0 03 	sts	0x03C0, r1
+	//	TCCR0B=0x04;		// Start the timer in Normal mode, prescaler at 1/256
+	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
+     512:	83 e0       	ldi	r24, 0x03	; 3
+     514:	85 bd       	out	0x25, r24	; 37
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void InitSwitches(void)
+{
+	SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Start debounce counter.
+     516:	81 e0       	ldi	r24, 0x01	; 1
+     518:	66 e2       	ldi	r22, 0x26	; 38
+     51a:	70 e0       	ldi	r23, 0x00	; 0
+     51c:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+
+	DDRC&=~Im_CARD_DETECT;	// Card detect pin to input.
+     520:	3d 98       	cbi	0x07, 5	; 7
+	PORTC|=Im_CARD_DETECT;	// Pull it up.
+     522:	45 9a       	sbi	0x08, 5	; 8
+#define	ENC_POS_C	0xC0
+#define	ENC_POS_D	0x80
+
+static void InitEncoder(void)
+{
+	encoderState=(PINA&Im_ENCODER_PINS);	// Initial encoder state read from pins directly.
+     524:	80 b1       	in	r24, 0x00	; 0
+     526:	80 7c       	andi	r24, 0xC0	; 192
+     528:	80 93 23 01 	sts	0x0123, r24
+	encoderValue=0;							// zero our relative position.
+     52c:	10 92 24 01 	sts	0x0124, r1
+	InitAdc();
+	InitSampleClock();
+	InitSoftclock();
+	InitSwitches();
+	InitEncoder();
+	InitMidi();					// Get the MIDI stack initialized.
+     530:	0e 94 e1 05 	call	0xbc2	; 0xbc2 <InitMidi>
+	InitUart0();
+     534:	0e 94 16 05 	call	0xa2c	; 0xa2c <InitUart0>
+	InitSdInterface();
+     538:	0e 94 8f 07 	call	0xf1e	; 0xf1e <InitSdInterface>
+{
+	static unsigned long 
+		currentAddress;
+	static unsigned char
+		currentByte;
+	currentAddress = 0;
+     53c:	10 92 17 01 	sts	0x0117, r1
+     540:	10 92 18 01 	sts	0x0118, r1
+     544:	10 92 19 01 	sts	0x0119, r1
+     548:	10 92 1a 01 	sts	0x011A, r1
+	
+	SetTimer(TIMER_SD,SECOND);
+     54c:	83 e0       	ldi	r24, 0x03	; 3
+     54e:	64 ec       	ldi	r22, 0xC4	; 196
+     550:	74 e0       	ldi	r23, 0x04	; 4
+     552:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+     556:	02 c0       	rjmp	.+4      	; 0x55c <main+0x12a>
+	while(!CheckTimer(TIMER_SD))
+	{	
+		HandleSoftclock();
+     558:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+	static unsigned char
+		currentByte;
+	currentAddress = 0;
+	
+	SetTimer(TIMER_SD,SECOND);
+	while(!CheckTimer(TIMER_SD))
+     55c:	83 e0       	ldi	r24, 0x03	; 3
+     55e:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+     562:	88 23       	and	r24, r24
+     564:	c9 f3       	breq	.-14     	; 0x558 <main+0x126>
+	{	
+		HandleSoftclock();
+	}
+	if(SdHandshake() == false)
+     566:	0e 94 09 09 	call	0x1212	; 0x1212 <SdHandshake>
+     56a:	88 23       	and	r24, r24
+     56c:	19 f4       	brne	.+6      	; 0x574 <main+0x142>
+	{
+		ShowFailure(0x55);	// Branch off here and never come back if we don't have an SD card
+     56e:	85 e5       	ldi	r24, 0x55	; 85
+     570:	0e 94 04 02 	call	0x408	; 0x408 <ShowFailure>
+     574:	aa 24       	eor	r10, r10
+     576:	bb 24       	eor	r11, r11
+     578:	65 01       	movw	r12, r10
+     57a:	45 01       	movw	r8, r10
+	}
+	
+	for(int blockNum = 0; blockNum < (8*128); blockNum++)	// 8 blocks * 128 samples * 512B = 512KB 
+	{
+		StartSdTransfer();
+     57c:	0e 94 a8 07 	call	0xf50	; 0xf50 <StartSdTransfer>
+		
+		if(SdBeginSingleBlockRead(blockNum) == true)
+     580:	c6 01       	movw	r24, r12
+     582:	b5 01       	movw	r22, r10
+     584:	0e 94 e5 08 	call	0x11ca	; 0x11ca <SdBeginSingleBlockRead>
+     588:	81 30       	cpi	r24, 0x01	; 1
+     58a:	09 f0       	breq	.+2      	; 0x58e <main+0x15c>
+     58c:	57 c0       	rjmp	.+174    	; 0x63c <main+0x20a>
+		{
+			SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+     58e:	83 e0       	ldi	r24, 0x03	; 3
+     590:	6a e7       	ldi	r22, 0x7A	; 122
+     592:	70 e0       	ldi	r23, 0x00	; 0
+     594:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+     598:	02 c0       	rjmp	.+4      	; 0x59e <main+0x16c>
+			
+			while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+			{
+				HandleSoftclock();	// Kludgy
+     59a:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+		
+		if(SdBeginSingleBlockRead(blockNum) == true)
+		{
+			SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+			
+			while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+     59e:	83 e0       	ldi	r24, 0x03	; 3
+     5a0:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+     5a4:	88 23       	and	r24, r24
+     5a6:	29 f4       	brne	.+10     	; 0x5b2 <main+0x180>
+     5a8:	8f ef       	ldi	r24, 0xFF	; 255
+     5aa:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     5ae:	8e 3f       	cpi	r24, 0xFE	; 254
+     5b0:	a1 f7       	brne	.-24     	; 0x59a <main+0x168>
+     5b2:	c0 e0       	ldi	r28, 0x00	; 0
+     5b4:	d0 e0       	ldi	r29, 0x00	; 0
+				HandleSoftclock();	// Kludgy
+			}
+			
+			for(int i=0; i < 512; i++)
+			{
+				currentByte = TransferSdByte(DUMMY_BYTE);
+     5b6:	8f ef       	ldi	r24, 0xFF	; 255
+     5b8:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     5bc:	80 93 16 01 	sts	0x0116, r24
+				WriteRAM(currentAddress, currentByte);
+     5c0:	e0 90 17 01 	lds	r14, 0x0117
+     5c4:	f0 90 18 01 	lds	r15, 0x0118
+     5c8:	00 91 19 01 	lds	r16, 0x0119
+     5cc:	10 91 1a 01 	lds	r17, 0x011A
+	return temp;
+}
+
+static void WriteRAM(unsigned long address, unsigned char value)
+{
+	LATCH_DDR=0xFF;						// Data bus to output -- we never need to read the RAM in this version of the ISR.
+     5d0:	9f ef       	ldi	r25, 0xFF	; 255
+     5d2:	94 b9       	out	0x04, r25	; 4
+	
+	LATCH_PORT=(address);	// Put the LSB of the address on the latch.
+     5d4:	e5 b8       	out	0x05, r14	; 5
+	PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
+     5d6:	13 9a       	sbi	0x02, 3	; 2
+	PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
+     5d8:	13 98       	cbi	0x02, 3	; 2
+	
+	LATCH_PORT=((address>>8));	// Put the middle byte of the address on the latch.
+     5da:	55 27       	eor	r21, r21
+     5dc:	41 2f       	mov	r20, r17
+     5de:	30 2f       	mov	r19, r16
+     5e0:	2f 2d       	mov	r18, r15
+     5e2:	25 b9       	out	0x05, r18	; 5
+	PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
+     5e4:	14 9a       	sbi	0x02, 4	; 2
+	PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
+     5e6:	14 98       	cbi	0x02, 4	; 2
+	
+	PORTC=(0x88|((address>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+     5e8:	98 01       	movw	r18, r16
+     5ea:	44 27       	eor	r20, r20
+     5ec:	55 27       	eor	r21, r21
+     5ee:	27 70       	andi	r18, 0x07	; 7
+     5f0:	28 68       	ori	r18, 0x88	; 136
+     5f2:	28 b9       	out	0x08, r18	; 8
+	
+	LATCH_PORT=value;				// Put the data to write on the RAM's input port
+     5f4:	85 b9       	out	0x05, r24	; 5
+	
+	// Finish writing to RAM.
+	PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
+     5f6:	11 98       	cbi	0x02, 1	; 2
+	PORTA|=(Om_RAM_WE);					// Disbale writes.
+     5f8:	11 9a       	sbi	0x02, 1	; 2
+			
+			for(int i=0; i < 512; i++)
+			{
+				currentByte = TransferSdByte(DUMMY_BYTE);
+				WriteRAM(currentAddress, currentByte);
+				currentAddress++;
+     5fa:	08 94       	sec
+     5fc:	e1 1c       	adc	r14, r1
+     5fe:	f1 1c       	adc	r15, r1
+     600:	01 1d       	adc	r16, r1
+     602:	11 1d       	adc	r17, r1
+     604:	e0 92 17 01 	sts	0x0117, r14
+     608:	f0 92 18 01 	sts	0x0118, r15
+     60c:	00 93 19 01 	sts	0x0119, r16
+     610:	10 93 1a 01 	sts	0x011A, r17
+			while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+			{
+				HandleSoftclock();	// Kludgy
+			}
+			
+			for(int i=0; i < 512; i++)
+     614:	21 96       	adiw	r28, 0x01	; 1
+     616:	82 e0       	ldi	r24, 0x02	; 2
+     618:	c0 30       	cpi	r28, 0x00	; 0
+     61a:	d8 07       	cpc	r29, r24
+     61c:	61 f6       	brne	.-104    	; 0x5b6 <main+0x184>
+			{
+				currentByte = TransferSdByte(DUMMY_BYTE);
+				WriteRAM(currentAddress, currentByte);
+				currentAddress++;
+			}
+			TransferSdByte(DUMMY_BYTE);		// Eat a couple of CRC bytes
+     61e:	8f ef       	ldi	r24, 0xFF	; 255
+     620:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+			TransferSdByte(DUMMY_BYTE);
+     624:	8f ef       	ldi	r24, 0xFF	; 255
+     626:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+			
+			WriteLedLatch(blockNum / 8);	// Show progress
+     62a:	03 e0       	ldi	r16, 0x03	; 3
+     62c:	95 94       	asr	r9
+     62e:	87 94       	ror	r8
+     630:	0a 95       	dec	r16
+     632:	e1 f7       	brne	.-8      	; 0x62c <main+0x1fa>
+     634:	88 2d       	mov	r24, r8
+     636:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+     63a:	03 c0       	rjmp	.+6      	; 0x642 <main+0x210>
+		}
+		else 
+		{
+			ShowFailure(0x03);
+     63c:	83 e0       	ldi	r24, 0x03	; 3
+     63e:	0e 94 04 02 	call	0x408	; 0x408 <ShowFailure>
+		}
+		
+		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+     642:	80 91 c8 00 	lds	r24, 0x00C8
+     646:	86 ff       	sbrs	r24, 6
+     648:	fc cf       	rjmp	.-8      	; 0x642 <main+0x210>
+			;
+		
+		EndSdTransfer();				// Bring CS high
+     64a:	0e 94 a6 07 	call	0xf4c	; 0xf4c <EndSdTransfer>
+     64e:	08 94       	sec
+     650:	a1 1c       	adc	r10, r1
+     652:	b1 1c       	adc	r11, r1
+     654:	c1 1c       	adc	r12, r1
+     656:	d1 1c       	adc	r13, r1
+	if(SdHandshake() == false)
+	{
+		ShowFailure(0x55);	// Branch off here and never come back if we don't have an SD card
+	}
+	
+	for(int blockNum = 0; blockNum < (8*128); blockNum++)	// 8 blocks * 128 samples * 512B = 512KB 
+     658:	80 e0       	ldi	r24, 0x00	; 0
+     65a:	a8 16       	cp	r10, r24
+     65c:	84 e0       	ldi	r24, 0x04	; 4
+     65e:	b8 06       	cpc	r11, r24
+     660:	80 e0       	ldi	r24, 0x00	; 0
+     662:	c8 06       	cpc	r12, r24
+     664:	80 e0       	ldi	r24, 0x00	; 0
+     666:	d8 06       	cpc	r13, r24
+     668:	09 f0       	breq	.+2      	; 0x66c <main+0x23a>
+     66a:	87 cf       	rjmp	.-242    	; 0x57a <main+0x148>
+	
+	// BULLSHIT LENGTH CALCULATION - stored as 4-byte values on the block immediately after the 512KB sample data
+	static unsigned long
+		charToInt[4];
+
+	StartSdTransfer();
+     66c:	0e 94 a8 07 	call	0xf50	; 0xf50 <StartSdTransfer>
+	
+	if(SdBeginSingleBlockRead(1024) == true)
+     670:	60 e0       	ldi	r22, 0x00	; 0
+     672:	74 e0       	ldi	r23, 0x04	; 4
+     674:	80 e0       	ldi	r24, 0x00	; 0
+     676:	90 e0       	ldi	r25, 0x00	; 0
+     678:	0e 94 e5 08 	call	0x11ca	; 0x11ca <SdBeginSingleBlockRead>
+     67c:	81 30       	cpi	r24, 0x01	; 1
+     67e:	09 f0       	breq	.+2      	; 0x682 <main+0x250>
+     680:	92 c0       	rjmp	.+292    	; 0x7a6 <main+0x374>
+	{
+		SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+     682:	83 e0       	ldi	r24, 0x03	; 3
+     684:	6a e7       	ldi	r22, 0x7A	; 122
+     686:	70 e0       	ldi	r23, 0x00	; 0
+     688:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+     68c:	02 c0       	rjmp	.+4      	; 0x692 <main+0x260>
+		
+		while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+		{
+			HandleSoftclock();	// Kludgy
+     68e:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+	
+	if(SdBeginSingleBlockRead(1024) == true)
+	{
+		SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+		
+		while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+     692:	83 e0       	ldi	r24, 0x03	; 3
+     694:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+     698:	88 23       	and	r24, r24
+     69a:	29 f4       	brne	.+10     	; 0x6a6 <main+0x274>
+     69c:	8f ef       	ldi	r24, 0xFF	; 255
+     69e:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     6a2:	8e 3f       	cpi	r24, 0xFE	; 254
+     6a4:	a1 f7       	brne	.-24     	; 0x68e <main+0x25c>
+     6a6:	dd 24       	eor	r13, r13
+		
+		
+		for(unsigned char j=0; j < 128; j++)
+		{
+			
+			charToInt[0] = TransferSdByte(DUMMY_BYTE);
+     6a8:	8f ef       	ldi	r24, 0xFF	; 255
+     6aa:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     6ae:	90 e0       	ldi	r25, 0x00	; 0
+     6b0:	a0 e0       	ldi	r26, 0x00	; 0
+     6b2:	b0 e0       	ldi	r27, 0x00	; 0
+     6b4:	80 93 06 01 	sts	0x0106, r24
+     6b8:	90 93 07 01 	sts	0x0107, r25
+     6bc:	a0 93 08 01 	sts	0x0108, r26
+     6c0:	b0 93 09 01 	sts	0x0109, r27
+			charToInt[1] = TransferSdByte(DUMMY_BYTE);
+     6c4:	8f ef       	ldi	r24, 0xFF	; 255
+     6c6:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     6ca:	90 e0       	ldi	r25, 0x00	; 0
+     6cc:	a0 e0       	ldi	r26, 0x00	; 0
+     6ce:	b0 e0       	ldi	r27, 0x00	; 0
+     6d0:	80 93 0a 01 	sts	0x010A, r24
+     6d4:	90 93 0b 01 	sts	0x010B, r25
+     6d8:	a0 93 0c 01 	sts	0x010C, r26
+     6dc:	b0 93 0d 01 	sts	0x010D, r27
+			charToInt[2] = TransferSdByte(DUMMY_BYTE);
+     6e0:	8f ef       	ldi	r24, 0xFF	; 255
+     6e2:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     6e6:	90 e0       	ldi	r25, 0x00	; 0
+     6e8:	a0 e0       	ldi	r26, 0x00	; 0
+     6ea:	b0 e0       	ldi	r27, 0x00	; 0
+     6ec:	80 93 0e 01 	sts	0x010E, r24
+     6f0:	90 93 0f 01 	sts	0x010F, r25
+     6f4:	a0 93 10 01 	sts	0x0110, r26
+     6f8:	b0 93 11 01 	sts	0x0111, r27
+			charToInt[3] = TransferSdByte(DUMMY_BYTE);
+     6fc:	8f ef       	ldi	r24, 0xFF	; 255
+     6fe:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     702:	90 e0       	ldi	r25, 0x00	; 0
+     704:	a0 e0       	ldi	r26, 0x00	; 0
+     706:	b0 e0       	ldi	r27, 0x00	; 0
+     708:	80 93 12 01 	sts	0x0112, r24
+     70c:	90 93 13 01 	sts	0x0113, r25
+     710:	a0 93 14 01 	sts	0x0114, r26
+     714:	b0 93 15 01 	sts	0x0115, r27
+			
+			sampleLength[j] = (charToInt[3] << 24) | (charToInt[2] << 16) | (charToInt[1] << 8) | (charToInt[0]);	// There might be a function to do this - whatever.
+     718:	ed 2d       	mov	r30, r13
+     71a:	f0 e0       	ldi	r31, 0x00	; 0
+     71c:	ee 0f       	add	r30, r30
+     71e:	ff 1f       	adc	r31, r31
+     720:	ee 0f       	add	r30, r30
+     722:	ff 1f       	adc	r31, r31
+     724:	ea 5d       	subi	r30, 0xDA	; 218
+     726:	fe 4f       	sbci	r31, 0xFE	; 254
+     728:	e0 90 0e 01 	lds	r14, 0x010E
+     72c:	f0 90 0f 01 	lds	r15, 0x010F
+     730:	00 91 10 01 	lds	r16, 0x0110
+     734:	10 91 11 01 	lds	r17, 0x0111
+     738:	87 01       	movw	r16, r14
+     73a:	ff 24       	eor	r15, r15
+     73c:	ee 24       	eor	r14, r14
+     73e:	20 91 0a 01 	lds	r18, 0x010A
+     742:	30 91 0b 01 	lds	r19, 0x010B
+     746:	40 91 0c 01 	lds	r20, 0x010C
+     74a:	50 91 0d 01 	lds	r21, 0x010D
+     74e:	54 2f       	mov	r21, r20
+     750:	43 2f       	mov	r20, r19
+     752:	32 2f       	mov	r19, r18
+     754:	22 27       	eor	r18, r18
+     756:	e2 2a       	or	r14, r18
+     758:	f3 2a       	or	r15, r19
+     75a:	04 2b       	or	r16, r20
+     75c:	15 2b       	or	r17, r21
+     75e:	20 91 06 01 	lds	r18, 0x0106
+     762:	30 91 07 01 	lds	r19, 0x0107
+     766:	40 91 08 01 	lds	r20, 0x0108
+     76a:	50 91 09 01 	lds	r21, 0x0109
+     76e:	e2 2a       	or	r14, r18
+     770:	f3 2a       	or	r15, r19
+     772:	04 2b       	or	r16, r20
+     774:	15 2b       	or	r17, r21
+     776:	b8 2f       	mov	r27, r24
+     778:	aa 27       	eor	r26, r26
+     77a:	99 27       	eor	r25, r25
+     77c:	88 27       	eor	r24, r24
+     77e:	e8 2a       	or	r14, r24
+     780:	f9 2a       	or	r15, r25
+     782:	0a 2b       	or	r16, r26
+     784:	1b 2b       	or	r17, r27
+     786:	e0 82       	st	Z, r14
+     788:	f1 82       	std	Z+1, r15	; 0x01
+     78a:	02 83       	std	Z+2, r16	; 0x02
+     78c:	13 83       	std	Z+3, r17	; 0x03
+		{
+			HandleSoftclock();	// Kludgy
+		}
+		
+		
+		for(unsigned char j=0; j < 128; j++)
+     78e:	d3 94       	inc	r13
+     790:	80 e8       	ldi	r24, 0x80	; 128
+     792:	d8 16       	cp	r13, r24
+     794:	09 f0       	breq	.+2      	; 0x798 <main+0x366>
+     796:	88 cf       	rjmp	.-240    	; 0x6a8 <main+0x276>
+			
+			sampleLength[j] = (charToInt[3] << 24) | (charToInt[2] << 16) | (charToInt[1] << 8) | (charToInt[0]);	// There might be a function to do this - whatever.
+			//sampleLength[j] = 0x1000;	// Debug fixed length
+			
+		}
+		TransferSdByte(DUMMY_BYTE);		// Eat a couple of CRC bytes
+     798:	8f ef       	ldi	r24, 0xFF	; 255
+     79a:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+		TransferSdByte(DUMMY_BYTE);
+     79e:	8f ef       	ldi	r24, 0xFF	; 255
+     7a0:	0e 94 ab 07 	call	0xf56	; 0xf56 <TransferSdByte>
+     7a4:	03 c0       	rjmp	.+6      	; 0x7ac <main+0x37a>
+	}
+	else 
+	{
+		ShowFailure(0x03);
+     7a6:	83 e0       	ldi	r24, 0x03	; 3
+     7a8:	0e 94 04 02 	call	0x408	; 0x408 <ShowFailure>
+	}
+	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+     7ac:	80 91 c8 00 	lds	r24, 0x00C8
+     7b0:	86 ff       	sbrs	r24, 6
+     7b2:	fc cf       	rjmp	.-8      	; 0x7ac <main+0x37a>
+		;
+		
+	EndSdTransfer();				// Bring CS high
+     7b4:	0e 94 a6 07 	call	0xf4c	; 0xf4c <EndSdTransfer>
+	
+
+	UnInitSdInterface();
+     7b8:	0e 94 81 07 	call	0xf02	; 0xf02 <UnInitSdInterface>
+	WriteLedLatch(0x01);
+     7bc:	81 e0       	ldi	r24, 0x01	; 1
+     7be:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+	SDtoRAM();
+	
+	//ClearRAM();
+	//PopulateRAM();			// Temporary really - take some variables and expand them to RAM
+	
+	midiChannelNumberA = 0;
+     7c2:	10 92 c2 03 	sts	0x03C2, r1
+	midiChannelNumberB = 9;
+     7c6:	89 e0       	ldi	r24, 0x09	; 9
+     7c8:	80 93 db 03 	sts	0x03DB, r24
+	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
+     7cc:	78 94       	sei
+	if(CheckTimer(TIMER_DEBOUNCE))	// Time to read switches?
+	{
+		// Pause interrupts, monkey with datalatch, get switch data, resume interrupts.
+		sreg=SREG;
+		cli();						// Store sreg, pause interrupts.
+		LATCH_PORT=0xFF;			// @@@ Pullups here seem to make the bus turn around less of a mess.
+     7ce:	1f ef       	ldi	r17, 0xFF	; 255
+		
+		if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_ON)		// Note on.
+		{
+			WriteLedLatch(currentMidiMessage.dataByteOne);
+			PlaySample(currentMidiMessage.dataByteOne);					// Playsample sets isPlaying flag LAST to prime it, avoids any problems with the interrupt jumping in the middle of a load
+			currentMidiMessage.messageType = IGNORE_ME;					// Crumby way to operate especially with all the information available from midi.c - but only look for a NOTE_ON to be simple (drumkit)
+     7d0:	09 e0       	ldi	r16, 0x09	; 9
+		setMode;
+	
+	
+	while(1)
+	{
+		HandleSoftclock();
+     7d2:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+	static unsigned char
+		lastKeyState;
+	unsigned char
+		sreg;
+
+	if(CheckTimer(TIMER_DEBOUNCE))	// Time to read switches?
+     7d6:	81 e0       	ldi	r24, 0x01	; 1
+     7d8:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+     7dc:	88 23       	and	r24, r24
+     7de:	d9 f0       	breq	.+54     	; 0x816 <main+0x3e4>
+	{
+		// Pause interrupts, monkey with datalatch, get switch data, resume interrupts.
+		sreg=SREG;
+     7e0:	9f b7       	in	r25, 0x3f	; 63
+		cli();						// Store sreg, pause interrupts.
+     7e2:	f8 94       	cli
+		LATCH_PORT=0xFF;			// @@@ Pullups here seem to make the bus turn around less of a mess.
+     7e4:	15 b9       	out	0x05, r17	; 5
+		LATCH_DDR=0x00;				// Turn the data bus around (AVR's data port to inputs)
+     7e6:	14 b8       	out	0x04, r1	; 4
+		PORTC&=~Om_SWITCH_LA;		// Enable switch latch outputs (OE Low)
+     7e8:	43 98       	cbi	0x08, 3	; 8
+		asm volatile("nop"::);		// Needed for bus turnaround time (2 nops)
+     7ea:	00 00       	nop
+		asm volatile("nop"::);
+     7ec:	00 00       	nop
+		keyState=~LATCH_INPUT;		// Grab new keystate and invert so that pressed keys are 1s
+     7ee:	83 b1       	in	r24, 0x03	; 3
+     7f0:	80 95       	com	r24
+     7f2:	80 93 21 01 	sts	0x0121, r24
+		PORTC|=Om_SWITCH_LA;		// Tristate switch latch outputs (OE high)
+     7f6:	43 9a       	sbi	0x08, 3	; 8
+		LATCH_DDR=0xFF;				// Turn the data bus rightside up (AVR gots the bus)
+     7f8:	14 b9       	out	0x04, r17	; 4
+		SREG=sreg;					// Stop tying up interrupts		
+     7fa:	9f bf       	out	0x3f, r25	; 63
+
+		if(!(PINC&Im_CARD_DETECT))	// Handle SD card switch (has a real hardware pin)
+     7fc:	35 99       	sbic	0x06, 5	; 6
+     7fe:	04 c0       	rjmp	.+8      	; 0x808 <main+0x3d6>
+		{
+			cardDetect=true;
+     800:	81 e0       	ldi	r24, 0x01	; 1
+     802:	80 93 25 01 	sts	0x0125, r24
+     806:	02 c0       	rjmp	.+4      	; 0x80c <main+0x3da>
+		}
+		else
+		{
+			cardDetect=false;
+     808:	10 92 25 01 	sts	0x0125, r1
+		}
+
+		SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Reset timer (allow time for bus to turn around)		
+     80c:	81 e0       	ldi	r24, 0x01	; 1
+     80e:	66 e2       	ldi	r22, 0x26	; 38
+     810:	70 e0       	ldi	r23, 0x00	; 0
+     812:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+	}
+
+	newKeys=((keyState^lastKeyState)&(keyState));		// Flag the keys which have been pressed since the last test.
+     816:	90 91 21 01 	lds	r25, 0x0121
+     81a:	80 91 1b 01 	lds	r24, 0x011B
+     81e:	80 95       	com	r24
+     820:	89 23       	and	r24, r25
+     822:	80 93 22 01 	sts	0x0122, r24
+	lastKeyState=keyState;								// And store this keystate as old news.
+     826:	90 93 1b 01 	sts	0x011B, r25
+	static unsigned char
+	lastEncoderState=0;
+	static unsigned int
+	lastEncTime=0;
+	
+	if(systemTicks!=lastEncTime)		// Read encoder once every system tick (around 0.8 mSecs)
+     82a:	20 91 c0 03 	lds	r18, 0x03C0
+     82e:	30 91 c1 03 	lds	r19, 0x03C1
+     832:	80 91 1c 01 	lds	r24, 0x011C
+     836:	90 91 1d 01 	lds	r25, 0x011D
+     83a:	28 17       	cp	r18, r24
+     83c:	39 07       	cpc	r19, r25
+     83e:	b1 f1       	breq	.+108    	; 0x8ac <main+0x47a>
+	{
+		lastEncTime=systemTicks;					// update last read time.
+     840:	80 91 c0 03 	lds	r24, 0x03C0
+     844:	90 91 c1 03 	lds	r25, 0x03C1
+     848:	90 93 1d 01 	sts	0x011D, r25
+     84c:	80 93 1c 01 	sts	0x011C, r24
+		encoderState=(PINA&Im_ENCODER_PINS);		// Read encoder state from pins directly.
+     850:	90 b1       	in	r25, 0x00	; 0
+     852:	90 7c       	andi	r25, 0xC0	; 192
+     854:	90 93 23 01 	sts	0x0123, r25
+		
+		if(encoderState!=lastEncoderState)	// Has the encoder value changed?  If so, update the value if the change looks valid.
+     858:	80 91 1e 01 	lds	r24, 0x011E
+     85c:	98 17       	cp	r25, r24
+     85e:	31 f1       	breq	.+76     	; 0x8ac <main+0x47a>
+		{
+			if(encoderState==ENC_POS_A)
+     860:	99 23       	and	r25, r25
+     862:	29 f4       	brne	.+10     	; 0x86e <main+0x43c>
+			{
+				if(lastEncoderState==ENC_POS_D)
+     864:	80 38       	cpi	r24, 0x80	; 128
+     866:	a9 f0       	breq	.+42     	; 0x892 <main+0x460>
+				{
+					//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_B)
+     868:	80 34       	cpi	r24, 0x40	; 64
+     86a:	f1 f4       	brne	.+60     	; 0x8a8 <main+0x476>
+     86c:	18 c0       	rjmp	.+48     	; 0x89e <main+0x46c>
+				{
+					//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_B)
+     86e:	90 34       	cpi	r25, 0x40	; 64
+     870:	29 f4       	brne	.+10     	; 0x87c <main+0x44a>
+			{
+				if(lastEncoderState==ENC_POS_A)
+     872:	88 23       	and	r24, r24
+     874:	71 f0       	breq	.+28     	; 0x892 <main+0x460>
+				{
+					//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_C)
+     876:	80 3c       	cpi	r24, 0xC0	; 192
+     878:	b9 f4       	brne	.+46     	; 0x8a8 <main+0x476>
+     87a:	11 c0       	rjmp	.+34     	; 0x89e <main+0x46c>
+				{
+					//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_C)
+     87c:	90 3c       	cpi	r25, 0xC0	; 192
+     87e:	29 f4       	brne	.+10     	; 0x88a <main+0x458>
+			{
+				if(lastEncoderState==ENC_POS_B)
+     880:	80 34       	cpi	r24, 0x40	; 64
+     882:	39 f0       	breq	.+14     	; 0x892 <main+0x460>
+				{
+					//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_D)
+     884:	80 38       	cpi	r24, 0x80	; 128
+     886:	81 f4       	brne	.+32     	; 0x8a8 <main+0x476>
+     888:	0a c0       	rjmp	.+20     	; 0x89e <main+0x46c>
+				{
+					//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_D)
+     88a:	90 38       	cpi	r25, 0x80	; 128
+     88c:	69 f4       	brne	.+26     	; 0x8a8 <main+0x476>
+			{
+				if(lastEncoderState==ENC_POS_C)
+     88e:	80 3c       	cpi	r24, 0xC0	; 192
+     890:	21 f4       	brne	.+8      	; 0x89a <main+0x468>
+				{
+					//					encoderValue++;
+					encoderValue--;
+     892:	80 91 24 01 	lds	r24, 0x0124
+     896:	81 50       	subi	r24, 0x01	; 1
+     898:	05 c0       	rjmp	.+10     	; 0x8a4 <main+0x472>
+				}
+				else if(lastEncoderState==ENC_POS_A)
+     89a:	88 23       	and	r24, r24
+     89c:	29 f4       	brne	.+10     	; 0x8a8 <main+0x476>
+				{
+					//					encoderValue--;
+					encoderValue++;
+     89e:	80 91 24 01 	lds	r24, 0x0124
+     8a2:	8f 5f       	subi	r24, 0xFF	; 255
+     8a4:	80 93 24 01 	sts	0x0124, r24
+				}
+			}		
+			
+			lastEncoderState=encoderState;		// Keep this state around to evaluate the next one.
+     8a8:	90 93 1e 01 	sts	0x011E, r25
+	{
+		HandleSoftclock();
+		HandleSwitches();
+		HandleEncoder();
+		
+		if(oldEncoderState != encoderValue)
+     8ac:	90 91 24 01 	lds	r25, 0x0124
+     8b0:	80 91 05 01 	lds	r24, 0x0105
+     8b4:	89 17       	cp	r24, r25
+     8b6:	61 f0       	breq	.+24     	; 0x8d0 <main+0x49e>
+		{
+			oldEncoderState = encoderValue;
+     8b8:	90 93 05 01 	sts	0x0105, r25
+			WriteLedLatch(encoderValue);
+     8bc:	89 2f       	mov	r24, r25
+     8be:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			PlaySample(encoderValue);
+     8c2:	60 91 24 01 	lds	r22, 0x0124
+     8c6:	70 e0       	ldi	r23, 0x00	; 0
+     8c8:	80 e0       	ldi	r24, 0x00	; 0
+     8ca:	90 e0       	ldi	r25, 0x00	; 0
+     8cc:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+		}
+		
+		// Wasteful code for these switches - just here for a demo - MIDI is where it's at
+		if(newKeys&Im_SWITCH_0)
+     8d0:	80 91 22 01 	lds	r24, 0x0122
+     8d4:	80 ff       	sbrs	r24, 0
+     8d6:	14 c0       	rjmp	.+40     	; 0x900 <main+0x4ce>
+		{
+			if(setMode)							// If you hit the 8th switch
+     8d8:	80 91 04 01 	lds	r24, 0x0104
+     8dc:	88 23       	and	r24, r24
+     8de:	21 f0       	breq	.+8      	; 0x8e8 <main+0x4b6>
+			{
+				sampleAssignment[0] = encoderValue;	// Take on that value
+     8e0:	80 91 24 01 	lds	r24, 0x0124
+     8e4:	80 93 26 03 	sts	0x0326, r24
+			}
+			PlaySample(sampleAssignment[0]);	// Preview sound that has just been written
+     8e8:	60 91 26 03 	lds	r22, 0x0326
+     8ec:	70 e0       	ldi	r23, 0x00	; 0
+     8ee:	80 e0       	ldi	r24, 0x00	; 0
+     8f0:	90 e0       	ldi	r25, 0x00	; 0
+     8f2:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+			WriteLedLatch(0x01);				// Indicate bank slot
+     8f6:	81 e0       	ldi	r24, 0x01	; 1
+     8f8:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			setMode = 0;					    // Clear set mode and go back to playing on press
+     8fc:	10 92 04 01 	sts	0x0104, r1
+		}
+		
+		// Copy pasta v
+		if(newKeys&Im_SWITCH_1)
+     900:	80 91 22 01 	lds	r24, 0x0122
+     904:	81 ff       	sbrs	r24, 1
+     906:	14 c0       	rjmp	.+40     	; 0x930 <main+0x4fe>
+		{
+			if(setMode)
+     908:	80 91 04 01 	lds	r24, 0x0104
+     90c:	88 23       	and	r24, r24
+     90e:	21 f0       	breq	.+8      	; 0x918 <main+0x4e6>
+			{
+				sampleAssignment[1] = encoderValue;
+     910:	80 91 24 01 	lds	r24, 0x0124
+     914:	80 93 27 03 	sts	0x0327, r24
+			}
+			PlaySample(sampleAssignment[1]);
+     918:	60 91 27 03 	lds	r22, 0x0327
+     91c:	70 e0       	ldi	r23, 0x00	; 0
+     91e:	80 e0       	ldi	r24, 0x00	; 0
+     920:	90 e0       	ldi	r25, 0x00	; 0
+     922:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+			WriteLedLatch(0x02);
+     926:	82 e0       	ldi	r24, 0x02	; 2
+     928:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			setMode = 0;
+     92c:	10 92 04 01 	sts	0x0104, r1
+		}
+		
+		if(newKeys&Im_SWITCH_2)
+     930:	80 91 22 01 	lds	r24, 0x0122
+     934:	82 ff       	sbrs	r24, 2
+     936:	14 c0       	rjmp	.+40     	; 0x960 <main+0x52e>
+		{
+			if(setMode)
+     938:	80 91 04 01 	lds	r24, 0x0104
+     93c:	88 23       	and	r24, r24
+     93e:	21 f0       	breq	.+8      	; 0x948 <main+0x516>
+			{
+				sampleAssignment[2] = encoderValue;
+     940:	80 91 24 01 	lds	r24, 0x0124
+     944:	80 93 28 03 	sts	0x0328, r24
+			}
+			PlaySample(sampleAssignment[2]);
+     948:	60 91 28 03 	lds	r22, 0x0328
+     94c:	70 e0       	ldi	r23, 0x00	; 0
+     94e:	80 e0       	ldi	r24, 0x00	; 0
+     950:	90 e0       	ldi	r25, 0x00	; 0
+     952:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+			WriteLedLatch(0x04);
+     956:	84 e0       	ldi	r24, 0x04	; 4
+     958:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			setMode = 0;
+     95c:	10 92 04 01 	sts	0x0104, r1
+		}
+
+		if(newKeys&Im_SWITCH_3)
+     960:	80 91 22 01 	lds	r24, 0x0122
+     964:	83 ff       	sbrs	r24, 3
+     966:	14 c0       	rjmp	.+40     	; 0x990 <main+0x55e>
+		{
+			if(setMode)
+     968:	80 91 04 01 	lds	r24, 0x0104
+     96c:	88 23       	and	r24, r24
+     96e:	21 f0       	breq	.+8      	; 0x978 <main+0x546>
+			{
+				sampleAssignment[3] = encoderValue;
+     970:	80 91 24 01 	lds	r24, 0x0124
+     974:	80 93 29 03 	sts	0x0329, r24
+			}
+			PlaySample(sampleAssignment[3]);
+     978:	60 91 29 03 	lds	r22, 0x0329
+     97c:	70 e0       	ldi	r23, 0x00	; 0
+     97e:	80 e0       	ldi	r24, 0x00	; 0
+     980:	90 e0       	ldi	r25, 0x00	; 0
+     982:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+			WriteLedLatch(0x08);
+     986:	88 e0       	ldi	r24, 0x08	; 8
+     988:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			setMode = 0;
+     98c:	10 92 04 01 	sts	0x0104, r1
+		}
+		
+		// Set mode assigns samples to the switch
+		if(newKeys&Im_SWITCH_7)
+     990:	80 91 22 01 	lds	r24, 0x0122
+     994:	87 ff       	sbrs	r24, 7
+     996:	06 c0       	rjmp	.+12     	; 0x9a4 <main+0x572>
+		{
+			setMode = 1;
+     998:	81 e0       	ldi	r24, 0x01	; 1
+     99a:	80 93 04 01 	sts	0x0104, r24
+			WriteLedLatch(0x80);
+     99e:	80 e8       	ldi	r24, 0x80	; 128
+     9a0:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+		}
+		
+		
+		if(Uart0GotByte())		// Handle receiving midi messages: Parse any bytes coming in over the UART into MIDI messages we can use.
+     9a4:	0e 94 0d 05 	call	0xa1a	; 0xa1a <Uart0GotByte>
+     9a8:	88 23       	and	r24, r24
+     9aa:	21 f0       	breq	.+8      	; 0x9b4 <main+0x582>
+		{
+			HandleIncomingMidiByte(Uart0GetByte());		// Deal with the UART message and put it in the incoming MIDI FIFO if relevant.
+     9ac:	0e 94 13 05 	call	0xa26	; 0xa26 <Uart0GetByte>
+     9b0:	0e 94 f3 05 	call	0xbe6	; 0xbe6 <HandleIncomingMidiByte>
+		}
+		
+		static MIDI_MESSAGE
+			currentMidiMessage;				// Used to point to incoming midi messages.
+		
+		GetMidiMessageFromIncomingFifo(&currentMidiMessage);
+     9b4:	80 e0       	ldi	r24, 0x00	; 0
+     9b6:	91 e0       	ldi	r25, 0x01	; 1
+     9b8:	0e 94 61 05 	call	0xac2	; 0xac2 <GetMidiMessageFromIncomingFifo>
+		
+		if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_ON)		// Note on.
+     9bc:	80 91 01 01 	lds	r24, 0x0101
+     9c0:	81 30       	cpi	r24, 0x01	; 1
+     9c2:	09 f0       	breq	.+2      	; 0x9c6 <main+0x594>
+     9c4:	06 cf       	rjmp	.-500    	; 0x7d2 <main+0x3a0>
+		{
+			WriteLedLatch(currentMidiMessage.dataByteOne);
+     9c6:	80 91 02 01 	lds	r24, 0x0102
+     9ca:	0e 94 ee 01 	call	0x3dc	; 0x3dc <WriteLedLatch>
+			PlaySample(currentMidiMessage.dataByteOne);					// Playsample sets isPlaying flag LAST to prime it, avoids any problems with the interrupt jumping in the middle of a load
+     9ce:	60 91 02 01 	lds	r22, 0x0102
+     9d2:	70 e0       	ldi	r23, 0x00	; 0
+     9d4:	80 e0       	ldi	r24, 0x00	; 0
+     9d6:	90 e0       	ldi	r25, 0x00	; 0
+     9d8:	0e 94 52 00 	call	0xa4	; 0xa4 <PlaySample>
+			currentMidiMessage.messageType = IGNORE_ME;					// Crumby way to operate especially with all the information available from midi.c - but only look for a NOTE_ON to be simple (drumkit)
+     9dc:	00 93 01 01 	sts	0x0101, r16
+     9e0:	f8 ce       	rjmp	.-528    	; 0x7d2 <main+0x3a0>
+
+000009e2 <EepromWrite>:
+// NOTE:  Accepted lore is not to use eeprom address 0 since it's the most likely one to get buggered in a crash.
+
+#include "includes.h"
+
+void EepromWrite(unsigned int theAddress, unsigned char theData)
+{
+     9e2:	9c 01       	movw	r18, r24
+	unsigned char 
+		sreg;
+
+	while(EECR&(1<<EEPE))	// Spin until EEPROM is ready.
+     9e4:	f9 99       	sbic	0x1f, 1	; 31
+     9e6:	fe cf       	rjmp	.-4      	; 0x9e4 <EepromWrite+0x2>
+		;
+
+	sreg=SREG;	// Keep operations atomic (interrupts can mess up eeprom access)
+     9e8:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Stop interrupts.
+     9ea:	f8 94       	cli
+
+	EEAR=theAddress;
+     9ec:	32 bd       	out	0x22, r19	; 34
+     9ee:	21 bd       	out	0x21, r18	; 33
+	EEDR=theData;
+     9f0:	60 bd       	out	0x20, r22	; 32
+	EECR|=(1<<EEMPE);	// Start the write.
+     9f2:	fa 9a       	sbi	0x1f, 2	; 31
+	EECR|=(1<<EEPE);	// Second start-write command.
+     9f4:	f9 9a       	sbi	0x1f, 1	; 31
+
+	SREG=sreg;			// Restore interrupts.
+     9f6:	8f bf       	out	0x3f, r24	; 63
+	EEAR=0;				// Point the address away from the registers we care about.
+     9f8:	12 bc       	out	0x22, r1	; 34
+     9fa:	11 bc       	out	0x21, r1	; 33
+}
+     9fc:	08 95       	ret
+
+000009fe <EepromRead>:
+
+unsigned char EepromRead(unsigned char theAddress)
+{
+     9fe:	28 2f       	mov	r18, r24
+	unsigned char 
+		sreg;
+
+	while(EECR&(1<<EEPE))	// Spin until EEPROM is ready.
+     a00:	f9 99       	sbic	0x1f, 1	; 31
+     a02:	fe cf       	rjmp	.-4      	; 0xa00 <EepromRead+0x2>
+		;
+
+	sreg=SREG;	// Keep operations atomic (interrupts can mess up eeprom access)
+     a04:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Stop interrupts.
+     a06:	f8 94       	cli
+
+	EEAR=theAddress;
+     a08:	30 e0       	ldi	r19, 0x00	; 0
+     a0a:	32 bd       	out	0x22, r19	; 34
+     a0c:	21 bd       	out	0x21, r18	; 33
+	EECR|=(1<<EERE);	// Start reading.
+     a0e:	f8 9a       	sbi	0x1f, 0	; 31
+
+	SREG=sreg;			// Restore interrupts.
+     a10:	8f bf       	out	0x3f, r24	; 63
+	EEAR=0;				// Point the address away from the registers we care about.
+     a12:	12 bc       	out	0x22, r1	; 34
+     a14:	11 bc       	out	0x21, r1	; 33
+	
+	return(EEDR);		// Pass the data back from eeprom.
+     a16:	80 b5       	in	r24, 0x20	; 32
+}
+     a18:	08 95       	ret
+
+00000a1a <Uart0GotByte>:
+*/
+
+bool Uart0GotByte(void)
+// Returns true when there is unread data in the UART's receive buffer.
+{
+	if(UCSR0A&(1<<RXC0))	
+     a1a:	80 91 c0 00 	lds	r24, 0x00C0
+	}
+	else
+	{
+		return(false);
+	}
+}
+     a1e:	88 1f       	adc	r24, r24
+     a20:	88 27       	eor	r24, r24
+     a22:	88 1f       	adc	r24, r24
+     a24:	08 95       	ret
+
+00000a26 <Uart0GetByte>:
+*/
+
+unsigned char Uart0GetByte(void)
+// Gets the first byte in the UART's receive buffer.
+{
+	return(UDR0);		// Get one byte back from the receive buffer.  Note that there may be (one) more in the FIFO.
+     a26:	80 91 c6 00 	lds	r24, 0x00C6
+}
+     a2a:	08 95       	ret
+
+00000a2c <InitUart0>:
+void InitUart0(void)
+// This UART setup is for 31250 baud, 8 data bits, one stop bit, no parity, no flow control.
+// Interrupts are disabled.
+// I bet you could make this routine even smarter about configuring its own bits given just CPU frequency and baud...
+{
+	PRR&=~(1<<PRUSART0);					// Turn the USART power on.
+     a2c:	80 91 64 00 	lds	r24, 0x0064
+     a30:	8d 7f       	andi	r24, 0xFD	; 253
+     a32:	80 93 64 00 	sts	0x0064, r24
+	UCSR0A&=~(1<<U2X0);						// Sets the USART to "normal rate" mode. 
+     a36:	80 91 c0 00 	lds	r24, 0x00C0
+     a3a:	8d 7f       	andi	r24, 0xFD	; 253
+     a3c:	80 93 c0 00 	sts	0x00C0, r24
+//	UCSR0A|=(1<<U2X0);						// Sets the USART to "double rate". 
+	UCSR0B = ((1<<TXEN0)|(1<<RXEN0)); 		// Tx/Rx enable.  This overrides DDRs.  This turns interrupts off, too.
+     a40:	88 e1       	ldi	r24, 0x18	; 24
+     a42:	80 93 c1 00 	sts	0x00C1, r24
+//	UBRR0L = ((F_CPU / (16 * BAUD)) - 1);  	// Formula for baud rate setting when the UART isn't set to double rate.
+	UBRR0L = 39;  							// Value for normal rate 31.25k baud.
+     a46:	87 e2       	ldi	r24, 0x27	; 39
+     a48:	80 93 c4 00 	sts	0x00C4, r24
+//	UBRR0L=64;  							// Value for double rate 38.4k baud, 20MHz.
+	UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));		// No parity, one stop bit, 8 data bits.
+     a4c:	86 e0       	ldi	r24, 0x06	; 6
+     a4e:	80 93 c2 00 	sts	0x00C2, r24
+//	fdevopen(Uart0PutChar, NULL);
+
+	while(!(UCSR0A&(1<<UDRE0)))				// Waits until the transmit buffer is ready to move on.
+     a52:	80 91 c0 00 	lds	r24, 0x00C0
+     a56:	85 ff       	sbrs	r24, 5
+     a58:	fc cf       	rjmp	.-8      	; 0xa52 <InitUart0+0x26>
+*/
+
+bool Uart0GotByte(void)
+// Returns true when there is unread data in the UART's receive buffer.
+{
+	if(UCSR0A&(1<<RXC0))	
+     a5a:	80 91 c0 00 	lds	r24, 0x00C0
+     a5e:	87 ff       	sbrs	r24, 7
+     a60:	03 c0       	rjmp	.+6      	; 0xa68 <InitUart0+0x3c>
+*/
+
+unsigned char Uart0GetByte(void)
+// Gets the first byte in the UART's receive buffer.
+{
+	return(UDR0);		// Get one byte back from the receive buffer.  Note that there may be (one) more in the FIFO.
+     a62:	80 91 c6 00 	lds	r24, 0x00C6
+     a66:	f9 cf       	rjmp	.-14     	; 0xa5a <InitUart0+0x2e>
+     a68:	08 95       	ret
+
+00000a6a <SetTimer>:
+}
+*/
+void SetTimer(unsigned char timerNum, unsigned int ticks_to_wait)
+// Sets a software timer with an entry time and an amount of time before it expires.
+{
+	entryTime[timerNum]=systemTicks;
+     a6a:	e8 2f       	mov	r30, r24
+     a6c:	f0 e0       	ldi	r31, 0x00	; 0
+     a6e:	80 91 c0 03 	lds	r24, 0x03C0
+     a72:	90 91 c1 03 	lds	r25, 0x03C1
+     a76:	ee 0f       	add	r30, r30
+     a78:	ff 1f       	adc	r31, r31
+     a7a:	df 01       	movw	r26, r30
+     a7c:	a1 5a       	subi	r26, 0xA1	; 161
+     a7e:	bc 4f       	sbci	r27, 0xFC	; 252
+     a80:	8d 93       	st	X+, r24
+     a82:	9c 93       	st	X, r25
+	delayTime[timerNum]=ticks_to_wait;
+     a84:	e9 59       	subi	r30, 0x99	; 153
+     a86:	fc 4f       	sbci	r31, 0xFC	; 252
+     a88:	71 83       	std	Z+1, r23	; 0x01
+     a8a:	60 83       	st	Z, r22
+}
+     a8c:	08 95       	ret
+
+00000a8e <CheckTimer>:
+
+unsigned char CheckTimer(unsigned char timerNum)
+// If the current system time MINUS the entry time is greater than (or equal to) the amount of ticks we're supposed to wait, we've waited long enough.  Return true.
+// Ie, return true if the time is up, and false if it isn't.
+{	
+	if((systemTicks-entryTime[timerNum])>=delayTime[timerNum])
+     a8e:	20 91 c0 03 	lds	r18, 0x03C0
+     a92:	30 91 c1 03 	lds	r19, 0x03C1
+     a96:	e8 2f       	mov	r30, r24
+     a98:	f0 e0       	ldi	r31, 0x00	; 0
+     a9a:	40 e0       	ldi	r20, 0x00	; 0
+     a9c:	ee 0f       	add	r30, r30
+     a9e:	ff 1f       	adc	r31, r31
+     aa0:	df 01       	movw	r26, r30
+     aa2:	a1 5a       	subi	r26, 0xA1	; 161
+     aa4:	bc 4f       	sbci	r27, 0xFC	; 252
+     aa6:	8d 91       	ld	r24, X+
+     aa8:	9c 91       	ld	r25, X
+     aaa:	28 1b       	sub	r18, r24
+     aac:	39 0b       	sbc	r19, r25
+     aae:	e9 59       	subi	r30, 0x99	; 153
+     ab0:	fc 4f       	sbci	r31, 0xFC	; 252
+     ab2:	80 81       	ld	r24, Z
+     ab4:	91 81       	ldd	r25, Z+1	; 0x01
+     ab6:	28 17       	cp	r18, r24
+     ab8:	39 07       	cpc	r19, r25
+     aba:	08 f0       	brcs	.+2      	; 0xabe <CheckTimer+0x30>
+     abc:	41 e0       	ldi	r20, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+     abe:	84 2f       	mov	r24, r20
+     ac0:	08 95       	ret
+
+00000ac2 <GetMidiMessageFromIncomingFifo>:
+void GetMidiMessageFromIncomingFifo(MIDI_MESSAGE *theMessage)
+// Returns an entire 3-byte midi message if there are any in the fifo.
+// If there are no messages in the fifo, do nothing.
+// These "midi messages" have been formatted to something that makes sense to the sampler from the actual midi bytes by the input handler.
+// Wed Apr 15 15:36:49 CDT 2009 -- added channel number info to midi messages to support multi-timbrality.
+{
+     ac2:	cf 93       	push	r28
+     ac4:	df 93       	push	r29
+     ac6:	ec 01       	movw	r28, r24
+	if(midiMessagesInIncomingFifo>0)			// Any messages in the fifo?
+     ac8:	20 91 f4 03 	lds	r18, 0x03F4
+     acc:	22 23       	and	r18, r18
+     ace:	19 f1       	breq	.+70     	; 0xb16 <GetMidiMessageFromIncomingFifo+0x54>
+	{
+		(*theMessage).messageType=midiMessageIncomingFifo[midiIncomingFifoReadPointer].messageType;		// Get the message at the current read pointer.
+     ad0:	90 91 77 03 	lds	r25, 0x0377
+     ad4:	e9 2f       	mov	r30, r25
+     ad6:	f0 e0       	ldi	r31, 0x00	; 0
+     ad8:	ee 0f       	add	r30, r30
+     ada:	ff 1f       	adc	r31, r31
+     adc:	ee 0f       	add	r30, r30
+     ade:	ff 1f       	adc	r31, r31
+     ae0:	df 01       	movw	r26, r30
+     ae2:	ad 53       	subi	r26, 0x3D	; 61
+     ae4:	bc 4f       	sbci	r27, 0xFC	; 252
+     ae6:	11 96       	adiw	r26, 0x01	; 1
+     ae8:	8c 91       	ld	r24, X
+     aea:	11 97       	sbiw	r26, 0x01	; 1
+     aec:	89 83       	std	Y+1, r24	; 0x01
+		(*theMessage).dataByteOne=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteOne;
+     aee:	eb 53       	subi	r30, 0x3B	; 59
+     af0:	fc 4f       	sbci	r31, 0xFC	; 252
+     af2:	80 81       	ld	r24, Z
+     af4:	8a 83       	std	Y+2, r24	; 0x02
+		(*theMessage).dataByteTwo=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteTwo;	
+     af6:	13 96       	adiw	r26, 0x03	; 3
+     af8:	8c 91       	ld	r24, X
+     afa:	13 97       	sbiw	r26, 0x03	; 3
+     afc:	8b 83       	std	Y+3, r24	; 0x03
+		(*theMessage).channelNumber=midiMessageIncomingFifo[midiIncomingFifoReadPointer].channelNumber;	
+     afe:	8c 91       	ld	r24, X
+     b00:	88 83       	st	Y, r24
+
+		midiIncomingFifoReadPointer++;			// read from the next element next time
+     b02:	9f 5f       	subi	r25, 0xFF	; 255
+     b04:	90 93 77 03 	sts	0x0377, r25
+		if(midiIncomingFifoReadPointer>=MIDI_MESSAGE_INCOMING_FIFO_SIZE)	// handle wrapping at the end
+     b08:	96 30       	cpi	r25, 0x06	; 6
+     b0a:	10 f0       	brcs	.+4      	; 0xb10 <GetMidiMessageFromIncomingFifo+0x4e>
+		{
+			midiIncomingFifoReadPointer=0;
+     b0c:	10 92 77 03 	sts	0x0377, r1
+		}
+
+		midiMessagesInIncomingFifo--;		// One less message in the fifo.
+     b10:	21 50       	subi	r18, 0x01	; 1
+     b12:	20 93 f4 03 	sts	0x03F4, r18
+	}
+}
+     b16:	df 91       	pop	r29
+     b18:	cf 91       	pop	r28
+     b1a:	08 95       	ret
+
+00000b1c <PutMidiMessageInIncomingFifo>:
+
+static void PutMidiMessageInIncomingFifo(MIDI_MESSAGE *theMessage)
+// If there is room in the fifo, put a MIDI message into it.
+// If the fifo is full, don't do anything.
+{
+     b1c:	cf 93       	push	r28
+     b1e:	df 93       	push	r29
+     b20:	ec 01       	movw	r28, r24
+	if(midiMessagesInIncomingFifo<MIDI_MESSAGE_INCOMING_FIFO_SIZE)		// Have room in the fifo?
+     b22:	20 91 f4 03 	lds	r18, 0x03F4
+     b26:	26 30       	cpi	r18, 0x06	; 6
+     b28:	18 f5       	brcc	.+70     	; 0xb70 <PutMidiMessageInIncomingFifo+0x54>
+	{
+		midiMessageIncomingFifo[midiIncomingFifoWritePointer].messageType=(*theMessage).messageType;	// Transfer the contents of the pointer we've passed into this function to the fifo, at the write pointer.
+     b2a:	90 91 76 03 	lds	r25, 0x0376
+     b2e:	e9 2f       	mov	r30, r25
+     b30:	f0 e0       	ldi	r31, 0x00	; 0
+     b32:	ee 0f       	add	r30, r30
+     b34:	ff 1f       	adc	r31, r31
+     b36:	ee 0f       	add	r30, r30
+     b38:	ff 1f       	adc	r31, r31
+     b3a:	df 01       	movw	r26, r30
+     b3c:	ad 53       	subi	r26, 0x3D	; 61
+     b3e:	bc 4f       	sbci	r27, 0xFC	; 252
+     b40:	89 81       	ldd	r24, Y+1	; 0x01
+     b42:	11 96       	adiw	r26, 0x01	; 1
+     b44:	8c 93       	st	X, r24
+     b46:	11 97       	sbiw	r26, 0x01	; 1
+		midiMessageIncomingFifo[midiIncomingFifoWritePointer].dataByteOne=(*theMessage).dataByteOne;
+     b48:	eb 53       	subi	r30, 0x3B	; 59
+     b4a:	fc 4f       	sbci	r31, 0xFC	; 252
+     b4c:	8a 81       	ldd	r24, Y+2	; 0x02
+     b4e:	80 83       	st	Z, r24
+		midiMessageIncomingFifo[midiIncomingFifoWritePointer].dataByteTwo=(*theMessage).dataByteTwo;
+     b50:	8b 81       	ldd	r24, Y+3	; 0x03
+     b52:	13 96       	adiw	r26, 0x03	; 3
+     b54:	8c 93       	st	X, r24
+     b56:	13 97       	sbiw	r26, 0x03	; 3
+		midiMessageIncomingFifo[midiIncomingFifoWritePointer].channelNumber=(*theMessage).channelNumber;
+     b58:	88 81       	ld	r24, Y
+     b5a:	8c 93       	st	X, r24
+	
+		midiIncomingFifoWritePointer++;			// write to the next element next time
+     b5c:	9f 5f       	subi	r25, 0xFF	; 255
+     b5e:	90 93 76 03 	sts	0x0376, r25
+		if(midiIncomingFifoWritePointer>=MIDI_MESSAGE_INCOMING_FIFO_SIZE)	// handle wrapping at the end
+     b62:	96 30       	cpi	r25, 0x06	; 6
+     b64:	10 f0       	brcs	.+4      	; 0xb6a <PutMidiMessageInIncomingFifo+0x4e>
+		{
+			midiIncomingFifoWritePointer=0;
+     b66:	10 92 76 03 	sts	0x0376, r1
+		}
+		
+		midiMessagesInIncomingFifo++;								// One more message in the fifo.
+     b6a:	2f 5f       	subi	r18, 0xFF	; 255
+     b6c:	20 93 f4 03 	sts	0x03F4, r18
+	}
+}
+     b70:	df 91       	pop	r29
+     b72:	cf 91       	pop	r28
+     b74:	08 95       	ret
+
+00000b76 <PutMidiMessageInOutgoingFifo>:
+void PutMidiMessageInOutgoingFifo(unsigned char theBank, unsigned char theMessage, unsigned char theDataByteOne, unsigned char theDataByteTwo)
+// If there is room in the fifo, put a MIDI message into it.  Again, this is the sampler's idea of a midi message and must be interpreted by the midi output handler before it makes sense to real instruments.
+// The format for passing in variables is slightly different as well (we use variables and not a pointer, as this makes it easier to use in the sampler routines). 
+// If the fifo is full, don't do anything.
+{
+	if(midiMessagesInOutgoingFifo<MIDI_MESSAGE_OUTGOING_FIFO_SIZE)		// Have room in the fifo?
+     b76:	30 91 f5 03 	lds	r19, 0x03F5
+     b7a:	36 30       	cpi	r19, 0x06	; 6
+     b7c:	08 f5       	brcc	.+66     	; 0xbc0 <PutMidiMessageInOutgoingFifo+0x4a>
+	{
+		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].messageType=theMessage;
+     b7e:	90 91 79 03 	lds	r25, 0x0379
+     b82:	e9 2f       	mov	r30, r25
+     b84:	f0 e0       	ldi	r31, 0x00	; 0
+     b86:	ee 0f       	add	r30, r30
+     b88:	ff 1f       	adc	r31, r31
+     b8a:	ee 0f       	add	r30, r30
+     b8c:	ff 1f       	adc	r31, r31
+     b8e:	df 01       	movw	r26, r30
+     b90:	a4 52       	subi	r26, 0x24	; 36
+     b92:	bc 4f       	sbci	r27, 0xFC	; 252
+     b94:	11 96       	adiw	r26, 0x01	; 1
+     b96:	6c 93       	st	X, r22
+     b98:	11 97       	sbiw	r26, 0x01	; 1
+		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].dataByteOne=theDataByteOne;
+     b9a:	e2 52       	subi	r30, 0x22	; 34
+     b9c:	fc 4f       	sbci	r31, 0xFC	; 252
+     b9e:	40 83       	st	Z, r20
+		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].dataByteTwo=theDataByteTwo;
+     ba0:	13 96       	adiw	r26, 0x03	; 3
+     ba2:	2c 93       	st	X, r18
+     ba4:	13 97       	sbiw	r26, 0x03	; 3
+     ba6:	80 91 c2 03 	lds	r24, 0x03C2
+		{
+			midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].channelNumber=midiChannelNumberA;
+		}
+		else
+		{
+			midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].channelNumber=midiChannelNumberA;		
+     baa:	8c 93       	st	X, r24
+		}
+	
+		midiOutgoingFifoWritePointer++;			// write to the next element next time
+     bac:	9f 5f       	subi	r25, 0xFF	; 255
+     bae:	90 93 79 03 	sts	0x0379, r25
+		if(midiOutgoingFifoWritePointer>=MIDI_MESSAGE_OUTGOING_FIFO_SIZE)	// handle wrapping at the end
+     bb2:	96 30       	cpi	r25, 0x06	; 6
+     bb4:	10 f0       	brcs	.+4      	; 0xbba <PutMidiMessageInOutgoingFifo+0x44>
+		{
+			midiOutgoingFifoWritePointer=0;
+     bb6:	10 92 79 03 	sts	0x0379, r1
+		}
+		
+		midiMessagesInOutgoingFifo++;								// One more message in the fifo.
+     bba:	3f 5f       	subi	r19, 0xFF	; 255
+     bbc:	30 93 f5 03 	sts	0x03F5, r19
+     bc0:	08 95       	ret
+
+00000bc2 <InitMidi>:
+	midiOutgoingFifoReadPointer=0;		// Next read is at 0.
+}
+
+void InitMidi(void)
+{
+	midiIncomingMessageState=IGNORE_ME;					// Reset the midi message gathering state machine -- We need a status byte first.
+     bc2:	89 e0       	ldi	r24, 0x09	; 9
+     bc4:	80 93 78 03 	sts	0x0378, r24
+	midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Output state machine ready to begin sending bytes.
+     bc8:	10 92 7b 03 	sts	0x037B, r1
+}
+
+static void InitMidiIncomingFifo(void)
+// Initialize the MIDI receive fifo to empty.
+{
+	midiMessagesInIncomingFifo=0;		// No messages in FIFO yet.
+     bcc:	10 92 f4 03 	sts	0x03F4, r1
+	midiIncomingFifoWritePointer=0;		// Next write is to 0.
+     bd0:	10 92 76 03 	sts	0x0376, r1
+	midiIncomingFifoReadPointer=0;		// Next read is at 0.
+     bd4:	10 92 77 03 	sts	0x0377, r1
+}
+
+static void InitMidiOutgoingFifo(void)
+// Initialize the MIDI transmit fifo to empty.
+{
+	midiMessagesInOutgoingFifo=0;		// No messages in FIFO yet.
+     bd8:	10 92 f5 03 	sts	0x03F5, r1
+	midiOutgoingFifoWritePointer=0;		// Next write is to 0.
+     bdc:	10 92 79 03 	sts	0x0379, r1
+	midiOutgoingFifoReadPointer=0;		// Next read is at 0.
+     be0:	10 92 7a 03 	sts	0x037A, r1
+{
+	midiIncomingMessageState=IGNORE_ME;					// Reset the midi message gathering state machine -- We need a status byte first.
+	midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Output state machine ready to begin sending bytes.
+	InitMidiIncomingFifo();								// Set up the receiving buffer.
+	InitMidiOutgoingFifo();								// Set up xmit buffer.
+}
+     be4:	08 95       	ret
+
+00000be6 <HandleIncomingMidiByte>:
+// type of status byte.  If the byte wasn't a status byte, we plug it into the state machine to see what we should do with the data.
+// So, for instance, if we get a NOTE_ON status byte, we keep the NOTE_ON context for data bytes until we get a new STATUS. 
+// This allows for expansion to handle different types of status messages, and makes sure we can handle "Running Status" style NOTE messages.
+// Real time messages don't mung up the channel message state machine (they don't break running status states) but system common messages DO break running status.
+// According to the MIDI spec, any voice / channel message should allow for running status, but it mostly seems to pertain to NOTE_ONs.
+{
+     be6:	1f 93       	push	r17
+     be8:	df 93       	push	r29
+     bea:	cf 93       	push	r28
+     bec:	00 d0       	rcall	.+0      	; 0xbee <HandleIncomingMidiByte+0x8>
+     bee:	00 d0       	rcall	.+0      	; 0xbf0 <HandleIncomingMidiByte+0xa>
+     bf0:	cd b7       	in	r28, 0x3d	; 61
+     bf2:	de b7       	in	r29, 0x3e	; 62
+     bf4:	28 2f       	mov	r18, r24
+		temporaryChannel;	// Use this to store the channel we think we're going to update while we collect the other data.
+
+	MIDI_MESSAGE
+		theMessage;
+	
+	if(theByte&0x80)									// First Check to if this byte is a status message.  Unimplemented status bytes should fall through.
+     bf6:	87 ff       	sbrs	r24, 7
+     bf8:	41 c0       	rjmp	.+130    	; 0xc7c <HandleIncomingMidiByte+0x96>
+//			PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+		}		
+
+		// Not a system message we care about.  Channel / Voice Message on our channel?
+*/
+		if(((theByte&0x0F)==midiChannelNumberA)||((theByte&0x0F)==midiChannelNumberB))		// Are you talking a valid Channel?  Now see if it's a command we understand.  
+     bfa:	68 2f       	mov	r22, r24
+     bfc:	70 e0       	ldi	r23, 0x00	; 0
+     bfe:	9b 01       	movw	r18, r22
+     c00:	2f 70       	andi	r18, 0x0F	; 15
+     c02:	30 70       	andi	r19, 0x00	; 0
+     c04:	80 91 c2 03 	lds	r24, 0x03C2
+     c08:	48 2f       	mov	r20, r24
+     c0a:	50 e0       	ldi	r21, 0x00	; 0
+     c0c:	24 17       	cp	r18, r20
+     c0e:	35 07       	cpc	r19, r21
+     c10:	39 f0       	breq	.+14     	; 0xc20 <HandleIncomingMidiByte+0x3a>
+     c12:	80 91 db 03 	lds	r24, 0x03DB
+     c16:	90 e0       	ldi	r25, 0x00	; 0
+     c18:	28 17       	cp	r18, r24
+     c1a:	39 07       	cpc	r19, r25
+     c1c:	09 f0       	breq	.+2      	; 0xc20 <HandleIncomingMidiByte+0x3a>
+     c1e:	ad c0       	rjmp	.+346    	; 0xd7a <HandleIncomingMidiByte+0x194>
+		{
+			if((theByte&0xF0)==MIDI_NOTE_ON_MASK)				// Is the byte a NOTE_ON status byte?  Two Data bytes.
+     c20:	cb 01       	movw	r24, r22
+     c22:	80 7f       	andi	r24, 0xF0	; 240
+     c24:	90 70       	andi	r25, 0x00	; 0
+     c26:	80 39       	cpi	r24, 0x90	; 144
+     c28:	91 05       	cpc	r25, r1
+     c2a:	19 f4       	brne	.+6      	; 0xc32 <HandleIncomingMidiByte+0x4c>
+			{
+				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_ONE;		// Cool.  We're starting a new NOTE_ON state.
+     c2c:	10 92 78 03 	sts	0x0378, r1
+     c30:	1b c0       	rjmp	.+54     	; 0xc68 <HandleIncomingMidiByte+0x82>
+				else
+				{
+					temporaryChannel=BANK_1;
+				}
+			}
+			else if((theByte&0xF0)==MIDI_NOTE_OFF_MASK)			// Is the byte a NOTE_OFF status byte?
+     c32:	80 38       	cpi	r24, 0x80	; 128
+     c34:	91 05       	cpc	r25, r1
+     c36:	39 f4       	brne	.+14     	; 0xc46 <HandleIncomingMidiByte+0x60>
+			{
+				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_ONE;	// We're starting NOTE_OFFs.  2 data bytes.
+     c38:	81 e0       	ldi	r24, 0x01	; 1
+     c3a:	80 93 78 03 	sts	0x0378, r24
+
+				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+     c3e:	24 17       	cp	r18, r20
+     c40:	35 07       	cpc	r19, r21
+     c42:	c9 f4       	brne	.+50     	; 0xc76 <HandleIncomingMidiByte+0x90>
+     c44:	14 c0       	rjmp	.+40     	; 0xc6e <HandleIncomingMidiByte+0x88>
+				else
+				{
+					temporaryChannel=BANK_1;
+				}
+			}
+			else if((theByte&0xF0)==MIDI_PROGRAM_CHANGE_MASK)	// Program change started.  One data byte.
+     c46:	80 3c       	cpi	r24, 0xC0	; 192
+     c48:	91 05       	cpc	r25, r1
+     c4a:	11 f4       	brne	.+4      	; 0xc50 <HandleIncomingMidiByte+0x6a>
+			{
+				midiIncomingMessageState=GET_PROGRAM_CHANGE_DATA_BYTE;	// One data byte.  Running status applies here, too, in theory.  The CPS-101 doesn't send bytes this way, but something out there might.
+     c4c:	82 e0       	ldi	r24, 0x02	; 2
+     c4e:	0a c0       	rjmp	.+20     	; 0xc64 <HandleIncomingMidiByte+0x7e>
+				else
+				{
+					temporaryChannel=BANK_1;
+				}
+			}
+			else if((theByte&0xF0)==MIDI_PITCH_WHEEL_MASK)		// Getting Pitch Wheel Data.  Pitch wheel is two data bytes, 2 data bytes, LSB then MSB.  0x2000 is no pitch change (bytes would be 0x00, 0x40 respectively).
+     c50:	80 3e       	cpi	r24, 0xE0	; 224
+     c52:	91 05       	cpc	r25, r1
+     c54:	11 f4       	brne	.+4      	; 0xc5a <HandleIncomingMidiByte+0x74>
+			{
+				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_LSB;		// LSB then MSB.  AFAICT running status applies. 
+     c56:	87 e0       	ldi	r24, 0x07	; 7
+     c58:	05 c0       	rjmp	.+10     	; 0xc64 <HandleIncomingMidiByte+0x7e>
+				else
+				{
+					temporaryChannel=BANK_1;
+				}
+			}
+			else if((theByte&0xF0)==MIDI_CONTROL_CHANGE_MASK)	// Control Changes (low res) have 2 data bytes -- the controller (or control) number, then the 7-bit value.
+     c5a:	80 3b       	cpi	r24, 0xB0	; 176
+     c5c:	91 05       	cpc	r25, r1
+     c5e:	09 f0       	breq	.+2      	; 0xc62 <HandleIncomingMidiByte+0x7c>
+     c60:	8c c0       	rjmp	.+280    	; 0xd7a <HandleIncomingMidiByte+0x194>
+			{
+				midiIncomingMessageState=GET_CONTROL_CHANGE_CONTROLLER_NUM;		// Control number, then value.  AFAICT running status applies. 
+     c62:	83 e0       	ldi	r24, 0x03	; 3
+     c64:	80 93 78 03 	sts	0x0378, r24
+
+				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+     c68:	24 17       	cp	r18, r20
+     c6a:	35 07       	cpc	r19, r21
+     c6c:	19 f4       	brne	.+6      	; 0xc74 <HandleIncomingMidiByte+0x8e>
+				{
+					temporaryChannel=BANK_0;
+     c6e:	10 92 74 03 	sts	0x0374, r1
+     c72:	86 c0       	rjmp	.+268    	; 0xd80 <HandleIncomingMidiByte+0x19a>
+				}
+				else
+				{
+					temporaryChannel=BANK_1;
+     c74:	81 e0       	ldi	r24, 0x01	; 1
+     c76:	80 93 74 03 	sts	0x0374, r24
+     c7a:	82 c0       	rjmp	.+260    	; 0xd80 <HandleIncomingMidiByte+0x19a>
+		}
+	}
+	else
+	// The byte we got wasn't a status byte.  Fall through to the state machine that handles data bytes.
+	{
+		switch(midiIncomingMessageState)
+     c7c:	10 91 78 03 	lds	r17, 0x0378
+     c80:	14 30       	cpi	r17, 0x04	; 4
+     c82:	09 f4       	brne	.+2      	; 0xc86 <HandleIncomingMidiByte+0xa0>
+     c84:	58 c0       	rjmp	.+176    	; 0xd36 <HandleIncomingMidiByte+0x150>
+     c86:	15 30       	cpi	r17, 0x05	; 5
+     c88:	58 f4       	brcc	.+22     	; 0xca0 <HandleIncomingMidiByte+0xba>
+     c8a:	11 30       	cpi	r17, 0x01	; 1
+     c8c:	c1 f1       	breq	.+112    	; 0xcfe <HandleIncomingMidiByte+0x118>
+     c8e:	11 30       	cpi	r17, 0x01	; 1
+     c90:	c8 f0       	brcs	.+50     	; 0xcc4 <HandleIncomingMidiByte+0xde>
+     c92:	12 30       	cpi	r17, 0x02	; 2
+     c94:	09 f4       	brne	.+2      	; 0xc98 <HandleIncomingMidiByte+0xb2>
+     c96:	46 c0       	rjmp	.+140    	; 0xd24 <HandleIncomingMidiByte+0x13e>
+     c98:	13 30       	cpi	r17, 0x03	; 3
+     c9a:	09 f0       	breq	.+2      	; 0xc9e <HandleIncomingMidiByte+0xb8>
+     c9c:	6e c0       	rjmp	.+220    	; 0xd7a <HandleIncomingMidiByte+0x194>
+     c9e:	47 c0       	rjmp	.+142    	; 0xd2e <HandleIncomingMidiByte+0x148>
+     ca0:	17 30       	cpi	r17, 0x07	; 7
+     ca2:	09 f4       	brne	.+2      	; 0xca6 <HandleIncomingMidiByte+0xc0>
+     ca4:	56 c0       	rjmp	.+172    	; 0xd52 <HandleIncomingMidiByte+0x16c>
+     ca6:	18 30       	cpi	r17, 0x08	; 8
+     ca8:	30 f4       	brcc	.+12     	; 0xcb6 <HandleIncomingMidiByte+0xd0>
+     caa:	15 30       	cpi	r17, 0x05	; 5
+     cac:	79 f0       	breq	.+30     	; 0xccc <HandleIncomingMidiByte+0xe6>
+     cae:	16 30       	cpi	r17, 0x06	; 6
+     cb0:	09 f0       	breq	.+2      	; 0xcb4 <HandleIncomingMidiByte+0xce>
+     cb2:	63 c0       	rjmp	.+198    	; 0xd7a <HandleIncomingMidiByte+0x194>
+     cb4:	28 c0       	rjmp	.+80     	; 0xd06 <HandleIncomingMidiByte+0x120>
+     cb6:	18 30       	cpi	r17, 0x08	; 8
+     cb8:	09 f4       	brne	.+2      	; 0xcbc <HandleIncomingMidiByte+0xd6>
+     cba:	4f c0       	rjmp	.+158    	; 0xd5a <HandleIncomingMidiByte+0x174>
+     cbc:	19 30       	cpi	r17, 0x09	; 9
+     cbe:	09 f0       	breq	.+2      	; 0xcc2 <HandleIncomingMidiByte+0xdc>
+     cc0:	5c c0       	rjmp	.+184    	; 0xd7a <HandleIncomingMidiByte+0x194>
+     cc2:	5e c0       	rjmp	.+188    	; 0xd80 <HandleIncomingMidiByte+0x19a>
+			{
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				firstDataByte=theByte;							// Got a note on, got a valid note -- now we need to get the velocity.
+     cc4:	80 93 75 03 	sts	0x0375, r24
+				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_TWO;
+     cc8:	85 e0       	ldi	r24, 0x05	; 5
+     cca:	58 c0       	rjmp	.+176    	; 0xd7c <HandleIncomingMidiByte+0x196>
+     ccc:	30 91 75 03 	lds	r19, 0x0375
+     cd0:	40 91 74 03 	lds	r20, 0x0374
+     cd4:	be 01       	movw	r22, r28
+     cd6:	6f 5f       	subi	r22, 0xFF	; 255
+     cd8:	7f 4f       	sbci	r23, 0xFF	; 255
+			}
+			break;
+
+			case GET_NOTE_ON_DATA_BYTE_TWO:					// Check velocity, and make the hardware do a note on, note off, or bug out if there's an error.
+			if(theByte==0)									// This "note on" is really a "note off".
+     cda:	88 23       	and	r24, r24
+     cdc:	29 f4       	brne	.+10     	; 0xce8 <HandleIncomingMidiByte+0x102>
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_NOTE_OFF;		// What kind of message is this?
+     cde:	82 e0       	ldi	r24, 0x02	; 2
+     ce0:	8a 83       	std	Y+2, r24	; 0x02
+				theMessage.dataByteOne=firstDataByte;				// For what note?
+     ce2:	3b 83       	std	Y+3, r19	; 0x03
+				theMessage.dataByteTwo=theByte;						// And what velocity?
+     ce4:	1c 82       	std	Y+4, r1	; 0x04
+     ce6:	04 c0       	rjmp	.+8      	; 0xcf0 <HandleIncomingMidiByte+0x10a>
+				midiIncomingMessageState=IGNORE_ME;					// Something got messed up.  The velocity value is invalid.  Wait for a new status.		
+			}
+			else											// Real note on, real value.
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_NOTE_ON;	// What kind of message is this?
+     ce8:	81 e0       	ldi	r24, 0x01	; 1
+     cea:	8a 83       	std	Y+2, r24	; 0x02
+				theMessage.dataByteOne=firstDataByte;			// For what note?
+     cec:	3b 83       	std	Y+3, r19	; 0x03
+				theMessage.dataByteTwo=theByte;					// And what velocity?
+     cee:	2c 83       	std	Y+4, r18	; 0x04
+				theMessage.channelNumber=temporaryChannel;		// And what channel?
+     cf0:	49 83       	std	Y+1, r20	; 0x01
+
+				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+     cf2:	cb 01       	movw	r24, r22
+     cf4:	0e 94 8e 05 	call	0xb1c	; 0xb1c <PutMidiMessageInIncomingFifo>
+
+				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_ONE; // And continue dealing with NOTE_ONs until we're told otherwise.
+     cf8:	10 92 78 03 	sts	0x0378, r1
+     cfc:	41 c0       	rjmp	.+130    	; 0xd80 <HandleIncomingMidiByte+0x19a>
+			{
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				firstDataByte=theByte;								// Got a note off for a valid note.  Get Velocity, like we care.
+     cfe:	80 93 75 03 	sts	0x0375, r24
+				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_TWO;
+     d02:	86 e0       	ldi	r24, 0x06	; 6
+     d04:	3b c0       	rjmp	.+118    	; 0xd7c <HandleIncomingMidiByte+0x196>
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_NOTE_OFF;		// What kind of message is this?
+     d06:	82 e0       	ldi	r24, 0x02	; 2
+     d08:	8a 83       	std	Y+2, r24	; 0x02
+				theMessage.dataByteOne=firstDataByte;				// For what note?
+     d0a:	80 91 75 03 	lds	r24, 0x0375
+     d0e:	8b 83       	std	Y+3, r24	; 0x03
+				theMessage.dataByteTwo=theByte;						// And what velocity?
+     d10:	2c 83       	std	Y+4, r18	; 0x04
+				theMessage.channelNumber=temporaryChannel;			// And what channel?
+     d12:	80 91 74 03 	lds	r24, 0x0374
+     d16:	89 83       	std	Y+1, r24	; 0x01
+
+				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+     d18:	ce 01       	movw	r24, r28
+     d1a:	01 96       	adiw	r24, 0x01	; 1
+     d1c:	0e 94 8e 05 	call	0xb1c	; 0xb1c <PutMidiMessageInIncomingFifo>
+
+				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_ONE;	// And continue dealing with NOTE_OFFs until we're told otherwise.
+     d20:	81 e0       	ldi	r24, 0x01	; 1
+     d22:	2c c0       	rjmp	.+88     	; 0xd7c <HandleIncomingMidiByte+0x196>
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_PROGRAM_CHANGE;		// A program change...
+     d24:	83 e0       	ldi	r24, 0x03	; 3
+     d26:	8a 83       	std	Y+2, r24	; 0x02
+				theMessage.dataByteOne=theByte;							// ...To this program
+     d28:	2b 83       	std	Y+3, r18	; 0x03
+				theMessage.dataByteTwo=0;								// And no second data byte.
+     d2a:	1c 82       	std	Y+4, r1	; 0x04
+     d2c:	1c c0       	rjmp	.+56     	; 0xd66 <HandleIncomingMidiByte+0x180>
+			{
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				firstDataByte=theByte;								// Got a valid CC number.  Get the value next.
+     d2e:	80 93 75 03 	sts	0x0375, r24
+				midiIncomingMessageState=GET_CONTROL_CHANGE_VALUE;
+     d32:	84 e0       	ldi	r24, 0x04	; 4
+     d34:	23 c0       	rjmp	.+70     	; 0xd7c <HandleIncomingMidiByte+0x196>
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_CONTROL_CHANGE;		// What kind of message is this?
+     d36:	1a 83       	std	Y+2, r17	; 0x02
+				theMessage.dataByteOne=firstDataByte;					// This is the CC number.
+     d38:	80 91 75 03 	lds	r24, 0x0375
+     d3c:	8b 83       	std	Y+3, r24	; 0x03
+				theMessage.dataByteTwo=theByte;							// And the value.
+     d3e:	2c 83       	std	Y+4, r18	; 0x04
+				theMessage.channelNumber=temporaryChannel;				// And what channel?
+     d40:	80 91 74 03 	lds	r24, 0x0374
+     d44:	89 83       	std	Y+1, r24	; 0x01
+
+				PutMidiMessageInIncomingFifo(&theMessage);						// Send that to yr fifo.
+     d46:	ce 01       	movw	r24, r28
+     d48:	01 96       	adiw	r24, 0x01	; 1
+     d4a:	0e 94 8e 05 	call	0xb1c	; 0xb1c <PutMidiMessageInIncomingFifo>
+
+				midiIncomingMessageState=GET_CONTROL_CHANGE_CONTROLLER_NUM;		// Unlikely to see running status here, but I guess it's possible.
+     d4e:	83 e0       	ldi	r24, 0x03	; 3
+     d50:	15 c0       	rjmp	.+42     	; 0xd7c <HandleIncomingMidiByte+0x196>
+			{
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				firstDataByte=theByte;								// Got an LSB for the pitch wheel, now get the _important_ byte.
+     d52:	80 93 75 03 	sts	0x0375, r24
+				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_MSB;
+     d56:	88 e0       	ldi	r24, 0x08	; 8
+     d58:	11 c0       	rjmp	.+34     	; 0xd7c <HandleIncomingMidiByte+0x196>
+				midiIncomingMessageState=IGNORE_ME;
+			}
+			else
+			{
+				// Queue midi message
+				theMessage.messageType=MESSAGE_TYPE_PITCH_WHEEL;	// What kind of message is this?
+     d5a:	17 e0       	ldi	r17, 0x07	; 7
+     d5c:	1a 83       	std	Y+2, r17	; 0x02
+				theMessage.dataByteOne=firstDataByte;				// LSB
+     d5e:	80 91 75 03 	lds	r24, 0x0375
+     d62:	8b 83       	std	Y+3, r24	; 0x03
+				theMessage.dataByteTwo=theByte;						// MSB
+     d64:	2c 83       	std	Y+4, r18	; 0x04
+				theMessage.channelNumber=temporaryChannel;			// And what channel?
+     d66:	80 91 74 03 	lds	r24, 0x0374
+     d6a:	89 83       	std	Y+1, r24	; 0x01
+
+				PutMidiMessageInIncomingFifo(&theMessage);					// Send that to the fifo.
+     d6c:	ce 01       	movw	r24, r28
+     d6e:	01 96       	adiw	r24, 0x01	; 1
+     d70:	0e 94 8e 05 	call	0xb1c	; 0xb1c <PutMidiMessageInIncomingFifo>
+
+				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_LSB;			// And continue dealing with Pitch Wheel wanking until we're told otherwise.
+     d74:	10 93 78 03 	sts	0x0378, r17
+     d78:	03 c0       	rjmp	.+6      	; 0xd80 <HandleIncomingMidiByte+0x19a>
+			case IGNORE_ME:
+			// Don't do anything with the byte; it isn't something we care about.
+			break;
+
+			default:
+			midiIncomingMessageState=IGNORE_ME;			// @@@ Should never happen.		
+     d7a:	89 e0       	ldi	r24, 0x09	; 9
+     d7c:	80 93 78 03 	sts	0x0378, r24
+			break;
+		}	
+	}
+}
+     d80:	0f 90       	pop	r0
+     d82:	0f 90       	pop	r0
+     d84:	0f 90       	pop	r0
+     d86:	0f 90       	pop	r0
+     d88:	cf 91       	pop	r28
+     d8a:	df 91       	pop	r29
+     d8c:	1f 91       	pop	r17
+     d8e:	08 95       	ret
+
+00000d90 <MidiTxBufferNotEmpty>:
+
+bool MidiTxBufferNotEmpty(void)
+{
+	if(midiMessagesInOutgoingFifo||(midiOutgoingMessageState!=READY_FOR_NEW_MESSAGE))		// Got something to say?
+     d90:	80 91 f5 03 	lds	r24, 0x03F5
+     d94:	88 23       	and	r24, r24
+     d96:	11 f0       	breq	.+4      	; 0xd9c <MidiTxBufferNotEmpty+0xc>
+     d98:	81 e0       	ldi	r24, 0x01	; 1
+     d9a:	08 95       	ret
+     d9c:	80 91 7b 03 	lds	r24, 0x037B
+     da0:	81 11       	cpse	r24, r1
+     da2:	81 e0       	ldi	r24, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+     da4:	08 95       	ret
+
+00000da6 <PopOutgoingMidiByte>:
+		theByte;
+
+	static unsigned char
+		lastStatusByte;		// Used to calculate running status.
+
+	switch(midiOutgoingMessageState)
+     da6:	80 91 7b 03 	lds	r24, 0x037B
+     daa:	83 30       	cpi	r24, 0x03	; 3
+     dac:	09 f4       	brne	.+2      	; 0xdb0 <PopOutgoingMidiByte+0xa>
+     dae:	91 c0       	rjmp	.+290    	; 0xed2 <PopOutgoingMidiByte+0x12c>
+     db0:	84 30       	cpi	r24, 0x04	; 4
+     db2:	38 f4       	brcc	.+14     	; 0xdc2 <PopOutgoingMidiByte+0x1c>
+     db4:	81 30       	cpi	r24, 0x01	; 1
+     db6:	09 f4       	brne	.+2      	; 0xdba <PopOutgoingMidiByte+0x14>
+     db8:	88 c0       	rjmp	.+272    	; 0xeca <PopOutgoingMidiByte+0x124>
+     dba:	82 30       	cpi	r24, 0x02	; 2
+     dbc:	08 f0       	brcs	.+2      	; 0xdc0 <PopOutgoingMidiByte+0x1a>
+     dbe:	87 c0       	rjmp	.+270    	; 0xece <PopOutgoingMidiByte+0x128>
+     dc0:	0d c0       	rjmp	.+26     	; 0xddc <PopOutgoingMidiByte+0x36>
+     dc2:	85 30       	cpi	r24, 0x05	; 5
+     dc4:	09 f4       	brne	.+2      	; 0xdc8 <PopOutgoingMidiByte+0x22>
+     dc6:	8c c0       	rjmp	.+280    	; 0xee0 <PopOutgoingMidiByte+0x13a>
+     dc8:	85 30       	cpi	r24, 0x05	; 5
+     dca:	08 f4       	brcc	.+2      	; 0xdce <PopOutgoingMidiByte+0x28>
+     dcc:	86 c0       	rjmp	.+268    	; 0xeda <PopOutgoingMidiByte+0x134>
+     dce:	86 30       	cpi	r24, 0x06	; 6
+     dd0:	09 f4       	brne	.+2      	; 0xdd4 <PopOutgoingMidiByte+0x2e>
+     dd2:	89 c0       	rjmp	.+274    	; 0xee6 <PopOutgoingMidiByte+0x140>
+     dd4:	87 30       	cpi	r24, 0x07	; 7
+     dd6:	09 f0       	breq	.+2      	; 0xdda <PopOutgoingMidiByte+0x34>
+     dd8:	91 c0       	rjmp	.+290    	; 0xefc <PopOutgoingMidiByte+0x156>
+     dda:	8b c0       	rjmp	.+278    	; 0xef2 <PopOutgoingMidiByte+0x14c>
+
+static void GetMidiMessageFromOutgoingFifo(MIDI_MESSAGE *theMessage)
+// Returns the data the sampler put into the output fifo.  This is generalized data and is turned into the correct midi bytes by the output handler.
+// If there are no messages in the fifo, do nothing.
+{
+	if(midiMessagesInOutgoingFifo>0)			// Any messages in the fifo?
+     ddc:	20 91 f5 03 	lds	r18, 0x03F5
+     de0:	22 23       	and	r18, r18
+     de2:	39 f1       	breq	.+78     	; 0xe32 <PopOutgoingMidiByte+0x8c>
+	{
+		(*theMessage).messageType=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].messageType;		// Get the message at the current read pointer.
+     de4:	90 91 7a 03 	lds	r25, 0x037A
+     de8:	e9 2f       	mov	r30, r25
+     dea:	f0 e0       	ldi	r31, 0x00	; 0
+     dec:	ee 0f       	add	r30, r30
+     dee:	ff 1f       	adc	r31, r31
+     df0:	ee 0f       	add	r30, r30
+     df2:	ff 1f       	adc	r31, r31
+     df4:	df 01       	movw	r26, r30
+     df6:	a4 52       	subi	r26, 0x24	; 36
+     df8:	bc 4f       	sbci	r27, 0xFC	; 252
+     dfa:	11 96       	adiw	r26, 0x01	; 1
+     dfc:	8c 91       	ld	r24, X
+     dfe:	11 97       	sbiw	r26, 0x01	; 1
+     e00:	80 93 71 03 	sts	0x0371, r24
+		(*theMessage).dataByteOne=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteOne;
+     e04:	e2 52       	subi	r30, 0x22	; 34
+     e06:	fc 4f       	sbci	r31, 0xFC	; 252
+     e08:	80 81       	ld	r24, Z
+     e0a:	80 93 72 03 	sts	0x0372, r24
+		(*theMessage).dataByteTwo=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteTwo;	
+     e0e:	13 96       	adiw	r26, 0x03	; 3
+     e10:	8c 91       	ld	r24, X
+     e12:	13 97       	sbiw	r26, 0x03	; 3
+     e14:	80 93 73 03 	sts	0x0373, r24
+		(*theMessage).channelNumber=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].channelNumber;	
+     e18:	8c 91       	ld	r24, X
+     e1a:	80 93 70 03 	sts	0x0370, r24
+
+		midiOutgoingFifoReadPointer++;										// read from the next element next time
+     e1e:	9f 5f       	subi	r25, 0xFF	; 255
+     e20:	90 93 7a 03 	sts	0x037A, r25
+		if(midiOutgoingFifoReadPointer>=MIDI_MESSAGE_OUTGOING_FIFO_SIZE)	// handle wrapping at the end
+     e24:	96 30       	cpi	r25, 0x06	; 6
+     e26:	10 f0       	brcs	.+4      	; 0xe2c <PopOutgoingMidiByte+0x86>
+		{
+			midiOutgoingFifoReadPointer=0;
+     e28:	10 92 7a 03 	sts	0x037A, r1
+		}
+
+		midiMessagesInOutgoingFifo--;		// One less message in the fifo.
+     e2c:	21 50       	subi	r18, 0x01	; 1
+     e2e:	20 93 f5 03 	sts	0x03F5, r18
+	switch(midiOutgoingMessageState)
+	{
+		case READY_FOR_NEW_MESSAGE:						// Finished popping off the last message.
+		GetMidiMessageFromOutgoingFifo(&theMessage);	// Get the next one.
+
+		switch(theMessage.messageType)					// What's the new status byte.
+     e32:	20 91 71 03 	lds	r18, 0x0371
+     e36:	22 30       	cpi	r18, 0x02	; 2
+     e38:	b9 f0       	breq	.+46     	; 0xe68 <PopOutgoingMidiByte+0xc2>
+     e3a:	23 30       	cpi	r18, 0x03	; 3
+     e3c:	20 f4       	brcc	.+8      	; 0xe46 <PopOutgoingMidiByte+0xa0>
+     e3e:	21 30       	cpi	r18, 0x01	; 1
+     e40:	09 f0       	breq	.+2      	; 0xe44 <PopOutgoingMidiByte+0x9e>
+     e42:	5c c0       	rjmp	.+184    	; 0xefc <PopOutgoingMidiByte+0x156>
+     e44:	06 c0       	rjmp	.+12     	; 0xe52 <PopOutgoingMidiByte+0xac>
+     e46:	23 30       	cpi	r18, 0x03	; 3
+     e48:	f9 f0       	breq	.+62     	; 0xe88 <PopOutgoingMidiByte+0xe2>
+     e4a:	24 30       	cpi	r18, 0x04	; 4
+     e4c:	09 f0       	breq	.+2      	; 0xe50 <PopOutgoingMidiByte+0xaa>
+     e4e:	56 c0       	rjmp	.+172    	; 0xefc <PopOutgoingMidiByte+0x156>
+     e50:	2b c0       	rjmp	.+86     	; 0xea8 <PopOutgoingMidiByte+0x102>
+		{
+			case MESSAGE_TYPE_NOTE_ON:
+			theByte=(MIDI_NOTE_ON_MASK)|(theMessage.channelNumber);	// Note on, current channel (status messages are 4 MSbs signifying a message type, followed by 4 signifying the channel number)
+     e52:	90 91 70 03 	lds	r25, 0x0370
+     e56:	90 69       	ori	r25, 0x90	; 144
+			if(lastStatusByte==theByte)								// Same status byte as last time?
+     e58:	80 91 6f 03 	lds	r24, 0x036F
+     e5c:	89 17       	cp	r24, r25
+     e5e:	79 f4       	brne	.+30     	; 0xe7e <PopOutgoingMidiByte+0xd8>
+			{
+				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (the note number) and skip sending the status byte.
+     e60:	90 91 72 03 	lds	r25, 0x0372
+				midiOutgoingMessageState=NOTE_ON_DATA_BYTE_TWO;		// Skip to second data byte next time.
+     e64:	83 e0       	ldi	r24, 0x03	; 3
+     e66:	2a c0       	rjmp	.+84     	; 0xebc <PopOutgoingMidiByte+0x116>
+
+			}
+			break;
+
+			case MESSAGE_TYPE_NOTE_OFF:
+			theByte=(MIDI_NOTE_ON_MASK)|(theMessage.channelNumber);		// Note off, current channel -- THIS IS THE SAME STATUS BYTE AS NOTE ON, MIND.
+     e68:	90 91 70 03 	lds	r25, 0x0370
+     e6c:	90 69       	ori	r25, 0x90	; 144
+			if(lastStatusByte==theByte)									// Same status byte as last time (this method keeps running status whether the application passes note_ons or note_offs)
+     e6e:	80 91 6f 03 	lds	r24, 0x036F
+     e72:	89 17       	cp	r24, r25
+     e74:	21 f4       	brne	.+8      	; 0xe7e <PopOutgoingMidiByte+0xd8>
+			{
+				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (the note number)
+     e76:	90 91 72 03 	lds	r25, 0x0372
+				midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_TWO;	// Skip to second data byte next time.
+     e7a:	84 e0       	ldi	r24, 0x04	; 4
+     e7c:	1f c0       	rjmp	.+62     	; 0xebc <PopOutgoingMidiByte+0x116>
+			}	
+			else
+			{
+				lastStatusByte=theByte;								// Update current running status.
+     e7e:	90 93 6f 03 	sts	0x036F, r25
+				midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_ONE;	// Next time send the data byte.
+     e82:	20 93 7b 03 	sts	0x037B, r18
+     e86:	3b c0       	rjmp	.+118    	; 0xefe <PopOutgoingMidiByte+0x158>
+
+			}
+			break;
+
+			case MESSAGE_TYPE_PROGRAM_CHANGE:
+			theByte=(MIDI_PROGRAM_CHANGE_MASK)|(theMessage.channelNumber);	// Program change, current channel.
+     e88:	90 91 70 03 	lds	r25, 0x0370
+     e8c:	90 6c       	ori	r25, 0xC0	; 192
+			if(lastStatusByte==theByte)										// Same status byte as last time?
+     e8e:	80 91 6f 03 	lds	r24, 0x036F
+     e92:	89 17       	cp	r24, r25
+     e94:	29 f4       	brne	.+10     	; 0xea0 <PopOutgoingMidiByte+0xfa>
+			{
+				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (skip the status byte)
+     e96:	90 91 72 03 	lds	r25, 0x0372
+				midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Restart state machine (PC messages only have one data byte)
+     e9a:	10 92 7b 03 	sts	0x037B, r1
+     e9e:	2f c0       	rjmp	.+94     	; 0xefe <PopOutgoingMidiByte+0x158>
+			}	
+			else
+			{
+				lastStatusByte=theByte;								// Update current running status.
+     ea0:	90 93 6f 03 	sts	0x036F, r25
+				midiOutgoingMessageState=PROGRAM_CHANGE_DATA_BYTE;	// Next time send the data byte.
+     ea4:	85 e0       	ldi	r24, 0x05	; 5
+     ea6:	0a c0       	rjmp	.+20     	; 0xebc <PopOutgoingMidiByte+0x116>
+
+			}
+			break;
+
+			case MESSAGE_TYPE_CONTROL_CHANGE:
+			theByte=(MIDI_CONTROL_CHANGE_MASK)|(theMessage.channelNumber);	// CC, current channel (status messages are 4 MSbs signifying a message type, followed by 4 signifying the channel number)
+     ea8:	90 91 70 03 	lds	r25, 0x0370
+     eac:	90 6b       	ori	r25, 0xB0	; 176
+			if(lastStatusByte==theByte)										// Same status byte as last time?
+     eae:	80 91 6f 03 	lds	r24, 0x036F
+     eb2:	89 17       	cp	r24, r25
+     eb4:	31 f4       	brne	.+12     	; 0xec2 <PopOutgoingMidiByte+0x11c>
+			{
+				theByte=theMessage.dataByteOne;								// Set up to return the first data byte (the note number) and skip sending the status byte.
+     eb6:	90 91 72 03 	lds	r25, 0x0372
+				midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_TWO;		// Skip to second data byte next time.
+     eba:	87 e0       	ldi	r24, 0x07	; 7
+     ebc:	80 93 7b 03 	sts	0x037B, r24
+     ec0:	1e c0       	rjmp	.+60     	; 0xefe <PopOutgoingMidiByte+0x158>
+			}	
+			else
+			{
+				lastStatusByte=theByte;										// Update current running status.
+     ec2:	90 93 6f 03 	sts	0x036F, r25
+				midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_ONE;		// Next time send the data byte.
+     ec6:	86 e0       	ldi	r24, 0x06	; 6
+     ec8:	f9 cf       	rjmp	.-14     	; 0xebc <PopOutgoingMidiByte+0x116>
+		}
+		return(theByte);		// Send out our byte.
+		break;
+		
+		case NOTE_ON_DATA_BYTE_ONE:
+		midiOutgoingMessageState=NOTE_ON_DATA_BYTE_TWO;		// Skip to second data byte next time.
+     eca:	83 e0       	ldi	r24, 0x03	; 3
+     ecc:	0d c0       	rjmp	.+26     	; 0xee8 <PopOutgoingMidiByte+0x142>
+		return(theMessage.dataByteOne);						// Return the first data byte.
+		break;
+
+		case NOTE_OFF_DATA_BYTE_ONE:
+		midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_TWO;	// Skip to second data byte next time.
+     ece:	84 e0       	ldi	r24, 0x04	; 4
+     ed0:	0b c0       	rjmp	.+22     	; 0xee8 <PopOutgoingMidiByte+0x142>
+		return(theMessage.dataByteOne);						// Return the first data byte.
+		break;
+
+		case NOTE_ON_DATA_BYTE_TWO:
+		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+     ed2:	10 92 7b 03 	sts	0x037B, r1
+     ed6:	90 e4       	ldi	r25, 0x40	; 64
+     ed8:	12 c0       	rjmp	.+36     	; 0xefe <PopOutgoingMidiByte+0x158>
+		return(MIDI_GENERIC_VELOCITY);						// Return generic "note on" velocity.
+		break;
+
+		case NOTE_OFF_DATA_BYTE_TWO:
+		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+     eda:	10 92 7b 03 	sts	0x037B, r1
+     ede:	0e c0       	rjmp	.+28     	; 0xefc <PopOutgoingMidiByte+0x156>
+		return(0);											// Return a velocity of 0 (this means a note off)
+		break;
+
+		case PROGRAM_CHANGE_DATA_BYTE:
+		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+     ee0:	10 92 7b 03 	sts	0x037B, r1
+     ee4:	03 c0       	rjmp	.+6      	; 0xeec <PopOutgoingMidiByte+0x146>
+		return(theMessage.dataByteOne);						// Return the first (only) data byte.
+		break;
+
+		case CONTROL_CHANGE_DATA_BYTE_ONE:
+		midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_TWO;		// Skip to second data byte next time.
+     ee6:	87 e0       	ldi	r24, 0x07	; 7
+     ee8:	80 93 7b 03 	sts	0x037B, r24
+		return(theMessage.dataByteOne);								// Return the first data byte.
+     eec:	90 91 72 03 	lds	r25, 0x0372
+     ef0:	06 c0       	rjmp	.+12     	; 0xefe <PopOutgoingMidiByte+0x158>
+		break;	
+
+		case CONTROL_CHANGE_DATA_BYTE_TWO:
+		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+     ef2:	10 92 7b 03 	sts	0x037B, r1
+		return(theMessage.dataByteTwo);						// Return the second data byte.
+     ef6:	90 91 73 03 	lds	r25, 0x0373
+     efa:	01 c0       	rjmp	.+2      	; 0xefe <PopOutgoingMidiByte+0x158>
+     efc:	90 e0       	ldi	r25, 0x00	; 0
+
+		default:
+		return(0);
+		break;
+	}
+}
+     efe:	89 2f       	mov	r24, r25
+     f00:	08 95       	ret
+
+00000f02 <UnInitSdInterface>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void UnInitSdInterface(void)
+{
+	DDRD&=~(Om_SD_CS|Om_SD_CLK);	// Flash specific outputs back to inputs.
+     f02:	8a b1       	in	r24, 0x0a	; 10
+     f04:	8f 7c       	andi	r24, 0xCF	; 207
+     f06:	8a b9       	out	0x0a, r24	; 10
+	PORTD|=(Om_SD_CS|Om_SD_CLK);	// Pullup pins so they don't float
+     f08:	8b b1       	in	r24, 0x0b	; 11
+     f0a:	80 63       	ori	r24, 0x30	; 48
+     f0c:	8b b9       	out	0x0b, r24	; 11
+	UCSR1B=0;						// Disable transmission / reception
+     f0e:	10 92 c9 00 	sts	0x00C9, r1
+	PRR|=(1<<PRUSART1);				// Power off the UART.	
+     f12:	e4 e6       	ldi	r30, 0x64	; 100
+     f14:	f0 e0       	ldi	r31, 0x00	; 0
+     f16:	80 81       	ld	r24, Z
+     f18:	80 61       	ori	r24, 0x10	; 16
+     f1a:	80 83       	st	Z, r24
+}
+     f1c:	08 95       	ret
+
+00000f1e <InitSdInterface>:
+// Because the command sequence which initializes the SD card needs CS to be high (CMD is what the card thinks, SPI not yet active) we exit with CS high.
+// SD cards prefer SPI mode 0, although they can apparently work OK in mode 3.
+// All instructions, addresses, and data are transferred with the most significant bit (MSb) first.
+// We're starting with SCK = (Fosc / 4) or 5MHz with a 20MHz crystal.
+{
+	PRR&=~(1<<PRUSART1);				// Power on the UART.
+     f1e:	e4 e6       	ldi	r30, 0x64	; 100
+     f20:	f0 e0       	ldi	r31, 0x00	; 0
+     f22:	80 81       	ld	r24, Z
+     f24:	8f 7e       	andi	r24, 0xEF	; 239
+     f26:	80 83       	st	Z, r24
+	UBRR1=0;							// The baud rate register must be 0 when the transmitter is enabled.
+     f28:	ec ec       	ldi	r30, 0xCC	; 204
+     f2a:	f0 e0       	ldi	r31, 0x00	; 0
+     f2c:	11 82       	std	Z+1, r1	; 0x01
+     f2e:	10 82       	st	Z, r1
+	DDRD|=(Om_SD_CLK);					// Set the XCK1 (normally the UART external clock, now the SCK out) to an output -- since the MSPIM can only be an SPI Master (and that's what we want).
+     f30:	54 9a       	sbi	0x0a, 4	; 10
+	UCSR1C=((1<<UMSEL11) | (1<<UMSEL10));	// Set the USART to MPSIM mode, SPI mode 0, MSB first.
+     f32:	80 ec       	ldi	r24, 0xC0	; 192
+     f34:	80 93 ca 00 	sts	0x00CA, r24
+	UCSR1B=((1<<RXEN1)|(1<<TXEN1)); 	// Enable the transmitter and receiver.
+     f38:	88 e1       	ldi	r24, 0x18	; 24
+     f3a:	80 93 c9 00 	sts	0x00C9, r24
+	UBRR1=1;							// According to the datasheet this should be "5MBaud" or a 5MHz clock.  NOTE:  The baud rate must be set properly AFTER the transmitter is enabled but before the first transmission.
+     f3e:	81 e0       	ldi	r24, 0x01	; 1
+     f40:	90 e0       	ldi	r25, 0x00	; 0
+     f42:	91 83       	std	Z+1, r25	; 0x01
+     f44:	80 83       	st	Z, r24
+//	UBRR1=99;							// 100kHz clock for testing
+
+	DDRD|=Om_SD_CS;			// CS pin to output.
+     f46:	55 9a       	sbi	0x0a, 5	; 10
+	PORTD|=Om_SD_CS;		// And start with CS low.
+     f48:	5d 9a       	sbi	0x0b, 5	; 11
+}
+     f4a:	08 95       	ret
+
+00000f4c <EndSdTransfer>:
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+     f4c:	5d 9a       	sbi	0x0b, 5	; 11
+}
+     f4e:	08 95       	ret
+
+00000f50 <StartSdTransfer>:
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+     f50:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+     f52:	5d 98       	cbi	0x0b, 5	; 11
+}
+     f54:	08 95       	ret
+
+00000f56 <TransferSdByte>:
+// Slow and careful transfers; checks both send and receive buffers and waits until they're ready to move on.
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+     f56:	98 2f       	mov	r25, r24
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     f58:	80 91 c8 00 	lds	r24, 0x00C8
+     f5c:	85 ff       	sbrs	r24, 5
+     f5e:	fc cf       	rjmp	.-8      	; 0xf58 <TransferSdByte+0x2>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+     f60:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+     f64:	80 91 c8 00 	lds	r24, 0x00C8
+     f68:	87 ff       	sbrs	r24, 7
+     f6a:	fc cf       	rjmp	.-8      	; 0xf64 <TransferSdByte+0xe>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+     f6c:	80 91 ce 00 	lds	r24, 0x00CE
+}
+     f70:	08 95       	ret
+
+00000f72 <SendDummyByte>:
+
+static void SendDummyByte(void)
+// Needed to sync the card in some weird cases
+{
+	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+     f72:	80 91 c8 00 	lds	r24, 0x00C8
+     f76:	80 64       	ori	r24, 0x40	; 64
+     f78:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     f7c:	80 91 c8 00 	lds	r24, 0x00C8
+     f80:	85 ff       	sbrs	r24, 5
+     f82:	fc cf       	rjmp	.-8      	; 0xf7c <SendDummyByte+0xa>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+     f84:	8f ef       	ldi	r24, 0xFF	; 255
+     f86:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+     f8a:	80 91 c8 00 	lds	r24, 0x00C8
+     f8e:	87 ff       	sbrs	r24, 7
+     f90:	fc cf       	rjmp	.-8      	; 0xf8a <SendDummyByte+0x18>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+     f92:	80 91 ce 00 	lds	r24, 0x00CE
+static void SendDummyByte(void)
+// Needed to sync the card in some weird cases
+{
+	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+	TransferSdByte(0xFF);	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+     f96:	80 91 c8 00 	lds	r24, 0x00C8
+     f9a:	86 ff       	sbrs	r24, 6
+     f9c:	fc cf       	rjmp	.-8      	; 0xf96 <SendDummyByte+0x24>
+		;
+}
+     f9e:	08 95       	ret
+
+00000fa0 <SendSdCommand>:
+unsigned char SendSdCommand(unsigned char cmdIndex,unsigned long argument)
+// Sends out your standard 6-byte SD command.  Uses the passed index and argument.
+// Will append CRC when necessary or leave it blank if not.
+// This function will always assert CS, since it's needed to give a command, however frequently it is necessary to leave CS low for a transfer, so the function exits with CS still asserted.
+// That means the caller must remember to bring it high again when they're done.
+{
+     fa0:	1f 93       	push	r17
+     fa2:	28 2f       	mov	r18, r24
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+     fa4:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+     fa6:	5d 98       	cbi	0x0b, 5	; 11
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     fa8:	80 91 c8 00 	lds	r24, 0x00C8
+     fac:	85 ff       	sbrs	r24, 5
+     fae:	fc cf       	rjmp	.-8      	; 0xfa8 <SendSdCommand+0x8>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+     fb0:	8f ef       	ldi	r24, 0xFF	; 255
+     fb2:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+     fb6:	80 91 c8 00 	lds	r24, 0x00C8
+     fba:	87 ff       	sbrs	r24, 7
+     fbc:	fc cf       	rjmp	.-8      	; 0xfb6 <SendSdCommand+0x16>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+     fbe:	80 91 ce 00 	lds	r24, 0x00CE
+		tmpCrc;
+
+	StartSdTransfer();		// Assert CS
+	TransferSdByte(0xFF);	// Initial pad to make sure card is in the correct state for the command.
+
+	if(cmdIndex&0x80)	// We mark an ACMD with a 1 in bit 7 (no commands have this; the start bit is always zero).  Therefor this is an ACMD, so send CMD55 first
+     fc2:	27 ff       	sbrs	r18, 7
+     fc4:	7a c0       	rjmp	.+244    	; 0x10ba <SendSdCommand+0x11a>
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     fc6:	80 91 c8 00 	lds	r24, 0x00C8
+     fca:	85 ff       	sbrs	r24, 5
+     fcc:	fc cf       	rjmp	.-8      	; 0xfc6 <SendSdCommand+0x26>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+     fce:	87 e7       	ldi	r24, 0x77	; 119
+     fd0:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+     fd4:	80 91 c8 00 	lds	r24, 0x00C8
+     fd8:	87 ff       	sbrs	r24, 7
+     fda:	fc cf       	rjmp	.-8      	; 0xfd4 <SendSdCommand+0x34>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+     fdc:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     fe0:	80 91 c8 00 	lds	r24, 0x00C8
+     fe4:	85 ff       	sbrs	r24, 5
+     fe6:	fc cf       	rjmp	.-8      	; 0xfe0 <SendSdCommand+0x40>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+     fe8:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+     fec:	80 91 c8 00 	lds	r24, 0x00C8
+     ff0:	87 ff       	sbrs	r24, 7
+     ff2:	fc cf       	rjmp	.-8      	; 0xfec <SendSdCommand+0x4c>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+     ff4:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+     ff8:	80 91 c8 00 	lds	r24, 0x00C8
+     ffc:	85 ff       	sbrs	r24, 5
+     ffe:	fc cf       	rjmp	.-8      	; 0xff8 <SendSdCommand+0x58>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1000:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1004:	80 91 c8 00 	lds	r24, 0x00C8
+    1008:	87 ff       	sbrs	r24, 7
+    100a:	fc cf       	rjmp	.-8      	; 0x1004 <SendSdCommand+0x64>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    100c:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1010:	80 91 c8 00 	lds	r24, 0x00C8
+    1014:	85 ff       	sbrs	r24, 5
+    1016:	fc cf       	rjmp	.-8      	; 0x1010 <SendSdCommand+0x70>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1018:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    101c:	80 91 c8 00 	lds	r24, 0x00C8
+    1020:	87 ff       	sbrs	r24, 7
+    1022:	fc cf       	rjmp	.-8      	; 0x101c <SendSdCommand+0x7c>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1024:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1028:	80 91 c8 00 	lds	r24, 0x00C8
+    102c:	85 ff       	sbrs	r24, 5
+    102e:	fc cf       	rjmp	.-8      	; 0x1028 <SendSdCommand+0x88>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1030:	10 92 ce 00 	sts	0x00CE, r1
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1034:	80 91 c8 00 	lds	r24, 0x00C8
+    1038:	87 ff       	sbrs	r24, 7
+    103a:	fc cf       	rjmp	.-8      	; 0x1034 <SendSdCommand+0x94>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    103c:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1040:	80 91 c8 00 	lds	r24, 0x00C8
+    1044:	85 ff       	sbrs	r24, 5
+    1046:	fc cf       	rjmp	.-8      	; 0x1040 <SendSdCommand+0xa0>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1048:	81 e0       	ldi	r24, 0x01	; 1
+    104a:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    104e:	80 91 c8 00 	lds	r24, 0x00C8
+    1052:	87 ff       	sbrs	r24, 7
+    1054:	fc cf       	rjmp	.-8      	; 0x104e <SendSdCommand+0xae>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1056:	80 91 ce 00 	lds	r24, 0x00CE
+    105a:	9a e0       	ldi	r25, 0x0A	; 10
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    105c:	3f ef       	ldi	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    105e:	80 91 c8 00 	lds	r24, 0x00C8
+    1062:	85 ff       	sbrs	r24, 5
+    1064:	fc cf       	rjmp	.-8      	; 0x105e <SendSdCommand+0xbe>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1066:	30 93 ce 00 	sts	0x00CE, r19
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    106a:	80 91 c8 00 	lds	r24, 0x00C8
+    106e:	87 ff       	sbrs	r24, 7
+    1070:	fc cf       	rjmp	.-8      	; 0x106a <SendSdCommand+0xca>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1072:	10 91 ce 00 	lds	r17, 0x00CE
+		i=10;		// Give the SD card a 10 byte timeout in which to respond.
+		do			
+		{
+			response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+		}
+		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.		
+    1076:	1f 3f       	cpi	r17, 0xFF	; 255
+    1078:	11 f4       	brne	.+4      	; 0x107e <SendSdCommand+0xde>
+    107a:	91 50       	subi	r25, 0x01	; 1
+    107c:	81 f7       	brne	.-32     	; 0x105e <SendSdCommand+0xbe>
+
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    107e:	80 91 c8 00 	lds	r24, 0x00C8
+    1082:	80 64       	ori	r24, 0x40	; 64
+    1084:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1088:	80 91 c8 00 	lds	r24, 0x00C8
+    108c:	85 ff       	sbrs	r24, 5
+    108e:	fc cf       	rjmp	.-8      	; 0x1088 <SendSdCommand+0xe8>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1090:	8f ef       	ldi	r24, 0xFF	; 255
+    1092:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1096:	80 91 c8 00 	lds	r24, 0x00C8
+    109a:	87 ff       	sbrs	r24, 7
+    109c:	fc cf       	rjmp	.-8      	; 0x1096 <SendSdCommand+0xf6>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    109e:	80 91 ce 00 	lds	r24, 0x00CE
+		}
+		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.		
+
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(0xFF);		//	@@@ -- SOME CARDS NEED THIS.  See notes.
+		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    10a2:	80 91 c8 00 	lds	r24, 0x00C8
+    10a6:	86 ff       	sbrs	r24, 6
+    10a8:	fc cf       	rjmp	.-8      	; 0x10a2 <SendSdCommand+0x102>
+			;
+
+		if(response>1)				// Something wrong?
+    10aa:	12 30       	cpi	r17, 0x02	; 2
+    10ac:	10 f0       	brcs	.+4      	; 0x10b2 <SendSdCommand+0x112>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    10ae:	5d 9a       	sbi	0x0b, 5	; 11
+    10b0:	89 c0       	rjmp	.+274    	; 0x11c4 <__stack+0xc5>
+    10b2:	5d 9a       	sbi	0x0b, 5	; 11
+			EndSdTransfer();	// Bring CS high
+			return(response);	// ACMD preambe returned something weird.  Bail.
+		}
+
+		EndSdTransfer();	// Bring CS high
+		cmdIndex&=0x7F;		// Handled ACMD, so get rid of leading marker bit
+    10b4:	2f 77       	andi	r18, 0x7F	; 127
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    10b6:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    10b8:	5d 98       	cbi	0x0b, 5	; 11
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    10ba:	80 91 c8 00 	lds	r24, 0x00C8
+    10be:	85 ff       	sbrs	r24, 5
+    10c0:	fc cf       	rjmp	.-8      	; 0x10ba <SendSdCommand+0x11a>
+		StartSdTransfer();	// Assert CS
+	}
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+    10c2:	82 2f       	mov	r24, r18
+    10c4:	80 64       	ori	r24, 0x40	; 64
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    10c6:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    10ca:	80 91 c8 00 	lds	r24, 0x00C8
+    10ce:	87 ff       	sbrs	r24, 7
+    10d0:	fc cf       	rjmp	.-8      	; 0x10ca <SendSdCommand+0x12a>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    10d2:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    10d6:	80 91 c8 00 	lds	r24, 0x00C8
+    10da:	85 ff       	sbrs	r24, 5
+    10dc:	fc cf       	rjmp	.-8      	; 0x10d6 <SendSdCommand+0x136>
+	}
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+    10de:	87 2f       	mov	r24, r23
+    10e0:	99 27       	eor	r25, r25
+    10e2:	aa 27       	eor	r26, r26
+    10e4:	bb 27       	eor	r27, r27
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    10e6:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    10ea:	80 91 c8 00 	lds	r24, 0x00C8
+    10ee:	87 ff       	sbrs	r24, 7
+    10f0:	fc cf       	rjmp	.-8      	; 0x10ea <SendSdCommand+0x14a>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    10f2:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    10f6:	80 91 c8 00 	lds	r24, 0x00C8
+    10fa:	85 ff       	sbrs	r24, 5
+    10fc:	fc cf       	rjmp	.-8      	; 0x10f6 <SendSdCommand+0x156>
+
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
+    10fe:	cb 01       	movw	r24, r22
+    1100:	aa 27       	eor	r26, r26
+    1102:	bb 27       	eor	r27, r27
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1104:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1108:	80 91 c8 00 	lds	r24, 0x00C8
+    110c:	87 ff       	sbrs	r24, 7
+    110e:	fc cf       	rjmp	.-8      	; 0x1108 <__stack+0x9>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1110:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1114:	80 91 c8 00 	lds	r24, 0x00C8
+    1118:	85 ff       	sbrs	r24, 5
+    111a:	fc cf       	rjmp	.-8      	; 0x1114 <__stack+0x15>
+	// Handled beginning an "application specific" command above, so do proper part of command now (commands are from 0-63)
+		
+	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the command index
+	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
+	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
+    111c:	bb 27       	eor	r27, r27
+    111e:	a7 2f       	mov	r26, r23
+    1120:	96 2f       	mov	r25, r22
+    1122:	85 2f       	mov	r24, r21
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1124:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1128:	80 91 c8 00 	lds	r24, 0x00C8
+    112c:	87 ff       	sbrs	r24, 7
+    112e:	fc cf       	rjmp	.-8      	; 0x1128 <__stack+0x29>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1130:	80 91 ce 00 	lds	r24, 0x00CE
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1134:	80 91 c8 00 	lds	r24, 0x00C8
+    1138:	85 ff       	sbrs	r24, 5
+    113a:	fc cf       	rjmp	.-8      	; 0x1134 <__stack+0x35>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    113c:	40 93 ce 00 	sts	0x00CE, r20
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1140:	80 91 c8 00 	lds	r24, 0x00C8
+    1144:	87 ff       	sbrs	r24, 7
+    1146:	fc cf       	rjmp	.-8      	; 0x1140 <__stack+0x41>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1148:	80 91 ce 00 	lds	r24, 0x00CE
+	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
+	TransferSdByte((unsigned char)argument);			// LSB of argument
+	
+	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
+
+	if(cmdIndex==CMD0)	// except here where we actually need a real CRC
+    114c:	22 23       	and	r18, r18
+    114e:	11 f4       	brne	.+4      	; 0x1154 <__stack+0x55>
+    1150:	95 e9       	ldi	r25, 0x95	; 149
+    1152:	05 c0       	rjmp	.+10     	; 0x115e <__stack+0x5f>
+	{
+		tmpCrc=0x95;
+	}
+	if(cmdIndex==CMD8)	// and here where we actually need a real CRC
+    1154:	28 30       	cpi	r18, 0x08	; 8
+    1156:	11 f4       	brne	.+4      	; 0x115c <__stack+0x5d>
+    1158:	97 e8       	ldi	r25, 0x87	; 135
+    115a:	01 c0       	rjmp	.+2      	; 0x115e <__stack+0x5f>
+    115c:	91 e0       	ldi	r25, 0x01	; 1
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    115e:	80 91 c8 00 	lds	r24, 0x00C8
+    1162:	85 ff       	sbrs	r24, 5
+    1164:	fc cf       	rjmp	.-8      	; 0x115e <__stack+0x5f>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1166:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    116a:	80 91 c8 00 	lds	r24, 0x00C8
+    116e:	87 ff       	sbrs	r24, 7
+    1170:	fc cf       	rjmp	.-8      	; 0x116a <__stack+0x6b>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1172:	80 91 ce 00 	lds	r24, 0x00CE
+	
+	TransferSdByte(tmpCrc);		// Send the CRC7 byte
+	
+	// Now handle a response.
+	
+	if(cmdIndex==CMD12)	// This is a stop transmission command -- one byte of padding comes in before the real response.
+    1176:	2c 30       	cpi	r18, 0x0C	; 12
+    1178:	69 f4       	brne	.+26     	; 0x1194 <__stack+0x95>
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    117a:	80 91 c8 00 	lds	r24, 0x00C8
+    117e:	85 ff       	sbrs	r24, 5
+    1180:	fc cf       	rjmp	.-8      	; 0x117a <__stack+0x7b>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1182:	8f ef       	ldi	r24, 0xFF	; 255
+    1184:	80 93 ce 00 	sts	0x00CE, r24
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1188:	80 91 c8 00 	lds	r24, 0x00C8
+    118c:	87 ff       	sbrs	r24, 7
+    118e:	fc cf       	rjmp	.-8      	; 0x1188 <__stack+0x89>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1190:	80 91 ce 00 	lds	r24, 0x00CE
+    1194:	9a e0       	ldi	r25, 0x0A	; 10
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1196:	3f ef       	ldi	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1198:	80 91 c8 00 	lds	r24, 0x00C8
+    119c:	85 ff       	sbrs	r24, 5
+    119e:	fc cf       	rjmp	.-8      	; 0x1198 <__stack+0x99>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    11a0:	30 93 ce 00 	sts	0x00CE, r19
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    11a4:	80 91 c8 00 	lds	r24, 0x00C8
+    11a8:	87 ff       	sbrs	r24, 7
+    11aa:	fc cf       	rjmp	.-8      	; 0x11a4 <__stack+0xa5>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    11ac:	10 91 ce 00 	lds	r17, 0x00CE
+	
+	do			
+	{
+		response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+	}
+	while((response==0xFF)&&--i);				// A valid response has a leading zero.  Wait for that or for 10 bytes to pass.
+    11b0:	1f 3f       	cpi	r17, 0xFF	; 255
+    11b2:	11 f4       	brne	.+4      	; 0x11b8 <__stack+0xb9>
+    11b4:	91 50       	subi	r25, 0x01	; 1
+    11b6:	81 f7       	brne	.-32     	; 0x1198 <__stack+0x99>
+
+// If we're not a command which has a multi-byte response, put in an extra 0xFF here.
+	if(cmdIndex!=CMD8&&cmdIndex!=CMD58)		// Add post-command padding.  We add this pad byte manually to commands with a longer-than-one-byte response.
+    11b8:	28 30       	cpi	r18, 0x08	; 8
+    11ba:	21 f0       	breq	.+8      	; 0x11c4 <__stack+0xc5>
+    11bc:	2a 33       	cpi	r18, 0x3A	; 58
+    11be:	11 f0       	breq	.+4      	; 0x11c4 <__stack+0xc5>
+	{
+		SendDummyByte();	
+    11c0:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+	}
+
+	return(response);		// Will be 0xFF if we timed out.  This should almost always be 0 or 1.
+}
+    11c4:	81 2f       	mov	r24, r17
+    11c6:	1f 91       	pop	r17
+    11c8:	08 95       	ret
+
+000011ca <SdBeginSingleBlockRead>:
+// Send the command.  Get the response from the SD card (no errors)
+// SD card waits some number of bytes with DATA OUT high, then the SD card sends the data token (0xFE) followed by the block, followed by a 2-byte CRC which we throw out.
+// NOTE -- per the SD spec, this delay before timeout can be as long as 100mSec worst case.  If (TAAC + NSAC) are less, then that sum is the worst case.  A qucik troll on the internet shows the slowest cards people polled at 40mS, some at 5, 1.5, or 1mSec, and a lot at 500uSec.
+// These are all based on TAAC and not NSAC (which always seems to be 0).
+// Either way, best to open with this command, then do your polling for the data token somewhere else since it could be a lot of time.  If we were ballers we would check the access speeds...
+{
+    11ca:	ab 01       	movw	r20, r22
+    11cc:	bc 01       	movw	r22, r24
+	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate the block addy into the byte addy
+
+	if(SendSdCommand(CMD17,theBlock)==0)	// If we send the command and get the correct response...
+    11ce:	e9 e0       	ldi	r30, 0x09	; 9
+    11d0:	44 0f       	add	r20, r20
+    11d2:	55 1f       	adc	r21, r21
+    11d4:	66 1f       	adc	r22, r22
+    11d6:	77 1f       	adc	r23, r23
+    11d8:	ea 95       	dec	r30
+    11da:	d1 f7       	brne	.-12     	; 0x11d0 <SdBeginSingleBlockRead+0x6>
+    11dc:	81 e1       	ldi	r24, 0x11	; 17
+    11de:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    11e2:	90 e0       	ldi	r25, 0x00	; 0
+    11e4:	88 23       	and	r24, r24
+    11e6:	09 f4       	brne	.+2      	; 0x11ea <SdBeginSingleBlockRead+0x20>
+    11e8:	91 e0       	ldi	r25, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+    11ea:	89 2f       	mov	r24, r25
+    11ec:	08 95       	ret
+
+000011ee <SdBeginSingleBlockWrite>:
+
+bool SdBeginSingleBlockWrite(unsigned long theBlock)
+// Opens up the SD card for a single block write, starting at the beginning of the passed block.
+// Returns false if something goes wrong.  Otherwise, we exit ready to write bytes to the block.
+{
+    11ee:	ab 01       	movw	r20, r22
+    11f0:	bc 01       	movw	r22, r24
+	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate the block addy into the byte addy
+
+	if(SendSdCommand(CMD24,theBlock)==0)	// If we send the command and get the correct response...
+    11f2:	f9 e0       	ldi	r31, 0x09	; 9
+    11f4:	44 0f       	add	r20, r20
+    11f6:	55 1f       	adc	r21, r21
+    11f8:	66 1f       	adc	r22, r22
+    11fa:	77 1f       	adc	r23, r23
+    11fc:	fa 95       	dec	r31
+    11fe:	d1 f7       	brne	.-12     	; 0x11f4 <SdBeginSingleBlockWrite+0x6>
+    1200:	88 e1       	ldi	r24, 0x18	; 24
+    1202:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    1206:	90 e0       	ldi	r25, 0x00	; 0
+    1208:	88 23       	and	r24, r24
+    120a:	09 f4       	brne	.+2      	; 0x120e <SdBeginSingleBlockWrite+0x20>
+    120c:	91 e0       	ldi	r25, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+    120e:	89 2f       	mov	r24, r25
+    1210:	08 95       	ret
+
+00001212 <SdHandshake>:
+// Tries to talk to the inserted SD card and set up an SPI interface.
+// Since this is a micro SD slot, we don't need to support MMC cards (they wouldn't fit in the slot).
+// We also do not support SDHC, since it costs more, we have orders of magnitude more storage than necessary as is, and the interface is a BIT different.  Could fix this if people whine.
+// Returns true if we successfully initialize the all the stuff we need to do to talk to the card.
+// NOTE -- this process takes time, and will hang operation for hundreds of milliseconds on a successful call.
+{
+    1212:	df 93       	push	r29
+    1214:	cf 93       	push	r28
+    1216:	00 d0       	rcall	.+0      	; 0x1218 <SdHandshake+0x6>
+    1218:	00 d0       	rcall	.+0      	; 0x121a <SdHandshake+0x8>
+    121a:	cd b7       	in	r28, 0x3d	; 61
+    121c:	de b7       	in	r29, 0x3e	; 62
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    121e:	5d 9a       	sbi	0x0b, 5	; 11
+    1220:	90 e0       	ldi	r25, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1222:	2f ef       	ldi	r18, 0xFF	; 255
+	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS must be high.  ChaN suggest MOSI stays high too which makes sense.
+
+	EndSdTransfer();	// Bring CS high
+	for(i=0;i<20;i++)
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    1224:	80 91 c8 00 	lds	r24, 0x00C8
+    1228:	80 64       	ori	r24, 0x40	; 64
+    122a:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    122e:	80 91 c8 00 	lds	r24, 0x00C8
+    1232:	85 ff       	sbrs	r24, 5
+    1234:	fc cf       	rjmp	.-8      	; 0x122e <SdHandshake+0x1c>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1236:	20 93 ce 00 	sts	0x00CE, r18
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    123a:	80 91 c8 00 	lds	r24, 0x00C8
+    123e:	87 ff       	sbrs	r24, 7
+    1240:	fc cf       	rjmp	.-8      	; 0x123a <SdHandshake+0x28>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    1242:	80 91 ce 00 	lds	r24, 0x00CE
+		cardValid;	// Is this a micro SD card or some random bit of plastic and silicon?
+
+	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS must be high.  ChaN suggest MOSI stays high too which makes sense.
+
+	EndSdTransfer();	// Bring CS high
+	for(i=0;i<20;i++)
+    1246:	9f 5f       	subi	r25, 0xFF	; 255
+    1248:	94 31       	cpi	r25, 0x14	; 20
+    124a:	61 f7       	brne	.-40     	; 0x1224 <SdHandshake+0x12>
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(DUMMY_BYTE);	// Transfer ten dummy bytes (80 clocks).
+	}	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    124c:	80 91 c8 00 	lds	r24, 0x00C8
+    1250:	86 ff       	sbrs	r24, 6
+    1252:	fc cf       	rjmp	.-8      	; 0x124c <SdHandshake+0x3a>
+
+void StartSdTransfer(void)
+// Just bring the Chip Select (Slave Select) line from high to low.
+// This will abort and restart a transfer if called in  the middle of a transfer process.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    1254:	5d 9a       	sbi	0x0b, 5	; 11
+	PORTD&=~Om_SD_CS;				// Then bring it low.
+    1256:	5d 98       	cbi	0x0b, 5	; 11
+    1258:	20 e0       	ldi	r18, 0x00	; 0
+    125a:	30 e0       	ldi	r19, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    125c:	9f ef       	ldi	r25, 0xFF	; 255
+	// Jacked from SD Fat lib, which suggests doing the following to prevent "re-init hang from cards in partial read".  Makes sense.
+
+	StartSdTransfer();						
+	for(n=0;n<SD_BLOCK_LENGTH;n++)
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+    125e:	80 91 c8 00 	lds	r24, 0x00C8
+    1262:	80 64       	ori	r24, 0x40	; 64
+    1264:	80 93 c8 00 	sts	0x00C8, r24
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    1268:	80 91 c8 00 	lds	r24, 0x00C8
+    126c:	85 ff       	sbrs	r24, 5
+    126e:	fc cf       	rjmp	.-8      	; 0x1268 <SdHandshake+0x56>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1270:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1274:	80 91 c8 00 	lds	r24, 0x00C8
+    1278:	87 ff       	sbrs	r24, 7
+    127a:	fc cf       	rjmp	.-8      	; 0x1274 <SdHandshake+0x62>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    127c:	80 91 ce 00 	lds	r24, 0x00CE
+
+
+	// Jacked from SD Fat lib, which suggests doing the following to prevent "re-init hang from cards in partial read".  Makes sense.
+
+	StartSdTransfer();						
+	for(n=0;n<SD_BLOCK_LENGTH;n++)
+    1280:	2f 5f       	subi	r18, 0xFF	; 255
+    1282:	3f 4f       	sbci	r19, 0xFF	; 255
+    1284:	82 e0       	ldi	r24, 0x02	; 2
+    1286:	20 30       	cpi	r18, 0x00	; 0
+    1288:	38 07       	cpc	r19, r24
+    128a:	49 f7       	brne	.-46     	; 0x125e <SdHandshake+0x4c>
+	{
+		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+		TransferSdByte(0xFF);	
+	}
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    128c:	80 91 c8 00 	lds	r24, 0x00C8
+    1290:	86 ff       	sbrs	r24, 6
+    1292:	fc cf       	rjmp	.-8      	; 0x128c <SdHandshake+0x7a>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    1294:	5d 9a       	sbi	0x0b, 5	; 11
+		;
+	EndSdTransfer();
+
+	// Should be in "idle mode" now.  Set SPI mode by asserting the CS and sending CMD 0.
+	cardValid=false;			// Card not valid until we say it is.	
+	SendSdCommand(CMD0,0);		// Send first time for good measure, also to make sure onboard pullups get to where they need to be.
+    1296:	80 e0       	ldi	r24, 0x00	; 0
+    1298:	40 e0       	ldi	r20, 0x00	; 0
+    129a:	50 e0       	ldi	r21, 0x00	; 0
+    129c:	60 e0       	ldi	r22, 0x00	; 0
+    129e:	70 e0       	ldi	r23, 0x00	; 0
+    12a0:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+    12a4:	80 91 c8 00 	lds	r24, 0x00C8
+    12a8:	86 ff       	sbrs	r24, 6
+    12aa:	fc cf       	rjmp	.-8      	; 0x12a4 <SdHandshake+0x92>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    12ac:	5d 9a       	sbi	0x0b, 5	; 11
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+		;
+	EndSdTransfer();
+
+	// Send CMD0 again, actually check response now.
+	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, keep going.
+    12ae:	80 e0       	ldi	r24, 0x00	; 0
+    12b0:	40 e0       	ldi	r20, 0x00	; 0
+    12b2:	50 e0       	ldi	r21, 0x00	; 0
+    12b4:	60 e0       	ldi	r22, 0x00	; 0
+    12b6:	70 e0       	ldi	r23, 0x00	; 0
+    12b8:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    12bc:	81 30       	cpi	r24, 0x01	; 1
+    12be:	09 f0       	breq	.+2      	; 0x12c2 <SdHandshake+0xb0>
+    12c0:	b4 c0       	rjmp	.+360    	; 0x142a <SdHandshake+0x218>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    12c2:	5d 9a       	sbi	0x0b, 5	; 11
+	// Send CMD0 again, actually check response now.
+	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, keep going.
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+    12c4:	88 e0       	ldi	r24, 0x08	; 8
+    12c6:	4a ea       	ldi	r20, 0xAA	; 170
+    12c8:	51 e0       	ldi	r21, 0x01	; 1
+    12ca:	60 e0       	ldi	r22, 0x00	; 0
+    12cc:	70 e0       	ldi	r23, 0x00	; 0
+    12ce:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    12d2:	81 30       	cpi	r24, 0x01	; 1
+    12d4:	09 f0       	breq	.+2      	; 0x12d8 <SdHandshake+0xc6>
+    12d6:	76 c0       	rjmp	.+236    	; 0x13c4 <SdHandshake+0x1b2>
+    12d8:	fe 01       	movw	r30, r28
+    12da:	31 96       	adiw	r30, 0x01	; 1
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    12dc:	9f ef       	ldi	r25, 0xFF	; 255
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+    12de:	9e 01       	movw	r18, r28
+    12e0:	2b 5f       	subi	r18, 0xFB	; 251
+    12e2:	3f 4f       	sbci	r19, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    12e4:	80 91 c8 00 	lds	r24, 0x00C8
+    12e8:	85 ff       	sbrs	r24, 5
+    12ea:	fc cf       	rjmp	.-8      	; 0x12e4 <SdHandshake+0xd2>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    12ec:	90 93 ce 00 	sts	0x00CE, r25
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    12f0:	80 91 c8 00 	lds	r24, 0x00C8
+    12f4:	87 ff       	sbrs	r24, 7
+    12f6:	fc cf       	rjmp	.-8      	; 0x12f0 <SdHandshake+0xde>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    12f8:	80 91 ce 00 	lds	r24, 0x00CE
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+			{
+				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+    12fc:	81 93       	st	Z+, r24
+	{
+		EndSdTransfer();					// Bring CS high
+
+		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we're either a v2 standard density card or an SDHC card
+		{
+			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+    12fe:	e2 17       	cp	r30, r18
+    1300:	f3 07       	cpc	r31, r19
+    1302:	81 f7       	brne	.-32     	; 0x12e4 <SdHandshake+0xd2>
+			{
+				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+			}
+
+			SendDummyByte();		// Send extra FF after multibyte response. 
+    1304:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    1308:	5d 9a       	sbi	0x0b, 5	; 11
+			}
+
+			SendDummyByte();		// Send extra FF after multibyte response. 
+			EndSdTransfer();		// Bring CS high
+
+			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it can't)
+    130a:	8b 81       	ldd	r24, Y+3	; 0x03
+    130c:	81 30       	cpi	r24, 0x01	; 1
+    130e:	09 f0       	breq	.+2      	; 0x1312 <SdHandshake+0x100>
+    1310:	8c c0       	rjmp	.+280    	; 0x142a <SdHandshake+0x218>
+    1312:	8c 81       	ldd	r24, Y+4	; 0x04
+    1314:	8a 3a       	cpi	r24, 0xAA	; 170
+    1316:	09 f0       	breq	.+2      	; 0x131a <SdHandshake+0x108>
+    1318:	88 c0       	rjmp	.+272    	; 0x142a <SdHandshake+0x218>
+			{				
+				SetTimer(TIMER_SD,SECOND);
+    131a:	83 e0       	ldi	r24, 0x03	; 3
+    131c:	64 ec       	ldi	r22, 0xC4	; 196
+    131e:	74 e0       	ldi	r23, 0x04	; 4
+    1320:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+    1324:	03 c0       	rjmp	.+6      	; 0x132c <SdHandshake+0x11a>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    1326:	5d 9a       	sbi	0x0b, 5	; 11
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go (0 is the result once the card is done initializing, takes a long time (we give it a second per the SD spec))
+				{
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+					HandleSoftclock();	// Keep the timer timing.
+    1328:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+
+			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it can't)
+			{				
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go (0 is the result once the card is done initializing, takes a long time (we give it a second per the SD spec))
+    132c:	83 e0       	ldi	r24, 0x03	; 3
+    132e:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    1332:	88 23       	and	r24, r24
+    1334:	49 f4       	brne	.+18     	; 0x1348 <SdHandshake+0x136>
+    1336:	89 ea       	ldi	r24, 0xA9	; 169
+    1338:	40 e0       	ldi	r20, 0x00	; 0
+    133a:	50 e0       	ldi	r21, 0x00	; 0
+    133c:	60 e0       	ldi	r22, 0x00	; 0
+    133e:	70 e0       	ldi	r23, 0x00	; 0
+    1340:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    1344:	88 23       	and	r24, r24
+    1346:	79 f7       	brne	.-34     	; 0x1326 <SdHandshake+0x114>
+				{
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+					HandleSoftclock();	// Keep the timer timing.
+				}		
+				
+				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+    1348:	83 e0       	ldi	r24, 0x03	; 3
+    134a:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    134e:	88 23       	and	r24, r24
+    1350:	31 f0       	breq	.+12     	; 0x135e <SdHandshake+0x14c>
+    1352:	6b c0       	rjmp	.+214    	; 0x142a <SdHandshake+0x218>
+				{
+					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think we might need to do this even though we throw out the results.
+					{
+						SendDummyByte();		// Send extra FF (it's busy)
+    1354:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+						HandleSoftclock();	// Keep the timer timing.
+    1358:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    135c:	5d 9a       	sbi	0x0b, 5	; 11
+					HandleSoftclock();	// Keep the timer timing.
+				}		
+				
+				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+				{
+					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think we might need to do this even though we throw out the results.
+    135e:	83 e0       	ldi	r24, 0x03	; 3
+    1360:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    1364:	88 23       	and	r24, r24
+    1366:	49 f4       	brne	.+18     	; 0x137a <SdHandshake+0x168>
+    1368:	8a e3       	ldi	r24, 0x3A	; 58
+    136a:	40 e0       	ldi	r20, 0x00	; 0
+    136c:	50 e0       	ldi	r21, 0x00	; 0
+    136e:	60 e0       	ldi	r22, 0x00	; 0
+    1370:	70 e0       	ldi	r23, 0x00	; 0
+    1372:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    1376:	88 23       	and	r24, r24
+    1378:	69 f7       	brne	.-38     	; 0x1354 <SdHandshake+0x142>
+					{
+						SendDummyByte();		// Send extra FF (it's busy)
+						HandleSoftclock();	// Keep the timer timing.
+						EndSdTransfer();		// Bring CS high.
+					}
+					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+    137a:	83 e0       	ldi	r24, 0x03	; 3
+    137c:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    1380:	88 23       	and	r24, r24
+    1382:	09 f0       	breq	.+2      	; 0x1386 <SdHandshake+0x174>
+    1384:	52 c0       	rjmp	.+164    	; 0x142a <SdHandshake+0x218>
+    1386:	90 e0       	ldi	r25, 0x00	; 0
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1388:	2f ef       	ldi	r18, 0xFF	; 255
+// Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and then returns the byte it's gotten from the Slave.
+// The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and afterwards accessing SPDR.
+// NOTE: Tue Oct 14 23:07:27 CDT 2008
+// This is a little different now with the UART hardware.  The UART is double buffered and the example in the datasheet has you checking both transmit and recieve buffers every transmission.
+{
+	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+    138a:	80 91 c8 00 	lds	r24, 0x00C8
+    138e:	85 ff       	sbrs	r24, 5
+    1390:	fc cf       	rjmp	.-8      	; 0x138a <SdHandshake+0x178>
+		;
+	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+    1392:	20 93 ce 00 	sts	0x00CE, r18
+
+	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+    1396:	80 91 c8 00 	lds	r24, 0x00C8
+    139a:	87 ff       	sbrs	r24, 7
+    139c:	fc cf       	rjmp	.-8      	; 0x1396 <SdHandshake+0x184>
+		;
+
+	return(UDR1);				// Return the data clocked in from the slave.
+    139e:	80 91 ce 00 	lds	r24, 0x00CE
+						HandleSoftclock();	// Keep the timer timing.
+						EndSdTransfer();		// Bring CS high.
+					}
+					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+					{
+						for(i=0;i<4;i++)						// This is an "R3" response, so we need to grab four more bytes.
+    13a2:	9f 5f       	subi	r25, 0xFF	; 255
+    13a4:	94 30       	cpi	r25, 0x04	; 4
+    13a6:	89 f7       	brne	.-30     	; 0x138a <SdHandshake+0x178>
+						{
+							ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+						}
+
+						SendDummyByte();			// Send extra FF after multibyte response. 
+    13a8:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    13ac:	5d 9a       	sbi	0x0b, 5	; 11
+						}
+
+						SendDummyByte();			// Send extra FF after multibyte response. 
+						EndSdTransfer();			// Bring CS high.
+
+						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+    13ae:	80 e1       	ldi	r24, 0x10	; 16
+    13b0:	40 e0       	ldi	r20, 0x00	; 0
+    13b2:	52 e0       	ldi	r21, 0x02	; 2
+    13b4:	60 e0       	ldi	r22, 0x00	; 0
+    13b6:	70 e0       	ldi	r23, 0x00	; 0
+    13b8:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    13bc:	5d 9a       	sbi	0x0b, 5	; 11
+						SendDummyByte();			// Send extra FF after multibyte response. 
+						EndSdTransfer();			// Bring CS high.
+
+						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+						EndSdTransfer();						// Bring CS high.
+						SendDummyByte();						
+    13be:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+    13c2:	31 c0       	rjmp	.+98     	; 0x1426 <SdHandshake+0x214>
+				}
+			}
+		}
+		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
+		{
+			SendDummyByte();					// Send extra FF after multibyte response. 
+    13c4:	0e 94 b9 07 	call	0xf72	; 0xf72 <SendDummyByte>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    13c8:	5d 9a       	sbi	0x0b, 5	; 11
+		}
+		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
+		{
+			SendDummyByte();					// Send extra FF after multibyte response. 
+			EndSdTransfer();					// Bring CS high
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+    13ca:	89 ea       	ldi	r24, 0xA9	; 169
+    13cc:	40 e0       	ldi	r20, 0x00	; 0
+    13ce:	50 e0       	ldi	r21, 0x00	; 0
+    13d0:	60 e0       	ldi	r22, 0x00	; 0
+    13d2:	70 e0       	ldi	r23, 0x00	; 0
+    13d4:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    13d8:	82 30       	cpi	r24, 0x02	; 2
+    13da:	38 f5       	brcc	.+78     	; 0x142a <SdHandshake+0x218>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    13dc:	5d 9a       	sbi	0x0b, 5	; 11
+			SendDummyByte();					// Send extra FF after multibyte response. 
+			EndSdTransfer();					// Bring CS high
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+			{
+				EndSdTransfer();			// Bring CS high.
+				SetTimer(TIMER_SD,SECOND);
+    13de:	83 e0       	ldi	r24, 0x03	; 3
+    13e0:	64 ec       	ldi	r22, 0xC4	; 196
+    13e2:	74 e0       	ldi	r23, 0x04	; 4
+    13e4:	0e 94 35 05 	call	0xa6a	; 0xa6a <SetTimer>
+    13e8:	03 c0       	rjmp	.+6      	; 0x13f0 <SdHandshake+0x1de>
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go 
+				{
+					HandleSoftclock();	// Keep the timer timing.
+    13ea:	0e 94 f7 01 	call	0x3ee	; 0x3ee <HandleSoftclock>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    13ee:	5d 9a       	sbi	0x0b, 5	; 11
+			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, keep going (MMC will bail)	
+			{
+				EndSdTransfer();			// Bring CS high.
+				SetTimer(TIMER_SD,SECOND);
+
+				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high capacity.  If this returns 0, we're good to go 
+    13f0:	83 e0       	ldi	r24, 0x03	; 3
+    13f2:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    13f6:	88 23       	and	r24, r24
+    13f8:	49 f4       	brne	.+18     	; 0x140c <SdHandshake+0x1fa>
+    13fa:	89 ea       	ldi	r24, 0xA9	; 169
+    13fc:	40 e0       	ldi	r20, 0x00	; 0
+    13fe:	50 e0       	ldi	r21, 0x00	; 0
+    1400:	60 e0       	ldi	r22, 0x00	; 0
+    1402:	70 e0       	ldi	r23, 0x00	; 0
+    1404:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+    1408:	88 23       	and	r24, r24
+    140a:	79 f7       	brne	.-34     	; 0x13ea <SdHandshake+0x1d8>
+				{
+					HandleSoftclock();	// Keep the timer timing.
+					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell the card we're cool with HIGH CAPACITY SD cards.  If we don't set this bit, and we're talking to an SDHC card, the card will always return busy.  This is what we want.
+				}		
+
+				if(!(CheckTimer(TIMER_SD)))		// Initialized!
+    140c:	83 e0       	ldi	r24, 0x03	; 3
+    140e:	0e 94 47 05 	call	0xa8e	; 0xa8e <CheckTimer>
+    1412:	88 23       	and	r24, r24
+    1414:	51 f4       	brne	.+20     	; 0x142a <SdHandshake+0x218>
+				{
+					SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+    1416:	80 e1       	ldi	r24, 0x10	; 16
+    1418:	40 e0       	ldi	r20, 0x00	; 0
+    141a:	52 e0       	ldi	r21, 0x02	; 2
+    141c:	60 e0       	ldi	r22, 0x00	; 0
+    141e:	70 e0       	ldi	r23, 0x00	; 0
+    1420:	0e 94 d0 07 	call	0xfa0	; 0xfa0 <SendSdCommand>
+//-----------------------------------------------------------------------
+
+void EndSdTransfer(void)
+// This ends an SPI transfer.  If called while the CS line is already high or there is no transfer going on, nothing happens.
+{
+	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+    1424:	5d 9a       	sbi	0x0b, 5	; 11
+    1426:	81 e0       	ldi	r24, 0x01	; 1
+    1428:	01 c0       	rjmp	.+2      	; 0x142c <SdHandshake+0x21a>
+    142a:	80 e0       	ldi	r24, 0x00	; 0
+    142c:	5d 9a       	sbi	0x0b, 5	; 11
+		}
+	}
+
+	EndSdTransfer();	// Bring CS high
+	return(cardValid);	// Report success or failure of initialization -- fails on timeout or bad response.  Bad response is an invalid card or no card, timeout means card didn't initialize (which might mean it's high capacity).
+}
+    142e:	0f 90       	pop	r0
+    1430:	0f 90       	pop	r0
+    1432:	0f 90       	pop	r0
+    1434:	0f 90       	pop	r0
+    1436:	cf 91       	pop	r28
+    1438:	df 91       	pop	r29
+    143a:	08 95       	ret
+
+0000143c <_exit>:
+    143c:	f8 94       	cli
+
+0000143e <__stop_program>:
+    143e:	ff cf       	rjmp	.-2      	; 0x143e <__stop_program>

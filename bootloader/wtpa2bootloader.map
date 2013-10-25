@@ -1,0 +1,505 @@
+Archive member included because of file (symbol)
+
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                              /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o (exit)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                              wtpa2bootloader.o (__do_copy_data)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                              wtpa2bootloader.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+systemTicks         0x2               wtpa2bootloader.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+LOAD wtpa2bootloader.o
+LOAD softclock.o
+LOAD microSD.o
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/libm.a
+Address of section .text set to 0xf000
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x0000f000      0xb3a
+ *(.vectors)
+ .vectors       0x0000f000       0x7c /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x0000f000                __vectors
+                0x0000f000                __vector_default
+ *(.vectors)
+ *(.progmem.gcc*)
+ *(.progmem*)
+                0x0000f07c                . = ALIGN (0x2)
+                0x0000f07c                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x0000f07c        0x0 linker stubs
+ *(.trampolines*)
+                0x0000f07c                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x0000f07c                __ctors_start = .
+ *(.ctors)
+                0x0000f07c                __ctors_end = .
+                0x0000f07c                __dtors_start = .
+ *(.dtors)
+                0x0000f07c                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x0000f07c        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x0000f07c                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x0000f07c        0xc /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x0000f088       0x16 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                0x0000f088                __do_copy_data
+ .init4         0x0000f09e       0x10 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                0x0000f09e                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x0000f0ae        0x8 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ *(.init9)
+ *(.text)
+ .text          0x0000f0b6        0x4 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x0000f0b6                __vector_22
+                0x0000f0b6                __vector_28
+                0x0000f0b6                __vector_1
+                0x0000f0b6                __vector_24
+                0x0000f0b6                __vector_12
+                0x0000f0b6                __bad_interrupt
+                0x0000f0b6                __vector_6
+                0x0000f0b6                __vector_3
+                0x0000f0b6                __vector_23
+                0x0000f0b6                __vector_30
+                0x0000f0b6                __vector_25
+                0x0000f0b6                __vector_11
+                0x0000f0b6                __vector_13
+                0x0000f0b6                __vector_17
+                0x0000f0b6                __vector_19
+                0x0000f0b6                __vector_7
+                0x0000f0b6                __vector_27
+                0x0000f0b6                __vector_5
+                0x0000f0b6                __vector_4
+                0x0000f0b6                __vector_9
+                0x0000f0b6                __vector_2
+                0x0000f0b6                __vector_21
+                0x0000f0b6                __vector_15
+                0x0000f0b6                __vector_29
+                0x0000f0b6                __vector_8
+                0x0000f0b6                __vector_26
+                0x0000f0b6                __vector_14
+                0x0000f0b6                __vector_10
+                0x0000f0b6                __vector_16
+                0x0000f0b6                __vector_18
+                0x0000f0b6                __vector_20
+ .text          0x0000f0ba      0x4ea wtpa2bootloader.o
+                0x0000f0ba                HandleSoftclock
+                0x0000f1dc                main
+ .text          0x0000f5a4       0x58 softclock.o
+                0x0000f5a4                SetTimer
+                0x0000f5c8                CheckTimer
+ .text          0x0000f5fc      0x53a microSD.o
+                0x0000f5fc                UnInitSdInterface
+                0x0000f618                InitSdInterface
+                0x0000f646                EndSdTransfer
+                0x0000f64a                StartSdTransfer
+                0x0000f650                TransferSdByte
+                0x0000f69a                SendSdCommand
+                0x0000f8c4                SdBeginSingleBlockRead
+                0x0000f8e8                SdBeginSingleBlockWrite
+                0x0000f90c                SdHandshake
+ .text          0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text          0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text          0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                0x0000fb36                . = ALIGN (0x2)
+ *(.text.*)
+ .text.libgcc   0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc   0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                0x0000fb36                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000fb36        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                0x0000fb36                exit
+                0x0000fb36                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000fb36        0x4 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ *(.fini0)
+                0x0000fb3a                _etext = .
+
+.data           0x00800100        0x8 load address 0x0000fb3a
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800100        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ .data          0x00800100        0x8 wtpa2bootloader.o
+ .data          0x00800108        0x0 softclock.o
+ .data          0x00800108        0x0 microSD.o
+ .data          0x00800108        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .data          0x00800108        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .data          0x00800108        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x00800108                . = ALIGN (0x2)
+                0x00800108                _edata = .
+                0x00800108                PROVIDE (__data_end, .)
+
+.bss            0x00800108      0x218
+                0x00800108                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800108        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ .bss           0x00800108      0x206 wtpa2bootloader.o
+ .bss           0x0080030e       0x10 softclock.o
+ .bss           0x0080031e        0x0 microSD.o
+ .bss           0x0080031e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .bss           0x0080031e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .bss           0x0080031e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x0080031e        0x2 wtpa2bootloader.o
+                0x0080031e                systemTicks
+                0x00800320                PROVIDE (__bss_end, .)
+                0x0000fb3a                __data_load_start = LOADADDR (.data)
+                0x0000fb42                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800320        0x0
+                0x00800320                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800320                PROVIDE (__noinit_end, .)
+                0x00800320                _end = .
+                0x00800320                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x00000000      0x6cc
+ *(.stab)
+ .stab          0x00000000      0x6cc /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+
+.stabstr        0x00000000       0x70
+ *(.stabstr)
+ .stabstr       0x00000000       0x70 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000       0x60
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 wtpa2bootloader.o
+ .debug_aranges
+                0x00000020       0x20 softclock.o
+ .debug_aranges
+                0x00000040       0x20 microSD.o
+
+.debug_pubnames
+                0x00000000      0x13b
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000       0x3f wtpa2bootloader.o
+ .debug_pubnames
+                0x0000003f       0x2e softclock.o
+ .debug_pubnames
+                0x0000006d       0xce microSD.o
+
+.debug_info     0x00000000      0xb01
+ *(.debug_info)
+ .debug_info    0x00000000      0x456 wtpa2bootloader.o
+ .debug_info    0x00000456      0x10b softclock.o
+ .debug_info    0x00000561      0x5a0 microSD.o
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000      0x4d9
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x226 wtpa2bootloader.o
+ .debug_abbrev  0x00000226       0xba softclock.o
+ .debug_abbrev  0x000002e0      0x1f9 microSD.o
+
+.debug_line     0x00000000      0xd20
+ *(.debug_line)
+ .debug_line    0x00000000      0x54e wtpa2bootloader.o
+ .debug_line    0x0000054e       0x9a softclock.o
+ .debug_line    0x000005e8      0x738 microSD.o
+
+.debug_frame    0x00000000      0x130
+ *(.debug_frame)
+ .debug_frame   0x00000000       0x50 wtpa2bootloader.o
+ .debug_frame   0x00000050       0x30 softclock.o
+ .debug_frame   0x00000080       0xb0 microSD.o
+
+.debug_str      0x00000000      0x316
+ *(.debug_str)
+ .debug_str     0x00000000      0x1c0 wtpa2bootloader.o
+                                0x202 (size before relaxing)
+ .debug_str     0x000001c0       0x4b softclock.o
+                                 0xf5 (size before relaxing)
+ .debug_str     0x0000020b      0x10b microSD.o
+                                0x1c7 (size before relaxing)
+
+.debug_loc      0x00000000      0x549
+ *(.debug_loc)
+ .debug_loc     0x00000000      0x387 wtpa2bootloader.o
+ .debug_loc     0x00000387       0x26 softclock.o
+ .debug_loc     0x000003ad      0x19c microSD.o
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(wtpa2bootloader.elf elf32-avr)
+LOAD linker stubs
+
+.debug_ranges   0x00000000       0xe8
+ .debug_ranges  0x00000000       0x40 wtpa2bootloader.o
+ .debug_ranges  0x00000040       0xa8 microSD.o
+
+Cross Reference Table
+
+Symbol                                            File
+CheckTimer                                        softclock.o
+                                                  microSD.o
+EndSdTransfer                                     microSD.o
+                                                  wtpa2bootloader.o
+HandleSoftclock                                   wtpa2bootloader.o
+                                                  microSD.o
+InitSdInterface                                   microSD.o
+                                                  wtpa2bootloader.o
+SdBeginSingleBlockRead                            microSD.o
+                                                  wtpa2bootloader.o
+SdBeginSingleBlockWrite                           microSD.o
+SdHandshake                                       microSD.o
+                                                  wtpa2bootloader.o
+SendSdCommand                                     microSD.o
+SetTimer                                          softclock.o
+                                                  microSD.o
+StartSdTransfer                                   microSD.o
+TransferSdByte                                    microSD.o
+                                                  wtpa2bootloader.o
+UnInitSdInterface                                 microSD.o
+                                                  wtpa2bootloader.o
+__bad_interrupt                                   /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__bss_end                                         /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+__bss_start                                       /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+__data_end                                        /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__data_load_start                                 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__data_start                                      /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__do_clear_bss                                    /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                                                  softclock.o
+                                                  wtpa2bootloader.o
+__do_copy_data                                    /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                                                  wtpa2bootloader.o
+__heap_end                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__init                                            /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__stack                                           /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_1                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_10                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_11                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_12                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_13                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_14                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_15                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_16                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_17                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_18                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_19                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_2                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_20                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_21                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_22                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_23                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_24                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_25                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_26                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_27                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_28                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_29                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_3                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_30                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_4                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_5                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_6                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_7                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_8                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_9                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_default                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vectors                                         /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+_exit                                             /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+exit                                              /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+main                                              wtpa2bootloader.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+systemTicks                                       softclock.o
+                                                  wtpa2bootloader.o

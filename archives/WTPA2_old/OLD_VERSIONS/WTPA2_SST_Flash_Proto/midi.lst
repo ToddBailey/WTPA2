@@ -1,0 +1,948 @@
+   1               		.file	"midi.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.global __do_copy_data
+   8               		.global __do_clear_bss
+  16               	.Ltext0:
+  17               	.global	GetMidiMessageFromIncomingFifo
+  19               	GetMidiMessageFromIncomingFifo:
+  20               	.LFB3:
+  21               	.LM1:
+  22               	.LVL0:
+  23 0000 CF93      		push r28
+  24 0002 DF93      		push r29
+  25               	/* prologue: function */
+  26               	/* frame size = 0 */
+  27 0004 AC01      		movw r20,r24
+  28               	.LM2:
+  29 0006 2091 0000 		lds r18,midiMessagesInIncomingFifo
+  30 000a 2223      		tst r18
+  31 000c 01F0      		breq .L4
+  32               	.LVL1:
+  33               	.LM3:
+  34 000e 9091 0000 		lds r25,midiIncomingFifoReadPointer
+  35 0012 E92F      		mov r30,r25
+  36 0014 F0E0      		ldi r31,lo8(0)
+  37 0016 EE0F      		lsl r30
+  38 0018 FF1F      		rol r31
+  39 001a EE0F      		lsl r30
+  40 001c FF1F      		rol r31
+  41 001e DF01      		movw r26,r30
+  42 0020 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+  43 0022 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+  44 0024 ED01      		movw r28,r26
+  45 0026 8981      		ldd r24,Y+1
+  46 0028 EA01      		movw r28,r20
+  47 002a 8983      		std Y+1,r24
+  48               	.LM4:
+  49 002c E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+  50 002e F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+  51 0030 8081      		ld r24,Z
+  52 0032 8A83      		std Y+2,r24
+  53               	.LM5:
+  54 0034 FD01      		movw r30,r26
+  55 0036 8381      		ldd r24,Z+3
+  56 0038 8B83      		std Y+3,r24
+  57               	.LM6:
+  58 003a 8C91      		ld r24,X
+  59 003c 8883      		st Y,r24
+  60               	.LM7:
+  61 003e 9F5F      		subi r25,lo8(-(1))
+  62 0040 9093 0000 		sts midiIncomingFifoReadPointer,r25
+  63               	.LM8:
+  64 0044 9630      		cpi r25,lo8(6)
+  65 0046 00F0      		brlo .L3
+  66               	.LM9:
+  67 0048 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
+  68               	.L3:
+  69               	.LM10:
+  70 004c 2150      		subi r18,lo8(-(-1))
+  71 004e 2093 0000 		sts midiMessagesInIncomingFifo,r18
+  72               	.LVL2:
+  73               	.L4:
+  74               	/* epilogue start */
+  75               	.LM11:
+  76 0052 DF91      		pop r29
+  77 0054 CF91      		pop r28
+  78 0056 0895      		ret
+  79               	.LFE3:
+  81               	.global	PutMidiMessageInOutgoingFifo
+  83               	PutMidiMessageInOutgoingFifo:
+  84               	.LFB6:
+  85               	.LM12:
+  86               	.LVL3:
+  87 0058 CF93      		push r28
+  88 005a DF93      		push r29
+  89               	/* prologue: function */
+  90               	/* frame size = 0 */
+  91               	.LM13:
+  92 005c 3091 0000 		lds r19,midiMessagesInOutgoingFifo
+  93 0060 3630      		cpi r19,lo8(6)
+  94 0062 00F4      		brsh .L10
+  95               	.LM14:
+  96 0064 9091 0000 		lds r25,midiOutgoingFifoWritePointer
+  97 0068 E92F      		mov r30,r25
+  98 006a F0E0      		ldi r31,lo8(0)
+  99 006c EE0F      		lsl r30
+ 100 006e FF1F      		rol r31
+ 101 0070 EE0F      		lsl r30
+ 102 0072 FF1F      		rol r31
+ 103 0074 DF01      		movw r26,r30
+ 104 0076 A050      		subi r26,lo8(-(midiMessageOutgoingFifo))
+ 105 0078 B040      		sbci r27,hi8(-(midiMessageOutgoingFifo))
+ 106 007a ED01      		movw r28,r26
+ 107 007c 6983      		std Y+1,r22
+ 108               	.LM15:
+ 109 007e E050      		subi r30,lo8(-(midiMessageOutgoingFifo+2))
+ 110 0080 F040      		sbci r31,hi8(-(midiMessageOutgoingFifo+2))
+ 111 0082 4083      		st Z,r20
+ 112               	.LM16:
+ 113 0084 2B83      		std Y+3,r18
+ 114 0086 8091 0000 		lds r24,midiChannelNumberA
+ 115               	.LVL4:
+ 116               	.LM17:
+ 117 008a 8C93      		st X,r24
+ 118               	.LM18:
+ 119 008c 9F5F      		subi r25,lo8(-(1))
+ 120 008e 9093 0000 		sts midiOutgoingFifoWritePointer,r25
+ 121               	.LM19:
+ 122 0092 9630      		cpi r25,lo8(6)
+ 123 0094 00F0      		brlo .L9
+ 124               	.LM20:
+ 125 0096 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
+ 126               	.L9:
+ 127               	.LM21:
+ 128 009a 3F5F      		subi r19,lo8(-(1))
+ 129 009c 3093 0000 		sts midiMessagesInOutgoingFifo,r19
+ 130               	.LVL5:
+ 131               	.L10:
+ 132               	/* epilogue start */
+ 133               	.LM22:
+ 134 00a0 DF91      		pop r29
+ 135 00a2 CF91      		pop r28
+ 136 00a4 0895      		ret
+ 137               	.LFE6:
+ 139               	.global	InitMidi
+ 141               	InitMidi:
+ 142               	.LFB9:
+ 143               	.LM23:
+ 144               	/* prologue: function */
+ 145               	/* frame size = 0 */
+ 146               	.LM24:
+ 147 00a6 89E0      		ldi r24,lo8(9)
+ 148 00a8 8093 0000 		sts midiIncomingMessageState,r24
+ 149               	.LM25:
+ 150 00ac 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 151               	.LBB20:
+ 152               	.LBB21:
+ 153               	.LM26:
+ 154 00b0 1092 0000 		sts midiMessagesInIncomingFifo,__zero_reg__
+ 155               	.LM27:
+ 156 00b4 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 157               	.LM28:
+ 158 00b8 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
+ 159               	.LBE21:
+ 160               	.LBE20:
+ 161               	.LBB22:
+ 162               	.LBB23:
+ 163               	.LM29:
+ 164 00bc 1092 0000 		sts midiMessagesInOutgoingFifo,__zero_reg__
+ 165               	.LM30:
+ 166 00c0 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
+ 167               	.LM31:
+ 168 00c4 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
+ 169               	/* epilogue start */
+ 170               	.LBE23:
+ 171               	.LBE22:
+ 172               	.LM32:
+ 173 00c8 0895      		ret
+ 174               	.LFE9:
+ 176               	.global	HandleIncomingMidiByte
+ 178               	HandleIncomingMidiByte:
+ 179               	.LFB10:
+ 180               	.LM33:
+ 181               	.LVL6:
+ 182 00ca CF93      		push r28
+ 183 00cc DF93      		push r29
+ 184               	/* prologue: function */
+ 185               	/* frame size = 0 */
+ 186 00ce 382F      		mov r19,r24
+ 187               	.LM34:
+ 188 00d0 87FF      		sbrs r24,7
+ 189 00d2 00C0      		rjmp .L14
+ 190               	.LM35:
+ 191 00d4 682F      		mov r22,r24
+ 192 00d6 70E0      		ldi r23,lo8(0)
+ 193 00d8 9B01      		movw r18,r22
+ 194 00da 2F70      		andi r18,lo8(15)
+ 195 00dc 3070      		andi r19,hi8(15)
+ 196 00de 8091 0000 		lds r24,midiChannelNumberA
+ 197               	.LVL7:
+ 198 00e2 482F      		mov r20,r24
+ 199 00e4 50E0      		ldi r21,lo8(0)
+ 200 00e6 2417      		cp r18,r20
+ 201 00e8 3507      		cpc r19,r21
+ 202 00ea 01F0      		breq .L15
+ 203 00ec 8091 0000 		lds r24,midiChannelNumberB
+ 204 00f0 90E0      		ldi r25,lo8(0)
+ 205 00f2 2817      		cp r18,r24
+ 206 00f4 3907      		cpc r19,r25
+ 207 00f6 01F0      		breq .+2
+ 208 00f8 00C0      		rjmp .L28
+ 209               	.L15:
+ 210               	.LM36:
+ 211 00fa CB01      		movw r24,r22
+ 212 00fc 807F      		andi r24,lo8(240)
+ 213 00fe 9070      		andi r25,hi8(240)
+ 214 0100 8039      		cpi r24,144
+ 215 0102 9105      		cpc r25,__zero_reg__
+ 216 0104 01F4      		brne .L17
+ 217               	.LM37:
+ 218 0106 1092 0000 		sts midiIncomingMessageState,__zero_reg__
+ 219 010a 00C0      		rjmp .L63
+ 220               	.L17:
+ 221               	.LM38:
+ 222 010c 8038      		cpi r24,128
+ 223 010e 9105      		cpc r25,__zero_reg__
+ 224 0110 01F4      		brne .L20
+ 225               	.LM39:
+ 226 0112 81E0      		ldi r24,lo8(1)
+ 227 0114 8093 0000 		sts midiIncomingMessageState,r24
+ 228               	.LM40:
+ 229 0118 2417      		cp r18,r20
+ 230 011a 3507      		cpc r19,r21
+ 231 011c 01F4      		brne .L57
+ 232 011e 00C0      		rjmp .L58
+ 233               	.L20:
+ 234               	.LM41:
+ 235 0120 803C      		cpi r24,192
+ 236 0122 9105      		cpc r25,__zero_reg__
+ 237 0124 01F4      		brne .L22
+ 238               	.LM42:
+ 239 0126 82E0      		ldi r24,lo8(2)
+ 240 0128 00C0      		rjmp .L60
+ 241               	.L22:
+ 242               	.LM43:
+ 243 012a 803E      		cpi r24,224
+ 244 012c 9105      		cpc r25,__zero_reg__
+ 245 012e 01F4      		brne .L24
+ 246               	.LM44:
+ 247 0130 87E0      		ldi r24,lo8(7)
+ 248 0132 00C0      		rjmp .L60
+ 249               	.L24:
+ 250               	.LM45:
+ 251 0134 803B      		cpi r24,176
+ 252 0136 9105      		cpc r25,__zero_reg__
+ 253 0138 01F0      		breq .+2
+ 254 013a 00C0      		rjmp .L28
+ 255               	.LM46:
+ 256 013c 83E0      		ldi r24,lo8(3)
+ 257               	.L60:
+ 258 013e 8093 0000 		sts midiIncomingMessageState,r24
+ 259               	.L63:
+ 260               	.LM47:
+ 261 0142 2417      		cp r18,r20
+ 262 0144 3507      		cpc r19,r21
+ 263 0146 01F4      		brne .L27
+ 264               	.L58:
+ 265               	.LM48:
+ 266 0148 1092 0000 		sts temporaryChannel.1566,__zero_reg__
+ 267 014c 00C0      		rjmp .L53
+ 268               	.L27:
+ 269               	.LM49:
+ 270 014e 81E0      		ldi r24,lo8(1)
+ 271               	.L57:
+ 272 0150 8093 0000 		sts temporaryChannel.1566,r24
+ 273 0154 00C0      		rjmp .L53
+ 274               	.LVL8:
+ 275               	.L14:
+ 276               	.LM50:
+ 277 0156 9091 0000 		lds r25,midiIncomingMessageState
+ 278 015a 9430      		cpi r25,lo8(4)
+ 279 015c 01F4      		brne .+2
+ 280 015e 00C0      		rjmp .L33
+ 281 0160 9530      		cpi r25,lo8(5)
+ 282 0162 00F4      		brsh .L38
+ 283 0164 9130      		cpi r25,lo8(1)
+ 284 0166 01F4      		brne .+2
+ 285 0168 00C0      		rjmp .L30
+ 286 016a 9130      		cpi r25,lo8(1)
+ 287 016c 00F0      		brlo .L29
+ 288 016e 9230      		cpi r25,lo8(2)
+ 289 0170 01F4      		brne .+2
+ 290 0172 00C0      		rjmp .L31
+ 291 0174 9330      		cpi r25,lo8(3)
+ 292 0176 01F0      		breq .+2
+ 293 0178 00C0      		rjmp .L28
+ 294 017a 00C0      		rjmp .L67
+ 295               	.L38:
+ 296 017c 9730      		cpi r25,lo8(7)
+ 297 017e 01F4      		brne .+2
+ 298 0180 00C0      		rjmp .L36
+ 299 0182 9830      		cpi r25,lo8(8)
+ 300 0184 00F4      		brsh .L39
+ 301 0186 9530      		cpi r25,lo8(5)
+ 302 0188 01F0      		breq .L34
+ 303 018a 9630      		cpi r25,lo8(6)
+ 304 018c 01F0      		breq .+2
+ 305 018e 00C0      		rjmp .L28
+ 306 0190 00C0      		rjmp .L68
+ 307               	.L39:
+ 308 0192 9830      		cpi r25,lo8(8)
+ 309 0194 01F4      		brne .+2
+ 310 0196 00C0      		rjmp .L37
+ 311 0198 9930      		cpi r25,lo8(9)
+ 312 019a 01F0      		breq .+2
+ 313 019c 00C0      		rjmp .L28
+ 314 019e 00C0      		rjmp .L53
+ 315               	.L29:
+ 316               	.LM51:
+ 317 01a0 8093 0000 		sts firstDataByte.1565,r24
+ 318               	.LM52:
+ 319 01a4 85E0      		ldi r24,lo8(5)
+ 320               	.LVL9:
+ 321 01a6 00C0      		rjmp .L54
+ 322               	.LVL10:
+ 323               	.L34:
+ 324 01a8 4091 0000 		lds r20,firstDataByte.1565
+ 325 01ac 5091 0000 		lds r21,temporaryChannel.1566
+ 326 01b0 2091 0000 		lds r18,midiMessagesInIncomingFifo
+ 327               	.LM53:
+ 328 01b4 8823      		tst r24
+ 329 01b6 01F4      		brne .L40
+ 330               	.LBB24:
+ 331               	.LBB25:
+ 332               	.LM54:
+ 333 01b8 2630      		cpi r18,lo8(6)
+ 334 01ba 00F4      		brsh .L43
+ 335               	.LM55:
+ 336 01bc 9091 0000 		lds r25,midiIncomingFifoWritePointer
+ 337 01c0 E92F      		mov r30,r25
+ 338 01c2 F0E0      		ldi r31,lo8(0)
+ 339 01c4 EE0F      		lsl r30
+ 340 01c6 FF1F      		rol r31
+ 341 01c8 EE0F      		lsl r30
+ 342 01ca FF1F      		rol r31
+ 343 01cc DF01      		movw r26,r30
+ 344 01ce A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 345 01d0 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 346 01d2 82E0      		ldi r24,lo8(2)
+ 347               	.LVL11:
+ 348 01d4 ED01      		movw r28,r26
+ 349 01d6 8983      		std Y+1,r24
+ 350               	.LM56:
+ 351 01d8 E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 352 01da F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 353 01dc 4083      		st Z,r20
+ 354               	.LM57:
+ 355 01de 1B82      		std Y+3,__zero_reg__
+ 356 01e0 00C0      		rjmp .L66
+ 357               	.LVL12:
+ 358               	.L40:
+ 359               	.LBE25:
+ 360               	.LBE24:
+ 361               	.LBB26:
+ 362               	.LBB27:
+ 363               	.LM58:
+ 364 01e2 2630      		cpi r18,lo8(6)
+ 365 01e4 00F4      		brsh .L43
+ 366               	.LM59:
+ 367 01e6 9091 0000 		lds r25,midiIncomingFifoWritePointer
+ 368 01ea E92F      		mov r30,r25
+ 369 01ec F0E0      		ldi r31,lo8(0)
+ 370 01ee EE0F      		lsl r30
+ 371 01f0 FF1F      		rol r31
+ 372 01f2 EE0F      		lsl r30
+ 373 01f4 FF1F      		rol r31
+ 374 01f6 DF01      		movw r26,r30
+ 375 01f8 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 376 01fa B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 377 01fc 81E0      		ldi r24,lo8(1)
+ 378               	.LVL13:
+ 379 01fe ED01      		movw r28,r26
+ 380 0200 8983      		std Y+1,r24
+ 381               	.LM60:
+ 382 0202 E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 383 0204 F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 384 0206 4083      		st Z,r20
+ 385               	.LM61:
+ 386 0208 3B83      		std Y+3,r19
+ 387               	.L66:
+ 388               	.LM62:
+ 389 020a 5C93      		st X,r21
+ 390               	.LM63:
+ 391 020c 9F5F      		subi r25,lo8(-(1))
+ 392 020e 9093 0000 		sts midiIncomingFifoWritePointer,r25
+ 393               	.LM64:
+ 394 0212 9630      		cpi r25,lo8(6)
+ 395 0214 00F0      		brlo .L44
+ 396               	.LM65:
+ 397 0216 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 398               	.L44:
+ 399               	.LM66:
+ 400 021a 2F5F      		subi r18,lo8(-(1))
+ 401 021c 2093 0000 		sts midiMessagesInIncomingFifo,r18
+ 402               	.LVL14:
+ 403               	.L43:
+ 404               	.LBE27:
+ 405               	.LBE26:
+ 406               	.LM67:
+ 407 0220 1092 0000 		sts midiIncomingMessageState,__zero_reg__
+ 408 0224 00C0      		rjmp .L53
+ 409               	.LVL15:
+ 410               	.L30:
+ 411               	.LM68:
+ 412 0226 8093 0000 		sts firstDataByte.1565,r24
+ 413               	.LM69:
+ 414 022a 86E0      		ldi r24,lo8(6)
+ 415               	.LVL16:
+ 416 022c 00C0      		rjmp .L54
+ 417               	.LVL17:
+ 418               	.L68:
+ 419               	.LM70:
+ 420 022e 4091 0000 		lds r20,firstDataByte.1565
+ 421               	.LM71:
+ 422 0232 5091 0000 		lds r21,temporaryChannel.1566
+ 423               	.LBB28:
+ 424               	.LBB29:
+ 425               	.LM72:
+ 426 0236 2091 0000 		lds r18,midiMessagesInIncomingFifo
+ 427 023a 2630      		cpi r18,lo8(6)
+ 428 023c 00F4      		brsh .L45
+ 429               	.LM73:
+ 430 023e 9091 0000 		lds r25,midiIncomingFifoWritePointer
+ 431 0242 E92F      		mov r30,r25
+ 432 0244 F0E0      		ldi r31,lo8(0)
+ 433 0246 EE0F      		lsl r30
+ 434 0248 FF1F      		rol r31
+ 435 024a EE0F      		lsl r30
+ 436 024c FF1F      		rol r31
+ 437 024e DF01      		movw r26,r30
+ 438 0250 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 439 0252 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 440 0254 82E0      		ldi r24,lo8(2)
+ 441               	.LVL18:
+ 442 0256 ED01      		movw r28,r26
+ 443 0258 8983      		std Y+1,r24
+ 444               	.LM74:
+ 445 025a E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 446 025c F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 447 025e 4083      		st Z,r20
+ 448               	.LM75:
+ 449 0260 3B83      		std Y+3,r19
+ 450               	.LM76:
+ 451 0262 5C93      		st X,r21
+ 452               	.LM77:
+ 453 0264 9F5F      		subi r25,lo8(-(1))
+ 454 0266 9093 0000 		sts midiIncomingFifoWritePointer,r25
+ 455               	.LM78:
+ 456 026a 9630      		cpi r25,lo8(6)
+ 457 026c 00F0      		brlo .L46
+ 458               	.LM79:
+ 459 026e 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 460               	.L46:
+ 461               	.LM80:
+ 462 0272 2F5F      		subi r18,lo8(-(1))
+ 463 0274 2093 0000 		sts midiMessagesInIncomingFifo,r18
+ 464               	.LVL19:
+ 465               	.L45:
+ 466               	.LBE29:
+ 467               	.LBE28:
+ 468               	.LM81:
+ 469 0278 81E0      		ldi r24,lo8(1)
+ 470 027a 00C0      		rjmp .L54
+ 471               	.LVL20:
+ 472               	.L31:
+ 473               	.LM82:
+ 474 027c 4091 0000 		lds r20,temporaryChannel.1566
+ 475               	.LBB30:
+ 476               	.LBB31:
+ 477               	.LM83:
+ 478 0280 2091 0000 		lds r18,midiMessagesInIncomingFifo
+ 479 0284 2630      		cpi r18,lo8(6)
+ 480 0286 00F4      		brsh .L47
+ 481               	.LM84:
+ 482 0288 9091 0000 		lds r25,midiIncomingFifoWritePointer
+ 483 028c E92F      		mov r30,r25
+ 484 028e F0E0      		ldi r31,lo8(0)
+ 485 0290 EE0F      		lsl r30
+ 486 0292 FF1F      		rol r31
+ 487 0294 EE0F      		lsl r30
+ 488 0296 FF1F      		rol r31
+ 489 0298 DF01      		movw r26,r30
+ 490 029a A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 491 029c B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 492 029e 83E0      		ldi r24,lo8(3)
+ 493               	.LVL21:
+ 494 02a0 ED01      		movw r28,r26
+ 495 02a2 8983      		std Y+1,r24
+ 496               	.LM85:
+ 497 02a4 E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 498 02a6 F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 499 02a8 3083      		st Z,r19
+ 500               	.LM86:
+ 501 02aa 1B82      		std Y+3,__zero_reg__
+ 502               	.LM87:
+ 503 02ac 4C93      		st X,r20
+ 504               	.LM88:
+ 505 02ae 9F5F      		subi r25,lo8(-(1))
+ 506 02b0 9093 0000 		sts midiIncomingFifoWritePointer,r25
+ 507               	.LM89:
+ 508 02b4 9630      		cpi r25,lo8(6)
+ 509 02b6 00F0      		brlo .L48
+ 510               	.LM90:
+ 511 02b8 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 512               	.L48:
+ 513               	.LM91:
+ 514 02bc 2F5F      		subi r18,lo8(-(1))
+ 515 02be 2093 0000 		sts midiMessagesInIncomingFifo,r18
+ 516               	.LVL22:
+ 517               	.L47:
+ 518               	.LBE31:
+ 519               	.LBE30:
+ 520               	.LM92:
+ 521 02c2 82E0      		ldi r24,lo8(2)
+ 522 02c4 00C0      		rjmp .L54
+ 523               	.LVL23:
+ 524               	.L67:
+ 525               	.LM93:
+ 526 02c6 8093 0000 		sts firstDataByte.1565,r24
+ 527               	.LM94:
+ 528 02ca 84E0      		ldi r24,lo8(4)
+ 529               	.LVL24:
+ 530 02cc 00C0      		rjmp .L54
+ 531               	.LVL25:
+ 532               	.L33:
+ 533               	.LM95:
+ 534 02ce 4091 0000 		lds r20,firstDataByte.1565
+ 535               	.LM96:
+ 536 02d2 5091 0000 		lds r21,temporaryChannel.1566
+ 537               	.LBB32:
+ 538               	.LBB33:
+ 539               	.LM97:
+ 540 02d6 2091 0000 		lds r18,midiMessagesInIncomingFifo
+ 541 02da 2630      		cpi r18,lo8(6)
+ 542 02dc 00F4      		brsh .L49
+ 543               	.LM98:
+ 544 02de 8091 0000 		lds r24,midiIncomingFifoWritePointer
+ 545               	.LVL26:
+ 546 02e2 E82F      		mov r30,r24
+ 547 02e4 F0E0      		ldi r31,lo8(0)
+ 548 02e6 EE0F      		lsl r30
+ 549 02e8 FF1F      		rol r31
+ 550 02ea EE0F      		lsl r30
+ 551 02ec FF1F      		rol r31
+ 552 02ee DF01      		movw r26,r30
+ 553 02f0 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 554 02f2 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 555 02f4 ED01      		movw r28,r26
+ 556 02f6 9983      		std Y+1,r25
+ 557               	.LM99:
+ 558 02f8 E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 559 02fa F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 560 02fc 4083      		st Z,r20
+ 561               	.LM100:
+ 562 02fe 3B83      		std Y+3,r19
+ 563               	.LM101:
+ 564 0300 5C93      		st X,r21
+ 565               	.LM102:
+ 566 0302 8F5F      		subi r24,lo8(-(1))
+ 567 0304 8093 0000 		sts midiIncomingFifoWritePointer,r24
+ 568               	.LM103:
+ 569 0308 8630      		cpi r24,lo8(6)
+ 570 030a 00F0      		brlo .L50
+ 571               	.LM104:
+ 572 030c 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 573               	.L50:
+ 574               	.LM105:
+ 575 0310 2F5F      		subi r18,lo8(-(1))
+ 576 0312 2093 0000 		sts midiMessagesInIncomingFifo,r18
+ 577               	.LVL27:
+ 578               	.L49:
+ 579               	.LBE33:
+ 580               	.LBE32:
+ 581               	.LM106:
+ 582 0316 83E0      		ldi r24,lo8(3)
+ 583 0318 00C0      		rjmp .L54
+ 584               	.LVL28:
+ 585               	.L36:
+ 586               	.LM107:
+ 587 031a 8093 0000 		sts firstDataByte.1565,r24
+ 588               	.LM108:
+ 589 031e 88E0      		ldi r24,lo8(8)
+ 590               	.LVL29:
+ 591 0320 00C0      		rjmp .L54
+ 592               	.LVL30:
+ 593               	.L37:
+ 594               	.LM109:
+ 595 0322 4091 0000 		lds r20,firstDataByte.1565
+ 596               	.LM110:
+ 597 0326 5091 0000 		lds r21,temporaryChannel.1566
+ 598               	.LBB34:
+ 599               	.LBB35:
+ 600               	.LM111:
+ 601 032a 2091 0000 		lds r18,midiMessagesInIncomingFifo
+ 602 032e 2630      		cpi r18,lo8(6)
+ 603 0330 00F4      		brsh .L51
+ 604               	.LM112:
+ 605 0332 9091 0000 		lds r25,midiIncomingFifoWritePointer
+ 606 0336 E92F      		mov r30,r25
+ 607 0338 F0E0      		ldi r31,lo8(0)
+ 608 033a EE0F      		lsl r30
+ 609 033c FF1F      		rol r31
+ 610 033e EE0F      		lsl r30
+ 611 0340 FF1F      		rol r31
+ 612 0342 DF01      		movw r26,r30
+ 613 0344 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
+ 614 0346 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
+ 615 0348 87E0      		ldi r24,lo8(7)
+ 616               	.LVL31:
+ 617 034a ED01      		movw r28,r26
+ 618 034c 8983      		std Y+1,r24
+ 619               	.LM113:
+ 620 034e E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
+ 621 0350 F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
+ 622 0352 4083      		st Z,r20
+ 623               	.LM114:
+ 624 0354 3B83      		std Y+3,r19
+ 625               	.LM115:
+ 626 0356 5C93      		st X,r21
+ 627               	.LM116:
+ 628 0358 9F5F      		subi r25,lo8(-(1))
+ 629 035a 9093 0000 		sts midiIncomingFifoWritePointer,r25
+ 630               	.LM117:
+ 631 035e 9630      		cpi r25,lo8(6)
+ 632 0360 00F0      		brlo .L52
+ 633               	.LM118:
+ 634 0362 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 635               	.L52:
+ 636               	.LM119:
+ 637 0366 2F5F      		subi r18,lo8(-(1))
+ 638 0368 2093 0000 		sts midiMessagesInIncomingFifo,r18
+ 639               	.LVL32:
+ 640               	.L51:
+ 641               	.LBE35:
+ 642               	.LBE34:
+ 643               	.LM120:
+ 644 036c 87E0      		ldi r24,lo8(7)
+ 645 036e 00C0      		rjmp .L54
+ 646               	.LVL33:
+ 647               	.L28:
+ 648               	.LM121:
+ 649 0370 89E0      		ldi r24,lo8(9)
+ 650               	.L54:
+ 651 0372 8093 0000 		sts midiIncomingMessageState,r24
+ 652               	.LVL34:
+ 653               	.L53:
+ 654               	/* epilogue start */
+ 655               	.LM122:
+ 656 0376 DF91      		pop r29
+ 657 0378 CF91      		pop r28
+ 658 037a 0895      		ret
+ 659               	.LFE10:
+ 661               	.global	MidiTxBufferNotEmpty
+ 663               	MidiTxBufferNotEmpty:
+ 664               	.LFB11:
+ 665               	.LM123:
+ 666               	/* prologue: function */
+ 667               	/* frame size = 0 */
+ 668               	.LM124:
+ 669 037c 8091 0000 		lds r24,midiMessagesInOutgoingFifo
+ 670 0380 8823      		tst r24
+ 671 0382 01F0      		breq .L70
+ 672 0384 81E0      		ldi r24,lo8(1)
+ 673 0386 0895      		ret
+ 674               	.L70:
+ 675 0388 8091 0000 		lds r24,midiOutgoingMessageState
+ 676 038c 8111      		cpse r24,__zero_reg__
+ 677 038e 81E0      		ldi r24,lo8(1)
+ 678               	.L71:
+ 679               	.LM125:
+ 680 0390 0895      		ret
+ 681               	.LFE11:
+ 683               	.global	PopOutgoingMidiByte
+ 685               	PopOutgoingMidiByte:
+ 686               	.LFB12:
+ 687               	.LM126:
+ 688 0392 CF93      		push r28
+ 689 0394 DF93      		push r29
+ 690               	/* prologue: function */
+ 691               	/* frame size = 0 */
+ 692               	.LM127:
+ 693 0396 8091 0000 		lds r24,midiOutgoingMessageState
+ 694 039a 8330      		cpi r24,lo8(3)
+ 695 039c 01F4      		brne .+2
+ 696 039e 00C0      		rjmp .L79
+ 697 03a0 8430      		cpi r24,lo8(4)
+ 698 03a2 00F4      		brsh .L84
+ 699 03a4 8130      		cpi r24,lo8(1)
+ 700 03a6 01F4      		brne .+2
+ 701 03a8 00C0      		rjmp .L77
+ 702 03aa 8230      		cpi r24,lo8(2)
+ 703 03ac 00F0      		brlo .+2
+ 704 03ae 00C0      		rjmp .L78
+ 705 03b0 00C0      		rjmp .L102
+ 706               	.L84:
+ 707 03b2 8530      		cpi r24,lo8(5)
+ 708 03b4 01F4      		brne .+2
+ 709 03b6 00C0      		rjmp .L81
+ 710 03b8 8530      		cpi r24,lo8(5)
+ 711 03ba 00F4      		brsh .+2
+ 712 03bc 00C0      		rjmp .L80
+ 713 03be 8630      		cpi r24,lo8(6)
+ 714 03c0 01F4      		brne .+2
+ 715 03c2 00C0      		rjmp .L82
+ 716 03c4 8730      		cpi r24,lo8(7)
+ 717 03c6 01F0      		breq .+2
+ 718 03c8 00C0      		rjmp .L75
+ 719 03ca 00C0      		rjmp .L103
+ 720               	.L102:
+ 721               	.LBB36:
+ 722               	.LBB37:
+ 723               	.LM128:
+ 724 03cc 2091 0000 		lds r18,midiMessagesInOutgoingFifo
+ 725 03d0 2223      		tst r18
+ 726 03d2 01F0      		breq .L85
+ 727               	.LM129:
+ 728 03d4 9091 0000 		lds r25,midiOutgoingFifoReadPointer
+ 729 03d8 E92F      		mov r30,r25
+ 730 03da F0E0      		ldi r31,lo8(0)
+ 731 03dc EE0F      		lsl r30
+ 732 03de FF1F      		rol r31
+ 733 03e0 EE0F      		lsl r30
+ 734 03e2 FF1F      		rol r31
+ 735 03e4 DF01      		movw r26,r30
+ 736 03e6 A050      		subi r26,lo8(-(midiMessageOutgoingFifo))
+ 737 03e8 B040      		sbci r27,hi8(-(midiMessageOutgoingFifo))
+ 738 03ea ED01      		movw r28,r26
+ 739 03ec 8981      		ldd r24,Y+1
+ 740 03ee 8093 0000 		sts theMessage.1606+1,r24
+ 741               	.LM130:
+ 742 03f2 E050      		subi r30,lo8(-(midiMessageOutgoingFifo+2))
+ 743 03f4 F040      		sbci r31,hi8(-(midiMessageOutgoingFifo+2))
+ 744 03f6 8081      		ld r24,Z
+ 745 03f8 8093 0000 		sts theMessage.1606+2,r24
+ 746               	.LM131:
+ 747 03fc 8B81      		ldd r24,Y+3
+ 748 03fe 8093 0000 		sts theMessage.1606+3,r24
+ 749               	.LM132:
+ 750 0402 8C91      		ld r24,X
+ 751 0404 8093 0000 		sts theMessage.1606,r24
+ 752               	.LM133:
+ 753 0408 9F5F      		subi r25,lo8(-(1))
+ 754 040a 9093 0000 		sts midiOutgoingFifoReadPointer,r25
+ 755               	.LM134:
+ 756 040e 9630      		cpi r25,lo8(6)
+ 757 0410 00F0      		brlo .L86
+ 758               	.LM135:
+ 759 0412 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
+ 760               	.L86:
+ 761               	.LM136:
+ 762 0416 2150      		subi r18,lo8(-(-1))
+ 763 0418 2093 0000 		sts midiMessagesInOutgoingFifo,r18
+ 764               	.L85:
+ 765               	.LBE37:
+ 766               	.LBE36:
+ 767               	.LM137:
+ 768 041c 2091 0000 		lds r18,theMessage.1606+1
+ 769 0420 2230      		cpi r18,lo8(2)
+ 770 0422 01F0      		breq .L88
+ 771 0424 2330      		cpi r18,lo8(3)
+ 772 0426 00F4      		brsh .L91
+ 773 0428 2130      		cpi r18,lo8(1)
+ 774 042a 01F0      		breq .+2
+ 775 042c 00C0      		rjmp .L75
+ 776 042e 00C0      		rjmp .L104
+ 777               	.L91:
+ 778 0430 2330      		cpi r18,lo8(3)
+ 779 0432 01F0      		breq .L89
+ 780 0434 2430      		cpi r18,lo8(4)
+ 781 0436 01F0      		breq .+2
+ 782 0438 00C0      		rjmp .L75
+ 783 043a 00C0      		rjmp .L105
+ 784               	.L104:
+ 785               	.LM138:
+ 786 043c 9091 0000 		lds r25,theMessage.1606
+ 787               	.LVL35:
+ 788 0440 9069      		ori r25,lo8(-112)
+ 789               	.LM139:
+ 790 0442 8091 0000 		lds r24,lastStatusByte.1608
+ 791 0446 8917      		cp r24,r25
+ 792 0448 01F4      		brne .L94
+ 793               	.LM140:
+ 794 044a 9091 0000 		lds r25,theMessage.1606+2
+ 795               	.LM141:
+ 796 044e 83E0      		ldi r24,lo8(3)
+ 797 0450 00C0      		rjmp .L99
+ 798               	.LVL36:
+ 799               	.L88:
+ 800               	.LM142:
+ 801 0452 9091 0000 		lds r25,theMessage.1606
+ 802               	.LVL37:
+ 803 0456 9069      		ori r25,lo8(-112)
+ 804               	.LM143:
+ 805 0458 8091 0000 		lds r24,lastStatusByte.1608
+ 806 045c 8917      		cp r24,r25
+ 807 045e 01F4      		brne .L94
+ 808               	.LM144:
+ 809 0460 9091 0000 		lds r25,theMessage.1606+2
+ 810               	.LM145:
+ 811 0464 84E0      		ldi r24,lo8(4)
+ 812 0466 00C0      		rjmp .L99
+ 813               	.L94:
+ 814               	.LM146:
+ 815 0468 9093 0000 		sts lastStatusByte.1608,r25
+ 816               	.LM147:
+ 817 046c 2093 0000 		sts midiOutgoingMessageState,r18
+ 818 0470 00C0      		rjmp .L93
+ 819               	.LVL38:
+ 820               	.L89:
+ 821               	.LM148:
+ 822 0472 9091 0000 		lds r25,theMessage.1606
+ 823               	.LVL39:
+ 824 0476 906C      		ori r25,lo8(-64)
+ 825               	.LM149:
+ 826 0478 8091 0000 		lds r24,lastStatusByte.1608
+ 827 047c 8917      		cp r24,r25
+ 828 047e 01F4      		brne .L95
+ 829               	.LM150:
+ 830 0480 9091 0000 		lds r25,theMessage.1606+2
+ 831               	.LM151:
+ 832 0484 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 833 0488 00C0      		rjmp .L93
+ 834               	.L95:
+ 835               	.LM152:
+ 836 048a 9093 0000 		sts lastStatusByte.1608,r25
+ 837               	.LM153:
+ 838 048e 85E0      		ldi r24,lo8(5)
+ 839 0490 00C0      		rjmp .L99
+ 840               	.LVL40:
+ 841               	.L105:
+ 842               	.LM154:
+ 843 0492 9091 0000 		lds r25,theMessage.1606
+ 844               	.LVL41:
+ 845 0496 906B      		ori r25,lo8(-80)
+ 846               	.LM155:
+ 847 0498 8091 0000 		lds r24,lastStatusByte.1608
+ 848 049c 8917      		cp r24,r25
+ 849 049e 01F4      		brne .L96
+ 850               	.LM156:
+ 851 04a0 9091 0000 		lds r25,theMessage.1606+2
+ 852               	.LM157:
+ 853 04a4 87E0      		ldi r24,lo8(7)
+ 854               	.L99:
+ 855 04a6 8093 0000 		sts midiOutgoingMessageState,r24
+ 856 04aa 00C0      		rjmp .L93
+ 857               	.L96:
+ 858               	.LM158:
+ 859 04ac 9093 0000 		sts lastStatusByte.1608,r25
+ 860               	.LM159:
+ 861 04b0 86E0      		ldi r24,lo8(6)
+ 862 04b2 00C0      		rjmp .L99
+ 863               	.LVL42:
+ 864               	.L77:
+ 865               	.LM160:
+ 866 04b4 83E0      		ldi r24,lo8(3)
+ 867 04b6 00C0      		rjmp .L100
+ 868               	.L78:
+ 869               	.LM161:
+ 870 04b8 84E0      		ldi r24,lo8(4)
+ 871 04ba 00C0      		rjmp .L100
+ 872               	.L79:
+ 873               	.LM162:
+ 874 04bc 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 875 04c0 90E4      		ldi r25,lo8(64)
+ 876               	.LVL43:
+ 877 04c2 00C0      		rjmp .L93
+ 878               	.LVL44:
+ 879               	.L80:
+ 880               	.LM163:
+ 881 04c4 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 882 04c8 00C0      		rjmp .L75
+ 883               	.L81:
+ 884               	.LM164:
+ 885 04ca 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 886 04ce 00C0      		rjmp .L101
+ 887               	.L82:
+ 888               	.LM165:
+ 889 04d0 87E0      		ldi r24,lo8(7)
+ 890               	.L100:
+ 891 04d2 8093 0000 		sts midiOutgoingMessageState,r24
+ 892               	.L101:
+ 893               	.LM166:
+ 894 04d6 9091 0000 		lds r25,theMessage.1606+2
+ 895               	.LVL45:
+ 896 04da 00C0      		rjmp .L93
+ 897               	.LVL46:
+ 898               	.L103:
+ 899               	.LM167:
+ 900 04dc 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 901               	.LM168:
+ 902 04e0 9091 0000 		lds r25,theMessage.1606+3
+ 903               	.LVL47:
+ 904 04e4 00C0      		rjmp .L93
+ 905               	.LVL48:
+ 906               	.L75:
+ 907 04e6 90E0      		ldi r25,lo8(0)
+ 908               	.LVL49:
+ 909               	.L93:
+ 910               	.LM169:
+ 911 04e8 892F      		mov r24,r25
+ 912               	/* epilogue start */
+ 913 04ea DF91      		pop r29
+ 914 04ec CF91      		pop r28
+ 915 04ee 0895      		ret
+ 916               	.LFE12:
+ 918               		.lcomm lastStatusByte.1608,1
+ 919               		.lcomm theMessage.1606,4
+ 920               		.lcomm temporaryChannel.1566,1
+ 921               		.lcomm firstDataByte.1565,1
+ 922               		.lcomm midiIncomingFifoWritePointer,1
+ 923               		.lcomm midiIncomingFifoReadPointer,1
+ 924               		.lcomm midiIncomingMessageState,1
+ 925               		.lcomm midiOutgoingFifoWritePointer,1
+ 926               		.lcomm midiOutgoingFifoReadPointer,1
+ 927               		.lcomm midiOutgoingMessageState,1
+ 928               		.comm midiMessageIncomingFifo,24,1
+ 929               		.comm midiMessageOutgoingFifo,24,1
+ 930               		.comm midiChannelNumberA,1,1
+ 931               		.comm midiChannelNumberB,1,1
+ 932               		.comm midiMessagesInIncomingFifo,1,1
+ 933               		.comm midiMessagesInOutgoingFifo,1,1
+ 998               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 midi.c
+     /tmp/ccC2KgLY.s:2      *ABS*:0000003f __SREG__
+     /tmp/ccC2KgLY.s:3      *ABS*:0000003e __SP_H__
+     /tmp/ccC2KgLY.s:4      *ABS*:0000003d __SP_L__
+     /tmp/ccC2KgLY.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccC2KgLY.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccC2KgLY.s:19     .text:00000000 GetMidiMessageFromIncomingFifo
+                            *COM*:00000001 midiMessagesInIncomingFifo
+     /tmp/ccC2KgLY.s:922    .bss:00000008 midiIncomingFifoReadPointer
+                            *COM*:00000018 midiMessageIncomingFifo
+     /tmp/ccC2KgLY.s:83     .text:00000058 PutMidiMessageInOutgoingFifo
+                            *COM*:00000001 midiMessagesInOutgoingFifo
+     /tmp/ccC2KgLY.s:924    .bss:0000000a midiOutgoingFifoWritePointer
+                            *COM*:00000018 midiMessageOutgoingFifo
+                            *COM*:00000001 midiChannelNumberA
+     /tmp/ccC2KgLY.s:141    .text:000000a6 InitMidi
+     /tmp/ccC2KgLY.s:923    .bss:00000009 midiIncomingMessageState
+     /tmp/ccC2KgLY.s:926    .bss:0000000c midiOutgoingMessageState
+     /tmp/ccC2KgLY.s:921    .bss:00000007 midiIncomingFifoWritePointer
+     /tmp/ccC2KgLY.s:925    .bss:0000000b midiOutgoingFifoReadPointer
+     /tmp/ccC2KgLY.s:178    .text:000000ca HandleIncomingMidiByte
+                            *COM*:00000001 midiChannelNumberB
+     /tmp/ccC2KgLY.s:919    .bss:00000005 temporaryChannel.1566
+     /tmp/ccC2KgLY.s:920    .bss:00000006 firstDataByte.1565
+     /tmp/ccC2KgLY.s:663    .text:0000037c MidiTxBufferNotEmpty
+     /tmp/ccC2KgLY.s:685    .text:00000392 PopOutgoingMidiByte
+     /tmp/ccC2KgLY.s:918    .bss:00000001 theMessage.1606
+                             .bss:00000000 lastStatusByte.1608
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

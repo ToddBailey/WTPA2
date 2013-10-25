@@ -1,0 +1,124 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 42;
+	objects = {
+
+/* Begin PBXFileReference section */
+		A1B0D6C613CCC6F700B68525 /* defines.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = defines.h; sourceTree = "<group>"; };
+		A1B0D6C713CCC6F700B68525 /* eeprom.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = eeprom.c; sourceTree = "<group>"; };
+		A1B0D6C813CCC6F700B68525 /* eeprom.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = eeprom.h; sourceTree = "<group>"; };
+		A1B0D6C913CCC6F700B68525 /* globals.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = globals.c; sourceTree = "<group>"; };
+		A1B0D6CA13CCC6F700B68525 /* globals.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = globals.h; sourceTree = "<group>"; };
+		A1B0D6CB13CCC6F700B68525 /* includes.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = includes.h; sourceTree = "<group>"; };
+		A1B0D6CC13CCC6F700B68525 /* Makefile */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.make; path = Makefile; sourceTree = "<group>"; };
+		A1B0D6CD13CCC6F700B68525 /* microSD.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = microSD.c; sourceTree = "<group>"; };
+		A1B0D6CE13CCC6F700B68525 /* microSD.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = microSD.h; sourceTree = "<group>"; };
+		A1B0D6CF13CCC6F700B68525 /* midi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = midi.c; sourceTree = "<group>"; };
+		A1B0D6D013CCC6F700B68525 /* midi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = midi.h; sourceTree = "<group>"; };
+		A1B0D6D113CCC6F700B68525 /* scratchpad.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = scratchpad.c; sourceTree = "<group>"; };
+		A1B0D6D213CCC6F700B68525 /* softclock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = softclock.c; sourceTree = "<group>"; };
+		A1B0D6D313CCC6F700B68525 /* softclock.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = softclock.h; sourceTree = "<group>"; };
+		A1B0D6D413CCC6F700B68525 /* uart.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = uart.c; sourceTree = "<group>"; };
+		A1B0D6D513CCC6F700B68525 /* uart.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uart.h; sourceTree = "<group>"; };
+		A1B0D6D713CCC6F700B68525 /* WTPA.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WTPA.h; sourceTree = "<group>"; };
+		A1F6848513CF97AB001FC665 /* WTPA.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = WTPA.c; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		A1B0D6B613CCC68000B68525 = {
+			isa = PBXGroup;
+			children = (
+				A1B0D6C613CCC6F700B68525 /* defines.h */,
+				A1B0D6C713CCC6F700B68525 /* eeprom.c */,
+				A1B0D6C813CCC6F700B68525 /* eeprom.h */,
+				A1B0D6C913CCC6F700B68525 /* globals.c */,
+				A1B0D6CA13CCC6F700B68525 /* globals.h */,
+				A1B0D6CB13CCC6F700B68525 /* includes.h */,
+				A1B0D6CC13CCC6F700B68525 /* Makefile */,
+				A1B0D6CD13CCC6F700B68525 /* microSD.c */,
+				A1B0D6CE13CCC6F700B68525 /* microSD.h */,
+				A1B0D6CF13CCC6F700B68525 /* midi.c */,
+				A1B0D6D013CCC6F700B68525 /* midi.h */,
+				A1B0D6D113CCC6F700B68525 /* scratchpad.c */,
+				A1B0D6D213CCC6F700B68525 /* softclock.c */,
+				A1B0D6D313CCC6F700B68525 /* softclock.h */,
+				A1B0D6D413CCC6F700B68525 /* uart.c */,
+				A1B0D6D513CCC6F700B68525 /* uart.h */,
+				A1F6848513CF97AB001FC665 /* WTPA.c */,
+				A1B0D6D713CCC6F700B68525 /* WTPA.h */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXProject section */
+		A1B0D6B813CCC68000B68525 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = A1B0D6BB13CCC68000B68525 /* Build configuration list for PBXProject "WTPA_DrumKit" */;
+			compatibilityVersion = "Xcode 2.4";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				English,
+				Japanese,
+				French,
+				German,
+			);
+			mainGroup = A1B0D6B613CCC68000B68525;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin XCBuildConfiguration section */
+		A1B0D6B913CCC68000B68525 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = NO;
+			};
+			name = Debug;
+		};
+		A1B0D6BA13CCC68000B68525 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Release;
+		};
+		A1B0D6E213CCCB2100B68525 /* Build */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Build;
+		};
+		A1B0D6E313CCCB2100B68525 /* Deploy */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				COPY_PHASE_STRIP = YES;
+			};
+			name = Deploy;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		A1B0D6BB13CCC68000B68525 /* Build configuration list for PBXProject "WTPA_DrumKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1B0D6B913CCC68000B68525 /* Debug */,
+				A1B0D6BA13CCC68000B68525 /* Release */,
+				A1B0D6E213CCCB2100B68525 /* Build */,
+				A1B0D6E313CCCB2100B68525 /* Deploy */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = A1B0D6B813CCC68000B68525 /* Project object */;
+}

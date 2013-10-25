@@ -1,0 +1,2233 @@
+
+WTPA.elf:     file format elf32-avr
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .data         00000004  00800100  00000b4c  00000be0  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  1 .text         00000b4c  00000000  00000000  00000094  2**1
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  2 .bss          00000074  00800104  00800104  00000be4  2**0
+                  ALLOC
+  3 .stab         000006cc  00000000  00000000  00000be4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+  4 .stabstr      00000070  00000000  00000000  000012b0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  5 .debug_aranges 00000080  00000000  00000000  00001320  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  6 .debug_pubnames 0000014f  00000000  00000000  000013a0  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  7 .debug_info   00000e80  00000000  00000000  000014ef  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  8 .debug_abbrev 000004dc  00000000  00000000  0000236f  2**0
+                  CONTENTS, READONLY, DEBUGGING
+  9 .debug_line   00000e98  00000000  00000000  0000284b  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 10 .debug_frame  00000180  00000000  00000000  000036e4  2**2
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_str    000006b1  00000000  00000000  00003864  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 12 .debug_loc    00000184  00000000  00000000  00003f15  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 13 .debug_ranges 00000058  00000000  00000000  00004099  2**0
+                  CONTENTS, READONLY, DEBUGGING
+
+Disassembly of section .text:
+
+00000000 <__vectors>:
+   0:	0c 94 3e 00 	jmp	0x7c	; 0x7c <__ctors_end>
+   4:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+   8:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+   c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  10:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  14:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  18:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  1c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  20:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  24:	0c 94 4b 01 	jmp	0x296	; 0x296 <__vector_9>
+  28:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  2c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  30:	0c 94 5d 00 	jmp	0xba	; 0xba <__vector_12>
+  34:	0c 94 cd 00 	jmp	0x19a	; 0x19a <__vector_13>
+  38:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  3c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  40:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  44:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  48:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  4c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  50:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  54:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  58:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  5c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  60:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  64:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  68:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  6c:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  70:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  74:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+  78:	0c 94 5b 00 	jmp	0xb6	; 0xb6 <__bad_interrupt>
+
+0000007c <__ctors_end>:
+  7c:	11 24       	eor	r1, r1
+  7e:	1f be       	out	0x3f, r1	; 63
+  80:	cf ef       	ldi	r28, 0xFF	; 255
+  82:	d0 e1       	ldi	r29, 0x10	; 16
+  84:	de bf       	out	0x3e, r29	; 62
+  86:	cd bf       	out	0x3d, r28	; 61
+
+00000088 <__do_copy_data>:
+  88:	11 e0       	ldi	r17, 0x01	; 1
+  8a:	a0 e0       	ldi	r26, 0x00	; 0
+  8c:	b1 e0       	ldi	r27, 0x01	; 1
+  8e:	ec e4       	ldi	r30, 0x4C	; 76
+  90:	fb e0       	ldi	r31, 0x0B	; 11
+  92:	02 c0       	rjmp	.+4      	; 0x98 <.do_copy_data_start>
+
+00000094 <.do_copy_data_loop>:
+  94:	05 90       	lpm	r0, Z+
+  96:	0d 92       	st	X+, r0
+
+00000098 <.do_copy_data_start>:
+  98:	a4 30       	cpi	r26, 0x04	; 4
+  9a:	b1 07       	cpc	r27, r17
+  9c:	d9 f7       	brne	.-10     	; 0x94 <.do_copy_data_loop>
+
+0000009e <__do_clear_bss>:
+  9e:	11 e0       	ldi	r17, 0x01	; 1
+  a0:	a4 e0       	ldi	r26, 0x04	; 4
+  a2:	b1 e0       	ldi	r27, 0x01	; 1
+  a4:	01 c0       	rjmp	.+2      	; 0xa8 <.do_clear_bss_start>
+
+000000a6 <.do_clear_bss_loop>:
+  a6:	1d 92       	st	X+, r1
+
+000000a8 <.do_clear_bss_start>:
+  a8:	a8 37       	cpi	r26, 0x78	; 120
+  aa:	b1 07       	cpc	r27, r17
+  ac:	e1 f7       	brne	.-8      	; 0xa6 <.do_clear_bss_loop>
+  ae:	0e 94 dd 02 	call	0x5ba	; 0x5ba <main>
+  b2:	0c 94 a4 05 	jmp	0xb48	; 0xb48 <_exit>
+
+000000b6 <__bad_interrupt>:
+  b6:	0c 94 66 01 	jmp	0x2cc	; 0x2cc <__vector_default>
+
+000000ba <__vector_12>:
+
+ISR(TIMER1_CAPT_vect)
+// The vector triggered by an external clock edge and associated with Bank0
+// We assume 32 steps per triangle waveform with average amplitudes
+// Square is always 32
+{
+  ba:	1f 92       	push	r1
+  bc:	0f 92       	push	r0
+  be:	0f b6       	in	r0, 0x3f	; 63
+  c0:	0f 92       	push	r0
+  c2:	11 24       	eor	r1, r1
+  c4:	2f 93       	push	r18
+  c6:	3f 93       	push	r19
+  c8:	4f 93       	push	r20
+  ca:	5f 93       	push	r21
+  cc:	8f 93       	push	r24
+  ce:	9f 93       	push	r25
+		dacByte;		
+
+	static bool
+		triangleSign;
+
+	if(adcByte<0)		// Make abs
+  d0:	80 91 1c 01 	lds	r24, 0x011C
+  d4:	87 ff       	sbrs	r24, 7
+  d6:	05 c0       	rjmp	.+10     	; 0xe2 <__vector_12+0x28>
+	{
+		adcByte=-adcByte;
+  d8:	80 91 1c 01 	lds	r24, 0x011C
+  dc:	81 95       	neg	r24
+  de:	80 93 1c 01 	sts	0x011C, r24
+	}	
+	workingByte=(unsigned char)adcByte;
+  e2:	90 91 1c 01 	lds	r25, 0x011C
+
+	if(genState==AM_SQUARE)	// Clocks out a square wave at the ISR freq / 32.  Amplitude is dependent on ISR freq
+  e6:	80 91 1d 01 	lds	r24, 0x011D
+  ea:	88 23       	and	r24, r24
+  ec:	91 f4       	brne	.+36     	; 0x112 <__vector_12+0x58>
+	{
+		if(waveformCounter>15)
+  ee:	80 91 11 01 	lds	r24, 0x0111
+  f2:	80 31       	cpi	r24, 0x10	; 16
+  f4:	10 f4       	brcc	.+4      	; 0xfa <__vector_12+0x40>
+  f6:	90 e0       	ldi	r25, 0x00	; 0
+  f8:	01 c0       	rjmp	.+2      	; 0xfc <__vector_12+0x42>
+		{
+			dacByte=workingByte*2;
+  fa:	99 0f       	add	r25, r25
+		}
+		else
+		{
+			dacByte=0;
+		}
+		waveformCounter++;
+  fc:	8f 5f       	subi	r24, 0xFF	; 255
+  fe:	80 93 11 01 	sts	0x0111, r24
+		if(waveformCounter==32)
+ 102:	80 32       	cpi	r24, 0x20	; 32
+ 104:	11 f4       	brne	.+4      	; 0x10a <__vector_12+0x50>
+		{
+			waveformCounter=0;
+ 106:	10 92 11 01 	sts	0x0111, r1
+		}
+
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+ 10a:	8f ef       	ldi	r24, 0xFF	; 255
+ 10c:	84 b9       	out	0x04, r24	; 4
+
+		LATCH_PORT=dacByte;		// Put the output on the output latch's input.
+ 10e:	95 b9       	out	0x05, r25	; 5
+ 110:	29 c0       	rjmp	.+82     	; 0x164 <__vector_12+0xaa>
+		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+	}
+	else	// FM triangle
+	{
+		workingByte=(workingByte>>2);				// Max of 32, at full amplitude either way		
+ 112:	59 2f       	mov	r21, r25
+ 114:	56 95       	lsr	r21
+ 116:	56 95       	lsr	r21
+	
+		if(triangleSign==true)	// Ramping up
+ 118:	80 91 10 01 	lds	r24, 0x0110
+ 11c:	40 91 12 01 	lds	r20, 0x0112
+ 120:	81 30       	cpi	r24, 0x01	; 1
+ 122:	89 f4       	brne	.+34     	; 0x146 <__vector_12+0x8c>
+		{
+			if(triangleAcc<(255-workingByte))	// Get there
+ 124:	24 2f       	mov	r18, r20
+ 126:	30 e0       	ldi	r19, 0x00	; 0
+ 128:	8f ef       	ldi	r24, 0xFF	; 255
+ 12a:	90 e0       	ldi	r25, 0x00	; 0
+ 12c:	85 1b       	sub	r24, r21
+ 12e:	91 09       	sbc	r25, r1
+ 130:	28 17       	cp	r18, r24
+ 132:	39 07       	cpc	r19, r25
+ 134:	24 f4       	brge	.+8      	; 0x13e <__vector_12+0x84>
+			{
+				triangleAcc+=workingByte;
+ 136:	54 0f       	add	r21, r20
+ 138:	50 93 12 01 	sts	0x0112, r21
+ 13c:	0e c0       	rjmp	.+28     	; 0x15a <__vector_12+0xa0>
+			}
+			else								// Got there.
+			{
+				triangleAcc=255;
+ 13e:	8f ef       	ldi	r24, 0xFF	; 255
+ 140:	80 93 12 01 	sts	0x0112, r24
+ 144:	08 c0       	rjmp	.+16     	; 0x156 <__vector_12+0x9c>
+				triangleSign=false;
+			}
+		}
+		else		// Ramping down
+		{
+			if(triangleAcc>workingByte)		// Get there
+ 146:	54 17       	cp	r21, r20
+ 148:	20 f4       	brcc	.+8      	; 0x152 <__vector_12+0x98>
+			{
+				triangleAcc-=workingByte;
+ 14a:	45 1b       	sub	r20, r21
+ 14c:	40 93 12 01 	sts	0x0112, r20
+ 150:	04 c0       	rjmp	.+8      	; 0x15a <__vector_12+0xa0>
+			}
+			else							// Got there, turn around
+			{
+				triangleAcc=0;
+ 152:	10 92 12 01 	sts	0x0112, r1
+				triangleSign=false;
+ 156:	10 92 10 01 	sts	0x0110, r1
+			}			
+		}
+
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+ 15a:	8f ef       	ldi	r24, 0xFF	; 255
+ 15c:	84 b9       	out	0x04, r24	; 4
+
+		LATCH_PORT=triangleAcc;		// Put the output on the output latch's input.
+ 15e:	80 91 12 01 	lds	r24, 0x0112
+ 162:	85 b9       	out	0x05, r24	; 5
+		PORTA|=(Om_DAC_LA);			// Strobe dac latch enable high -- this puts the output on the 373's output...
+ 164:	15 9a       	sbi	0x02, 5	; 2
+		PORTA&=~(Om_DAC_LA);		// ...And keeps it there.
+ 166:	15 98       	cbi	0x02, 5	; 2
+
+	}
+
+	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+ 168:	80 91 7a 00 	lds	r24, 0x007A
+ 16c:	86 fd       	sbrc	r24, 6
+ 16e:	0a c0       	rjmp	.+20     	; 0x184 <__vector_12+0xca>
+	{
+		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
+ 170:	80 91 79 00 	lds	r24, 0x0079
+ 174:	80 58       	subi	r24, 0x80	; 128
+ 176:	80 93 1c 01 	sts	0x011C, r24
+		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
+ 17a:	80 91 7a 00 	lds	r24, 0x007A
+ 17e:	80 64       	ori	r24, 0x40	; 64
+ 180:	80 93 7a 00 	sts	0x007A, r24
+	}
+
+}
+ 184:	9f 91       	pop	r25
+ 186:	8f 91       	pop	r24
+ 188:	5f 91       	pop	r21
+ 18a:	4f 91       	pop	r20
+ 18c:	3f 91       	pop	r19
+ 18e:	2f 91       	pop	r18
+ 190:	0f 90       	pop	r0
+ 192:	0f be       	out	0x3f, r0	; 63
+ 194:	0f 90       	pop	r0
+ 196:	1f 90       	pop	r1
+ 198:	18 95       	reti
+
+0000019a <__vector_13>:
+
+ISR(TIMER1_COMPA_vect)
+// The bank0 internal timer vectors here on an interrupt.
+{
+ 19a:	1f 92       	push	r1
+ 19c:	0f 92       	push	r0
+ 19e:	0f b6       	in	r0, 0x3f	; 63
+ 1a0:	0f 92       	push	r0
+ 1a2:	11 24       	eor	r1, r1
+ 1a4:	2f 93       	push	r18
+ 1a6:	3f 93       	push	r19
+ 1a8:	4f 93       	push	r20
+ 1aa:	5f 93       	push	r21
+ 1ac:	8f 93       	push	r24
+ 1ae:	9f 93       	push	r25
+		dacByte;		
+
+	static bool
+		triangleSign;
+
+	if(adcByte<0)		// Make abs
+ 1b0:	80 91 1c 01 	lds	r24, 0x011C
+ 1b4:	87 ff       	sbrs	r24, 7
+ 1b6:	05 c0       	rjmp	.+10     	; 0x1c2 <__vector_13+0x28>
+	{
+		adcByte=-adcByte;
+ 1b8:	80 91 1c 01 	lds	r24, 0x011C
+ 1bc:	81 95       	neg	r24
+ 1be:	80 93 1c 01 	sts	0x011C, r24
+	}	
+	workingByte=(unsigned char)adcByte;
+ 1c2:	90 91 1c 01 	lds	r25, 0x011C
+
+	if(genState==AM_SQUARE)	// Clocks out a square wave at the ISR freq / 32.  Amplitude is dependent on ISR freq
+ 1c6:	80 91 1d 01 	lds	r24, 0x011D
+ 1ca:	88 23       	and	r24, r24
+ 1cc:	91 f4       	brne	.+36     	; 0x1f2 <__vector_13+0x58>
+	{
+		if(waveformCounter>15)
+ 1ce:	80 91 0e 01 	lds	r24, 0x010E
+ 1d2:	80 31       	cpi	r24, 0x10	; 16
+ 1d4:	10 f4       	brcc	.+4      	; 0x1da <__vector_13+0x40>
+ 1d6:	90 e0       	ldi	r25, 0x00	; 0
+ 1d8:	01 c0       	rjmp	.+2      	; 0x1dc <__vector_13+0x42>
+		{
+			dacByte=workingByte*2;
+ 1da:	99 0f       	add	r25, r25
+		}
+		else
+		{
+			dacByte=0;
+		}
+		waveformCounter++;
+ 1dc:	8f 5f       	subi	r24, 0xFF	; 255
+ 1de:	80 93 0e 01 	sts	0x010E, r24
+		if(waveformCounter==32)
+ 1e2:	80 32       	cpi	r24, 0x20	; 32
+ 1e4:	11 f4       	brne	.+4      	; 0x1ea <__vector_13+0x50>
+		{
+			waveformCounter=0;
+ 1e6:	10 92 0e 01 	sts	0x010E, r1
+		}
+
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+ 1ea:	8f ef       	ldi	r24, 0xFF	; 255
+ 1ec:	84 b9       	out	0x04, r24	; 4
+
+		LATCH_PORT=dacByte;		// Put the output on the output latch's input.
+ 1ee:	95 b9       	out	0x05, r25	; 5
+ 1f0:	29 c0       	rjmp	.+82     	; 0x244 <__vector_13+0xaa>
+		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+	}
+	else	// FM triangle
+	{
+		workingByte=(workingByte>>2);				// Max of 32, at full amplitude either way		
+ 1f2:	59 2f       	mov	r21, r25
+ 1f4:	56 95       	lsr	r21
+ 1f6:	56 95       	lsr	r21
+	
+		if(triangleSign==true)	// Ramping up
+ 1f8:	80 91 0d 01 	lds	r24, 0x010D
+ 1fc:	40 91 0f 01 	lds	r20, 0x010F
+ 200:	81 30       	cpi	r24, 0x01	; 1
+ 202:	89 f4       	brne	.+34     	; 0x226 <__vector_13+0x8c>
+		{
+			if(triangleAcc<(255-workingByte))	// Get there
+ 204:	24 2f       	mov	r18, r20
+ 206:	30 e0       	ldi	r19, 0x00	; 0
+ 208:	8f ef       	ldi	r24, 0xFF	; 255
+ 20a:	90 e0       	ldi	r25, 0x00	; 0
+ 20c:	85 1b       	sub	r24, r21
+ 20e:	91 09       	sbc	r25, r1
+ 210:	28 17       	cp	r18, r24
+ 212:	39 07       	cpc	r19, r25
+ 214:	24 f4       	brge	.+8      	; 0x21e <__vector_13+0x84>
+			{
+				triangleAcc+=workingByte;
+ 216:	54 0f       	add	r21, r20
+ 218:	50 93 0f 01 	sts	0x010F, r21
+ 21c:	0e c0       	rjmp	.+28     	; 0x23a <__vector_13+0xa0>
+			}
+			else								// Got there.
+			{
+				triangleAcc=255;
+ 21e:	8f ef       	ldi	r24, 0xFF	; 255
+ 220:	80 93 0f 01 	sts	0x010F, r24
+ 224:	08 c0       	rjmp	.+16     	; 0x236 <__vector_13+0x9c>
+				triangleSign=false;
+			}
+		}
+		else		// Ramping down
+		{
+			if(triangleAcc>workingByte)		// Get there
+ 226:	54 17       	cp	r21, r20
+ 228:	20 f4       	brcc	.+8      	; 0x232 <__vector_13+0x98>
+			{
+				triangleAcc-=workingByte;
+ 22a:	45 1b       	sub	r20, r21
+ 22c:	40 93 0f 01 	sts	0x010F, r20
+ 230:	04 c0       	rjmp	.+8      	; 0x23a <__vector_13+0xa0>
+			}
+			else							// Got there, turn around
+			{
+				triangleAcc=0;
+ 232:	10 92 0f 01 	sts	0x010F, r1
+				triangleSign=false;
+ 236:	10 92 0d 01 	sts	0x010D, r1
+			}			
+		}
+
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+ 23a:	8f ef       	ldi	r24, 0xFF	; 255
+ 23c:	84 b9       	out	0x04, r24	; 4
+
+		LATCH_PORT=triangleAcc;		// Put the output on the output latch's input.
+ 23e:	80 91 0f 01 	lds	r24, 0x010F
+ 242:	85 b9       	out	0x05, r24	; 5
+		PORTA|=(Om_DAC_LA);			// Strobe dac latch enable high -- this puts the output on the 373's output...
+ 244:	15 9a       	sbi	0x02, 5	; 2
+		PORTA&=~(Om_DAC_LA);		// ...And keeps it there.
+ 246:	15 98       	cbi	0x02, 5	; 2
+
+	}
+
+	OCR1A+=cyclesPerIsr;	// Keep going at the correct rate
+ 248:	80 91 88 00 	lds	r24, 0x0088
+ 24c:	90 91 89 00 	lds	r25, 0x0089
+ 250:	20 91 1e 01 	lds	r18, 0x011E
+ 254:	30 91 1f 01 	lds	r19, 0x011F
+ 258:	28 0f       	add	r18, r24
+ 25a:	39 1f       	adc	r19, r25
+ 25c:	30 93 89 00 	sts	0x0089, r19
+ 260:	20 93 88 00 	sts	0x0088, r18
+
+	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+ 264:	80 91 7a 00 	lds	r24, 0x007A
+ 268:	86 fd       	sbrc	r24, 6
+ 26a:	0a c0       	rjmp	.+20     	; 0x280 <__vector_13+0xe6>
+	{
+		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
+ 26c:	80 91 79 00 	lds	r24, 0x0079
+ 270:	80 58       	subi	r24, 0x80	; 128
+ 272:	80 93 1c 01 	sts	0x011C, r24
+		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
+ 276:	80 91 7a 00 	lds	r24, 0x007A
+ 27a:	80 64       	ori	r24, 0x40	; 64
+ 27c:	80 93 7a 00 	sts	0x007A, r24
+	}
+
+}
+ 280:	9f 91       	pop	r25
+ 282:	8f 91       	pop	r24
+ 284:	5f 91       	pop	r21
+ 286:	4f 91       	pop	r20
+ 288:	3f 91       	pop	r19
+ 28a:	2f 91       	pop	r18
+ 28c:	0f 90       	pop	r0
+ 28e:	0f be       	out	0x3f, r0	; 63
+ 290:	0f 90       	pop	r0
+ 292:	1f 90       	pop	r1
+ 294:	18 95       	reti
+
+00000296 <__vector_9>:
+
+ISR(TIMER2_COMPA_vect)
+// Serves exclusively to make our gay intro happen
+// As far as the PWM goes, this should happen as often as possible.
+{
+ 296:	1f 92       	push	r1
+ 298:	0f 92       	push	r0
+ 29a:	0f b6       	in	r0, 0x3f	; 63
+ 29c:	0f 92       	push	r0
+ 29e:	11 24       	eor	r1, r1
+ 2a0:	8f 93       	push	r24
+ 2a2:	9f 93       	push	r25
+	static unsigned char
+		pwmCount;
+	
+	if(ledPwm>pwmCount)
+ 2a4:	80 91 15 01 	lds	r24, 0x0115
+ 2a8:	90 91 0c 01 	lds	r25, 0x010C
+ 2ac:	98 17       	cp	r25, r24
+ 2ae:	18 f4       	brcc	.+6      	; 0x2b6 <__vector_9+0x20>
+	{
+		LATCH_PORT=0xFF;	// LEDs go on.
+ 2b0:	8f ef       	ldi	r24, 0xFF	; 255
+ 2b2:	85 b9       	out	0x05, r24	; 5
+ 2b4:	01 c0       	rjmp	.+2      	; 0x2b8 <__vector_9+0x22>
+	}
+	else
+	{
+		LATCH_PORT=0x00;	// LEDs go off.
+ 2b6:	15 b8       	out	0x05, r1	; 5
+	}
+	pwmCount++;
+ 2b8:	9f 5f       	subi	r25, 0xFF	; 255
+ 2ba:	90 93 0c 01 	sts	0x010C, r25
+}
+ 2be:	9f 91       	pop	r25
+ 2c0:	8f 91       	pop	r24
+ 2c2:	0f 90       	pop	r0
+ 2c4:	0f be       	out	0x3f, r0	; 63
+ 2c6:	0f 90       	pop	r0
+ 2c8:	1f 90       	pop	r1
+ 2ca:	18 95       	reti
+
+000002cc <__vector_default>:
+
+ISR(__vector_default)
+{
+ 2cc:	1f 92       	push	r1
+ 2ce:	0f 92       	push	r0
+ 2d0:	0f b6       	in	r0, 0x3f	; 63
+ 2d2:	0f 92       	push	r0
+ 2d4:	11 24       	eor	r1, r1
+    //  This means a bug happened.  Some interrupt that shouldn't have generated an interrupt went here, the default interrupt vector.
+	//	printf("Buggy Interrupt Generated!  Flags = ");
+	//  printf("*****put interrupt register values here****");
+}
+ 2d6:	0f 90       	pop	r0
+ 2d8:	0f be       	out	0x3f, r0	; 63
+ 2da:	0f 90       	pop	r0
+ 2dc:	1f 90       	pop	r1
+ 2de:	18 95       	reti
+
+000002e0 <HandleSoftclock>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+void HandleSoftclock(void)
+{
+	if(TIFR0&(1<<TOV0))		// Got a timer overflow flag?
+ 2e0:	a8 9b       	sbis	0x15, 0	; 21
+ 2e2:	0a c0       	rjmp	.+20     	; 0x2f8 <HandleSoftclock+0x18>
+	{
+		TIFR0 |= (1<<TOV0);		// Reset the flag (by writing a one).
+ 2e4:	a8 9a       	sbi	0x15, 0	; 21
+		systemTicks++;			// Increment the system ticks.
+ 2e6:	80 91 76 01 	lds	r24, 0x0176
+ 2ea:	90 91 77 01 	lds	r25, 0x0177
+ 2ee:	01 96       	adiw	r24, 0x01	; 1
+ 2f0:	90 93 77 01 	sts	0x0177, r25
+ 2f4:	80 93 76 01 	sts	0x0176, r24
+ 2f8:	08 95       	ret
+
+000002fa <SetSampleClock>:
+// Updated these functions to clear the sdUsingBank(x) flags when these are called so the interrupts dont do any sd related stuff.  Necessary since we can call one of these during SD streaming playback.
+
+static void SetSampleClock(unsigned char theBank, unsigned char theClock, unsigned int theRate)
+// This code is common to all the requests to start different audio modes (record, playback, overdub, etc) and sets the correct clock source for a given bank.
+// Timer interrupts should be disabled when you call this!
+{
+ 2fa:	28 2f       	mov	r18, r24
+	bankStates[theBank].clockMode=theClock;	// What type of interrupt should trigger this sample bank?  Put this in the bank variables so other functions can see.
+ 2fc:	90 e0       	ldi	r25, 0x00	; 0
+ 2fe:	fc 01       	movw	r30, r24
+ 300:	75 e0       	ldi	r23, 0x05	; 5
+ 302:	ee 0f       	add	r30, r30
+ 304:	ff 1f       	adc	r31, r31
+ 306:	7a 95       	dec	r23
+ 308:	e1 f7       	brne	.-8      	; 0x302 <SetSampleClock+0x8>
+ 30a:	88 0f       	add	r24, r24
+ 30c:	99 1f       	adc	r25, r25
+ 30e:	e8 0f       	add	r30, r24
+ 310:	f9 1f       	adc	r31, r25
+ 312:	ee 5c       	subi	r30, 0xCE	; 206
+ 314:	fe 4f       	sbci	r31, 0xFE	; 254
+ 316:	60 87       	std	Z+8, r22	; 0x08
+
+	if(theClock==CLK_INTERNAL)				// The internally counted clock is usually associated with MIDI-controlled sampling (output capture on timer 1)
+ 318:	62 30       	cpi	r22, 0x02	; 2
+ 31a:	49 f5       	brne	.+82     	; 0x36e <SetSampleClock+0x74>
+	{
+		cyclesPerIsr=theRate;
+ 31c:	50 93 1f 01 	sts	0x011F, r21
+ 320:	40 93 1e 01 	sts	0x011E, r20
+
+		if(theBank==BANK_0)		// Bank 0 is associated with OCR1A
+ 324:	22 23       	and	r18, r18
+ 326:	79 f4       	brne	.+30     	; 0x346 <SetSampleClock+0x4c>
+		{
+			OCR1A=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.		
+ 328:	80 91 84 00 	lds	r24, 0x0084
+ 32c:	90 91 85 00 	lds	r25, 0x0085
+ 330:	84 0f       	add	r24, r20
+ 332:	95 1f       	adc	r25, r21
+ 334:	90 93 89 00 	sts	0x0089, r25
+ 338:	80 93 88 00 	sts	0x0088, r24
+			TIFR1|=(1<<OCF1A);		// Clear the interrupt flag.
+ 33c:	b1 9a       	sbi	0x16, 1	; 22
+			TIMSK1|=(1<<OCIE1A);	// Enable the compare match interrupt.
+ 33e:	80 91 6f 00 	lds	r24, 0x006F
+ 342:	82 60       	ori	r24, 0x02	; 2
+ 344:	0e c0       	rjmp	.+28     	; 0x362 <SetSampleClock+0x68>
+			TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.
+		}
+		else					// Bank 1 is associated with OCR1B
+		{
+			OCR1B=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.		
+ 346:	80 91 84 00 	lds	r24, 0x0084
+ 34a:	90 91 85 00 	lds	r25, 0x0085
+ 34e:	84 0f       	add	r24, r20
+ 350:	95 1f       	adc	r25, r21
+ 352:	90 93 8b 00 	sts	0x008B, r25
+ 356:	80 93 8a 00 	sts	0x008A, r24
+			TIFR1|=(1<<OCF1B);		// Clear the interrupt flag.
+ 35a:	b2 9a       	sbi	0x16, 2	; 22
+			TIMSK1|=(1<<OCIE1B);	// Enable the compare match interrupt.
+ 35c:	80 91 6f 00 	lds	r24, 0x006F
+ 360:	84 60       	ori	r24, 0x04	; 4
+ 362:	80 93 6f 00 	sts	0x006F, r24
+			TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.			
+ 366:	81 e0       	ldi	r24, 0x01	; 1
+ 368:	80 93 81 00 	sts	0x0081, r24
+ 36c:	08 95       	ret
+		}
+	}
+	else if(theClock==CLK_EXTERNAL)	// External clock.
+ 36e:	61 30       	cpi	r22, 0x01	; 1
+ 370:	a9 f4       	brne	.+42     	; 0x39c <SetSampleClock+0xa2>
+	{
+		if(theBank==BANK_0)		// Bank 0 is based on Input Capture interrupts (rising edge from the sample clock oscillator)
+ 372:	22 23       	and	r18, r18
+ 374:	61 f4       	brne	.+24     	; 0x38e <SetSampleClock+0x94>
+		{
+			TCCR1B|=(1<<ICES1);		// Trigger on a rising edge.
+ 376:	80 91 81 00 	lds	r24, 0x0081
+ 37a:	80 64       	ori	r24, 0x40	; 64
+ 37c:	80 93 81 00 	sts	0x0081, r24
+			TIFR1|=(1<<ICF1);		// Clear Input Capture interrupt flag.
+ 380:	b5 9a       	sbi	0x16, 5	; 22
+			TIMSK1|=(1<<ICIE1);		// Enable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
+ 382:	80 91 6f 00 	lds	r24, 0x006F
+ 386:	80 62       	ori	r24, 0x20	; 32
+ 388:	80 93 6f 00 	sts	0x006F, r24
+ 38c:	08 95       	ret
+		}
+		else					// Bank1 is based on PC4's pin change interrupt (PCINT20, which is associated with PC interrupt 2)
+		{
+			PCIFR|=(1<<PCIF2);		// Clear any pending interrupts hanging around.
+ 38e:	da 9a       	sbi	0x1b, 2	; 27
+			PCICR=(1<<PCIE2);		// Enable the pin change interrupt for PORTC.
+ 390:	84 e0       	ldi	r24, 0x04	; 4
+ 392:	80 93 68 00 	sts	0x0068, r24
+			PCMSK2=0x10;			// PORTC pin 4 generates interrupt
+ 396:	80 e1       	ldi	r24, 0x10	; 16
+ 398:	80 93 6d 00 	sts	0x006D, r24
+ 39c:	08 95       	ret
+
+0000039e <DoWaveformGen>:
+//--------------------------------------
+
+static void DoWaveformGen(void)
+// Handle doing the different waveforms when buttons are pressed
+{
+	if(newKeys&Im_SWITCH_0)
+ 39e:	90 91 17 01 	lds	r25, 0x0117
+ 3a2:	90 ff       	sbrs	r25, 0
+ 3a4:	0f c0       	rjmp	.+30     	; 0x3c4 <DoWaveformGen+0x26>
+	{
+		TIMSK1=0;
+ 3a6:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_INTERNAL,10417);	// 60 Hz with 32 isrs in a period
+ 3aa:	80 e0       	ldi	r24, 0x00	; 0
+ 3ac:	62 e0       	ldi	r22, 0x02	; 2
+ 3ae:	41 eb       	ldi	r20, 0xB1	; 177
+ 3b0:	58 e2       	ldi	r21, 0x28	; 40
+ 3b2:	0e 94 7d 01 	call	0x2fa	; 0x2fa <SetSampleClock>
+		ledOnOffMask^=(1<<0);
+ 3b6:	80 91 13 01 	lds	r24, 0x0113
+ 3ba:	91 e0       	ldi	r25, 0x01	; 1
+ 3bc:	89 27       	eor	r24, r25
+ 3be:	80 93 13 01 	sts	0x0113, r24
+ 3c2:	1c c0       	rjmp	.+56     	; 0x3fc <DoWaveformGen+0x5e>
+		genState=AM_SQUARE;
+	}
+	else if(newKeys&Im_SWITCH_1)
+ 3c4:	91 ff       	sbrs	r25, 1
+ 3c6:	07 c0       	rjmp	.+14     	; 0x3d6 <DoWaveformGen+0x38>
+	{
+		TIMSK1=0;
+ 3c8:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_INTERNAL,5209);	// 120 Hz
+ 3cc:	80 e0       	ldi	r24, 0x00	; 0
+ 3ce:	62 e0       	ldi	r22, 0x02	; 2
+ 3d0:	49 e5       	ldi	r20, 0x59	; 89
+ 3d2:	54 e1       	ldi	r21, 0x14	; 20
+ 3d4:	11 c0       	rjmp	.+34     	; 0x3f8 <DoWaveformGen+0x5a>
+		genState=AM_SQUARE;
+	}
+	else if(newKeys&Im_SWITCH_2)
+ 3d6:	92 ff       	sbrs	r25, 2
+ 3d8:	07 c0       	rjmp	.+14     	; 0x3e8 <DoWaveformGen+0x4a>
+	{
+		TIMSK1=0;
+ 3da:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_INTERNAL,2604);	// 240 Hz
+ 3de:	80 e0       	ldi	r24, 0x00	; 0
+ 3e0:	62 e0       	ldi	r22, 0x02	; 2
+ 3e2:	4c e2       	ldi	r20, 0x2C	; 44
+ 3e4:	5a e0       	ldi	r21, 0x0A	; 10
+ 3e6:	08 c0       	rjmp	.+16     	; 0x3f8 <DoWaveformGen+0x5a>
+		genState=AM_SQUARE;	
+	}
+	else if(newKeys&Im_SWITCH_3)
+ 3e8:	93 ff       	sbrs	r25, 3
+ 3ea:	0b c0       	rjmp	.+22     	; 0x402 <DoWaveformGen+0x64>
+	{
+		TIMSK1=0;
+ 3ec:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_EXTERNAL,0);		// analog clock
+ 3f0:	80 e0       	ldi	r24, 0x00	; 0
+ 3f2:	61 e0       	ldi	r22, 0x01	; 1
+ 3f4:	40 e0       	ldi	r20, 0x00	; 0
+ 3f6:	50 e0       	ldi	r21, 0x00	; 0
+ 3f8:	0e 94 7d 01 	call	0x2fa	; 0x2fa <SetSampleClock>
+		genState=AM_SQUARE;		
+ 3fc:	10 92 1d 01 	sts	0x011D, r1
+ 400:	08 95       	ret
+	}
+	else if(newKeys&Im_SWITCH_4)
+ 402:	94 ff       	sbrs	r25, 4
+ 404:	07 c0       	rjmp	.+14     	; 0x414 <DoWaveformGen+0x76>
+	{
+		TIMSK1=0;
+ 406:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_INTERNAL,10417);	// 60 Hz with 32 isrs in a period
+ 40a:	80 e0       	ldi	r24, 0x00	; 0
+ 40c:	62 e0       	ldi	r22, 0x02	; 2
+ 40e:	41 eb       	ldi	r20, 0xB1	; 177
+ 410:	58 e2       	ldi	r21, 0x28	; 40
+ 412:	11 c0       	rjmp	.+34     	; 0x436 <DoWaveformGen+0x98>
+		genState=FM_TRIANGLE;
+	
+	}
+	else if(newKeys&Im_SWITCH_5)
+ 414:	95 ff       	sbrs	r25, 5
+ 416:	07 c0       	rjmp	.+14     	; 0x426 <DoWaveformGen+0x88>
+	{
+		TIMSK1=0;
+ 418:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_INTERNAL,5209);	// 120 Hz
+ 41c:	80 e0       	ldi	r24, 0x00	; 0
+ 41e:	62 e0       	ldi	r22, 0x02	; 2
+ 420:	49 e5       	ldi	r20, 0x59	; 89
+ 422:	54 e1       	ldi	r21, 0x14	; 20
+ 424:	08 c0       	rjmp	.+16     	; 0x436 <DoWaveformGen+0x98>
+		genState=FM_TRIANGLE;
+	
+	}
+	else if(newKeys&Im_SWITCH_6)
+ 426:	96 ff       	sbrs	r25, 6
+ 428:	0c c0       	rjmp	.+24     	; 0x442 <DoWaveformGen+0xa4>
+	{
+		TIMSK1=0;
+ 42a:	10 92 6f 00 	sts	0x006F, r1
+		SetSampleClock(BANK_0,CLK_EXTERNAL,0);		// analog clock
+ 42e:	80 e0       	ldi	r24, 0x00	; 0
+ 430:	61 e0       	ldi	r22, 0x01	; 1
+ 432:	40 e0       	ldi	r20, 0x00	; 0
+ 434:	50 e0       	ldi	r21, 0x00	; 0
+ 436:	0e 94 7d 01 	call	0x2fa	; 0x2fa <SetSampleClock>
+		genState=FM_TRIANGLE;			
+ 43a:	81 e0       	ldi	r24, 0x01	; 1
+ 43c:	80 93 1d 01 	sts	0x011D, r24
+ 440:	08 95       	ret
+	}
+	else if(newKeys&Im_SWITCH_7)
+ 442:	97 ff       	sbrs	r25, 7
+ 444:	04 c0       	rjmp	.+8      	; 0x44e <DoWaveformGen+0xb0>
+	{
+		TIMSK1=0;
+ 446:	10 92 6f 00 	sts	0x006F, r1
+		TCCR1B=0;			// Stop the timer.	
+ 44a:	10 92 81 00 	sts	0x0081, r1
+ 44e:	08 95       	ret
+
+00000450 <BlinkLeds>:
+
+static void BlinkLeds(unsigned int theMask)
+// Sets up the mask of leds to blink and their blink rate.
+// NOTE:  All leds made to blink will blink synchronously at the rate last set.  This saves us from having 8 separate software clocks.
+// NOTE:  When an LED is told to stop blinking it will revert to OFF, even if the LED was ON when we told it to blink.  I can live with this.
+{
+ 450:	a8 2f       	mov	r26, r24
+	unsigned char
+		i;
+
+	for(i=0; i<NUM_LEDS; i++)		// Go through all the LEDs...
+	{
+		if(ledBlinkMask&(1<<i))		// ...and if a LED was supposed to be blinking...
+ 452:	80 91 14 01 	lds	r24, 0x0114
+ 456:	68 2f       	mov	r22, r24
+ 458:	70 e0       	ldi	r23, 0x00	; 0
+ 45a:	50 91 13 01 	lds	r21, 0x0113
+ 45e:	20 e0       	ldi	r18, 0x00	; 0
+ 460:	30 e0       	ldi	r19, 0x00	; 0
+		{
+			ledOnOffMask&=~(1<<i);		// ...turn it off.  This makes sure any blinking LEDs don't stop their blinks in the 'on' state.
+ 462:	e1 e0       	ldi	r30, 0x01	; 1
+ 464:	f0 e0       	ldi	r31, 0x00	; 0
+	unsigned char
+		i;
+
+	for(i=0; i<NUM_LEDS; i++)		// Go through all the LEDs...
+	{
+		if(ledBlinkMask&(1<<i))		// ...and if a LED was supposed to be blinking...
+ 466:	cb 01       	movw	r24, r22
+ 468:	02 2e       	mov	r0, r18
+ 46a:	02 c0       	rjmp	.+4      	; 0x470 <BlinkLeds+0x20>
+ 46c:	95 95       	asr	r25
+ 46e:	87 95       	ror	r24
+ 470:	0a 94       	dec	r0
+ 472:	e2 f7       	brpl	.-8      	; 0x46c <BlinkLeds+0x1c>
+ 474:	80 ff       	sbrs	r24, 0
+ 476:	09 c0       	rjmp	.+18     	; 0x48a <BlinkLeds+0x3a>
+		{
+			ledOnOffMask&=~(1<<i);		// ...turn it off.  This makes sure any blinking LEDs don't stop their blinks in the 'on' state.
+ 478:	cf 01       	movw	r24, r30
+ 47a:	02 2e       	mov	r0, r18
+ 47c:	02 c0       	rjmp	.+4      	; 0x482 <BlinkLeds+0x32>
+ 47e:	88 0f       	add	r24, r24
+ 480:	99 1f       	adc	r25, r25
+ 482:	0a 94       	dec	r0
+ 484:	e2 f7       	brpl	.-8      	; 0x47e <BlinkLeds+0x2e>
+ 486:	80 95       	com	r24
+ 488:	58 23       	and	r21, r24
+ 48a:	2f 5f       	subi	r18, 0xFF	; 255
+ 48c:	3f 4f       	sbci	r19, 0xFF	; 255
+// NOTE:  When an LED is told to stop blinking it will revert to OFF, even if the LED was ON when we told it to blink.  I can live with this.
+{
+	unsigned char
+		i;
+
+	for(i=0; i<NUM_LEDS; i++)		// Go through all the LEDs...
+ 48e:	28 30       	cpi	r18, 0x08	; 8
+ 490:	31 05       	cpc	r19, r1
+ 492:	49 f7       	brne	.-46     	; 0x466 <BlinkLeds+0x16>
+ 494:	50 93 13 01 	sts	0x0113, r21
+		{
+			ledOnOffMask&=~(1<<i);		// ...turn it off.  This makes sure any blinking LEDs don't stop their blinks in the 'on' state.
+		}
+	}
+
+	ledBlinkMask=theMask;				// Now assign new leds to blink.
+ 498:	a0 93 14 01 	sts	0x0114, r26
+	SetTimer(TIMER_BLINK,BLINK_TIME);	// And the time that they will all blink to.
+ 49c:	82 e0       	ldi	r24, 0x02	; 2
+ 49e:	68 e9       	ldi	r22, 0x98	; 152
+ 4a0:	70 e0       	ldi	r23, 0x00	; 0
+ 4a2:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+}
+ 4a6:	08 95       	ret
+
+000004a8 <KillLeds>:
+}
+
+static void KillLeds(void)
+// Turns off all LEDs immediately.
+{
+	ledOnOffMask=0;
+ 4a8:	10 92 13 01 	sts	0x0113, r1
+	BlinkLeds(0);		// Durrrr.....
+ 4ac:	80 e0       	ldi	r24, 0x00	; 0
+ 4ae:	90 e0       	ldi	r25, 0x00	; 0
+ 4b0:	0e 94 28 02 	call	0x450	; 0x450 <BlinkLeds>
+}
+ 4b4:	08 95       	ret
+
+000004b6 <DoSawtooth>:
+// Also test to see if our flash is present and working.
+{
+	static unsigned char
+		lastShuttleRead;
+
+	if(subState==SS_0)
+ 4b6:	80 91 19 01 	lds	r24, 0x0119
+ 4ba:	88 23       	and	r24, r24
+ 4bc:	41 f4       	brne	.+16     	; 0x4ce <DoSawtooth+0x18>
+	{
+		KillLeds();							// Start with LEDs off.
+ 4be:	0e 94 54 02 	call	0x4a8	; 0x4a8 <KillLeds>
+		BlinkLeds((1<<LED_6)|(1<<LED_7));	// Blink Leds 6, 7.
+ 4c2:	80 ec       	ldi	r24, 0xC0	; 192
+ 4c4:	90 e0       	ldi	r25, 0x00	; 0
+ 4c6:	0e 94 28 02 	call	0x450	; 0x450 <BlinkLeds>
+		subState=SS_1;
+ 4ca:	81 e0       	ldi	r24, 0x01	; 1
+ 4cc:	13 c0       	rjmp	.+38     	; 0x4f4 <DoSawtooth+0x3e>
+	}
+	else if(subState==SS_1)
+ 4ce:	81 30       	cpi	r24, 0x01	; 1
+ 4d0:	a1 f4       	brne	.+40     	; 0x4fa <DoSawtooth+0x44>
+	{
+		cli();		// DONT EVER DO Interrupts this way if you care about not messing something up.
+ 4d2:	f8 94       	cli
+		bankStates[BANK_0].audioFunction=AUDIO_SAWTOOTH;	// Set the external analog clock interrupt vector to make sawtooth waves.
+ 4d4:	80 93 32 01 	sts	0x0132, r24
+		bankStates[BANK_0].clockMode=CLK_EXTERNAL;
+ 4d8:	80 93 3a 01 	sts	0x013A, r24
+		SetSampleClock(BANK_0,CLK_EXTERNAL,0);
+ 4dc:	80 e0       	ldi	r24, 0x00	; 0
+ 4de:	61 e0       	ldi	r22, 0x01	; 1
+ 4e0:	40 e0       	ldi	r20, 0x00	; 0
+ 4e2:	50 e0       	ldi	r21, 0x00	; 0
+ 4e4:	0e 94 7d 01 	call	0x2fa	; 0x2fa <SetSampleClock>
+//		UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+		sei();		// DONT EVER DO Interrupts this way if you care about not messing something up.		
+ 4e8:	78 94       	sei
+
+		lastShuttleRead=encoderValue;	// Keep track of the original encoder reading so we can change the leds when it changes.
+ 4ea:	80 91 1b 01 	lds	r24, 0x011B
+ 4ee:	80 93 0b 01 	sts	0x010B, r24
+
+		subState=SS_2;					// And wait forever.
+ 4f2:	82 e0       	ldi	r24, 0x02	; 2
+ 4f4:	80 93 19 01 	sts	0x0119, r24
+ 4f8:	08 95       	ret
+	}
+	else if(subState==SS_2)
+ 4fa:	82 30       	cpi	r24, 0x02	; 2
+ 4fc:	09 f0       	breq	.+2      	; 0x500 <DoSawtooth+0x4a>
+ 4fe:	5c c0       	rjmp	.+184    	; 0x5b8 <DoSawtooth+0x102>
+	{
+
+		if(newKeys&Im_SWITCH_0)
+ 500:	80 91 17 01 	lds	r24, 0x0117
+ 504:	28 2f       	mov	r18, r24
+ 506:	80 ff       	sbrs	r24, 0
+ 508:	06 c0       	rjmp	.+12     	; 0x516 <DoSawtooth+0x60>
+		{
+			ledOnOffMask^=(1<<LED_0);	// Toggle the LED.
+ 50a:	80 91 13 01 	lds	r24, 0x0113
+ 50e:	91 e0       	ldi	r25, 0x01	; 1
+ 510:	89 27       	eor	r24, r25
+ 512:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_1)
+ 516:	21 ff       	sbrs	r18, 1
+ 518:	06 c0       	rjmp	.+12     	; 0x526 <DoSawtooth+0x70>
+		{
+			ledOnOffMask^=(1<<LED_1);	// Toggle the LED.
+ 51a:	80 91 13 01 	lds	r24, 0x0113
+ 51e:	92 e0       	ldi	r25, 0x02	; 2
+ 520:	89 27       	eor	r24, r25
+ 522:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_2)
+ 526:	22 ff       	sbrs	r18, 2
+ 528:	06 c0       	rjmp	.+12     	; 0x536 <DoSawtooth+0x80>
+		{
+			ledOnOffMask^=(1<<LED_2);	// Toggle the LED.
+ 52a:	80 91 13 01 	lds	r24, 0x0113
+ 52e:	94 e0       	ldi	r25, 0x04	; 4
+ 530:	89 27       	eor	r24, r25
+ 532:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_3)
+ 536:	23 ff       	sbrs	r18, 3
+ 538:	06 c0       	rjmp	.+12     	; 0x546 <DoSawtooth+0x90>
+		{
+			ledOnOffMask^=(1<<LED_3);	// Toggle the LED.
+ 53a:	80 91 13 01 	lds	r24, 0x0113
+ 53e:	98 e0       	ldi	r25, 0x08	; 8
+ 540:	89 27       	eor	r24, r25
+ 542:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_4)
+ 546:	24 ff       	sbrs	r18, 4
+ 548:	06 c0       	rjmp	.+12     	; 0x556 <DoSawtooth+0xa0>
+		{
+			ledOnOffMask^=(1<<LED_4);	// Toggle the LED.
+ 54a:	80 91 13 01 	lds	r24, 0x0113
+ 54e:	90 e1       	ldi	r25, 0x10	; 16
+ 550:	89 27       	eor	r24, r25
+ 552:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_5)
+ 556:	25 ff       	sbrs	r18, 5
+ 558:	06 c0       	rjmp	.+12     	; 0x566 <DoSawtooth+0xb0>
+		{
+			ledOnOffMask^=(1<<LED_5);	// Toggle the LED.
+ 55a:	80 91 13 01 	lds	r24, 0x0113
+ 55e:	90 e2       	ldi	r25, 0x20	; 32
+ 560:	89 27       	eor	r24, r25
+ 562:	80 93 13 01 	sts	0x0113, r24
+		}
+
+		if(newKeys&Im_SWITCH_6)
+ 566:	26 ff       	sbrs	r18, 6
+ 568:	0a c0       	rjmp	.+20     	; 0x57e <DoSawtooth+0xc8>
+}
+
+static void StopBlinking(void)
+// Stops all blinking LEDs.
+{
+	BlinkLeds(0);		// Durrrr.....
+ 56a:	80 e0       	ldi	r24, 0x00	; 0
+ 56c:	90 e0       	ldi	r25, 0x00	; 0
+ 56e:	0e 94 28 02 	call	0x450	; 0x450 <BlinkLeds>
+		}
+
+		if(newKeys&Im_SWITCH_6)
+		{
+			StopBlinking();
+			ledOnOffMask^=(1<<LED_6);	// Toggle the LED.
+ 572:	80 91 13 01 	lds	r24, 0x0113
+ 576:	90 e4       	ldi	r25, 0x40	; 64
+ 578:	89 27       	eor	r24, r25
+ 57a:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(newKeys&Im_SWITCH_7)
+ 57e:	80 91 17 01 	lds	r24, 0x0117
+ 582:	87 ff       	sbrs	r24, 7
+ 584:	09 c0       	rjmp	.+18     	; 0x598 <DoSawtooth+0xe2>
+}
+
+static void StopBlinking(void)
+// Stops all blinking LEDs.
+{
+	BlinkLeds(0);		// Durrrr.....
+ 586:	80 e0       	ldi	r24, 0x00	; 0
+ 588:	90 e0       	ldi	r25, 0x00	; 0
+ 58a:	0e 94 28 02 	call	0x450	; 0x450 <BlinkLeds>
+			ledOnOffMask^=(1<<LED_6);	// Toggle the LED.
+		}
+		if(newKeys&Im_SWITCH_7)
+		{
+			StopBlinking();
+			ledOnOffMask^=(1<<LED_7);	// Toggle the LED.
+ 58e:	80 91 13 01 	lds	r24, 0x0113
+ 592:	80 58       	subi	r24, 0x80	; 128
+ 594:	80 93 13 01 	sts	0x0113, r24
+		}
+		if(lastShuttleRead!=encoderValue)	// Change the leds to the new encoder value when we get a new value.
+ 598:	90 91 0b 01 	lds	r25, 0x010B
+ 59c:	80 91 1b 01 	lds	r24, 0x011B
+ 5a0:	98 17       	cp	r25, r24
+ 5a2:	51 f0       	breq	.+20     	; 0x5b8 <DoSawtooth+0x102>
+}
+
+static void StopBlinking(void)
+// Stops all blinking LEDs.
+{
+	BlinkLeds(0);		// Durrrr.....
+ 5a4:	80 e0       	ldi	r24, 0x00	; 0
+ 5a6:	90 e0       	ldi	r25, 0x00	; 0
+ 5a8:	0e 94 28 02 	call	0x450	; 0x450 <BlinkLeds>
+			ledOnOffMask^=(1<<LED_7);	// Toggle the LED.
+		}
+		if(lastShuttleRead!=encoderValue)	// Change the leds to the new encoder value when we get a new value.
+		{
+			StopBlinking();
+			ledOnOffMask=encoderValue;
+ 5ac:	80 91 1b 01 	lds	r24, 0x011B
+ 5b0:	80 93 13 01 	sts	0x0113, r24
+			lastShuttleRead=encoderValue;
+ 5b4:	80 93 0b 01 	sts	0x010B, r24
+ 5b8:	08 95       	ret
+
+000005ba <main>:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+int main(void)
+// Initialize this mess.
+{
+ 5ba:	cf 92       	push	r12
+ 5bc:	df 92       	push	r13
+ 5be:	ef 92       	push	r14
+ 5c0:	ff 92       	push	r15
+ 5c2:	1f 93       	push	r17
+ 5c4:	cf 93       	push	r28
+ 5c6:	df 93       	push	r29
+	PRR=0xFF;			// Power off everything, let the initialization routines turn on modules you need.
+ 5c8:	1f ef       	ldi	r17, 0xFF	; 255
+ 5ca:	10 93 64 00 	sts	0x0064, r17
+	MCUCR&=~(1<<PUD);	// Globally enable pullups (we need them for the encoder)
+ 5ce:	85 b7       	in	r24, 0x35	; 53
+ 5d0:	8f 7e       	andi	r24, 0xEF	; 239
+ 5d2:	85 bf       	out	0x35, r24	; 53
+
+	// Set the DDRs for all RAM, DAC, latch related pins here.  Any non-SFR related IO pin gets initialized here.  ADC and anything else with a specific init routine will be intialized separately.
+
+	DDRC=0xEF;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  Pins PC5-PC7 are unused now, so pull them low.
+ 5d4:	8f ee       	ldi	r24, 0xEF	; 239
+ 5d6:	87 b9       	out	0x07, r24	; 7
+	PORTC=0x08;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
+ 5d8:	88 e0       	ldi	r24, 0x08	; 8
+ 5da:	88 b9       	out	0x08, r24	; 8
+
+	DDRD=0x80;			// PORTD is the UART (midi) the Flash interface (SPI) the ACLK input and the LED latch enable.  Make UART and Flash input for now and the rest make appropriate (LE is an output) .
+ 5dc:	90 e8       	ldi	r25, 0x80	; 128
+ 5de:	9a b9       	out	0x0a, r25	; 10
+	PORTD=0x00;			// Drive the LE for the LEDs low and leave the rest floating.
+ 5e0:	1b b8       	out	0x0b, r1	; 11
+
+//	PORTA=0xC6;			// OE and WE high, latch enables low, no pullup on AIN0, pullups on the encoder pins.
+	PORTA=0x06;			// OE and WE high, latch enables low, no pullup on AIN0, encoder now has hardware pullups.
+ 5e2:	86 e0       	ldi	r24, 0x06	; 6
+ 5e4:	82 b9       	out	0x02, r24	; 2
+	DDRA=0x3E;			// PORTA is digital outputs (latch strobe lines and OE/WE lines PA1-5), the analog in (on PA0) and the encoder inputs (PA6 and PA7)
+ 5e6:	8e e3       	ldi	r24, 0x3E	; 62
+ 5e8:	81 b9       	out	0x01, r24	; 1
+
+	DDRB=0xFF;			// Latch port to OP.
+ 5ea:	14 b9       	out	0x04, r17	; 4
+	LATCH_PORT=128;		// And set it equal to midscale for the DAC.
+ 5ec:	95 b9       	out	0x05, r25	; 5
+
+	// Set the DAC to midscale to avoid pops on the first interrupt call.
+	PORTA|=(Om_RAM_OE);		// Tristate the RAM.
+ 5ee:	12 9a       	sbi	0x02, 2	; 2
+	LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+ 5f0:	14 b9       	out	0x04, r17	; 4
+	PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the dacByte on the 373's output...
+ 5f2:	15 9a       	sbi	0x02, 5	; 2
+	PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+ 5f4:	15 98       	cbi	0x02, 5	; 2
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void InitSwitches(void)
+{
+	SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Start debounce counter.
+ 5f6:	81 e0       	ldi	r24, 0x01	; 1
+ 5f8:	66 e2       	ldi	r22, 0x26	; 38
+ 5fa:	70 e0       	ldi	r23, 0x00	; 0
+ 5fc:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+
+	DDRC&=~Im_CARD_DETECT;	// Card detect pin to input.
+ 600:	3d 98       	cbi	0x07, 5	; 7
+	PORTC|=Im_CARD_DETECT;	// Pull it up.
+ 602:	45 9a       	sbi	0x08, 5	; 8
+#define	ENC_POS_C	0xC0
+#define	ENC_POS_D	0x80
+
+static void InitEncoder(void)
+{
+	encoderState=(PINA&Im_ENCODER_PINS);	// Initial encoder state read from pins directly.
+ 604:	80 b1       	in	r24, 0x00	; 0
+ 606:	80 7c       	andi	r24, 0xC0	; 192
+ 608:	80 93 1a 01 	sts	0x011A, r24
+	encoderValue=0;							// zero our relative position.
+ 60c:	10 92 1b 01 	sts	0x011B, r1
+	}
+}
+
+static void InitLeds(void)
+{
+	ledOnOffMask=0;
+ 610:	10 92 13 01 	sts	0x0113, r1
+	ledBlinkMask=0;
+ 614:	10 92 14 01 	sts	0x0114, r1
+// This and the switch handler are the only mainline (non IRQ) code that messes with the databus.
+{
+	unsigned char
+		sreg;
+
+	sreg=SREG;	// Store global interrupt state
+ 618:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Clear global interrupts (so we don't get an audio interrupt while messing with OE and WE)
+ 61a:	f8 94       	cli
+
+	LATCH_PORT=theMask;				// Put passed data onto bus.
+ 61c:	15 b8       	out	0x05, r1	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+ 61e:	14 b9       	out	0x04, r17	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+ 620:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.
+ 622:	5f 98       	cbi	0x0b, 7	; 11
+
+	SREG=sreg;						// Restore interrupts.
+ 624:	8f bf       	out	0x3f, r24	; 63
+	PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+
+	InitSwitches();
+	InitEncoder();
+	InitLeds();
+	InitUart0();
+ 626:	0e 94 59 05 	call	0xab2	; 0xab2 <InitUart0>
+*/
+
+static void InitAdc(void)
+// Note, we don't set up the Adc to trigger on anything right away.
+{
+	PRR&=~(1<<PRADC);		// Turn the ADC power on (clear the bit to power on).
+ 62a:	80 91 64 00 	lds	r24, 0x0064
+ 62e:	8e 7f       	andi	r24, 0xFE	; 254
+ 630:	80 93 64 00 	sts	0x0064, r24
+	ADMUX = 0x60; 			// 0110 0000.  AVCC is the reference (w/ ext cap), left justify the result, start with ADC0 as the channel.  The ADC always wants to see a cap at AREF if the internal references or VCC are used.
+ 634:	80 e6       	ldi	r24, 0x60	; 96
+ 636:	80 93 7c 00 	sts	0x007C, r24
+	DIDR0 = 0x01;			// Disable the digital input for ADC0.
+ 63a:	81 e0       	ldi	r24, 0x01	; 1
+ 63c:	80 93 7e 00 	sts	0x007E, r24
+	ADCSRA = 0x95;			// 1001 0101 (prescaler to 32 = ~48kHz sample rate, (64 = 24kHz).  Enable the ADC, no autotrigger or interrupts. (For ex: at 8MHz sysclk and 1/64, ADC clock = 125kHz, normal conversion ~= 10kHz (13 samples per conversion).  According to the datasheet, to get max resolution from the converter, the ADC clock must be between 50 and 200kHz.)
+ 640:	85 e9       	ldi	r24, 0x95	; 149
+ 642:	80 93 7a 00 	sts	0x007A, r24
+//	ADCSRA = 0x96;			// 1001 0110 (prescaler to 64 = ~24kHz sample rate, (32 = 48kHz).  Enable the ADC, no autotrigger or interrupts. (For ex: at 8MHz sysclk and 1/64, ADC clock = 125kHz, normal conversion ~= 10kHz (13 samples per conversion).  According to the datasheet, to get max resolution from the converter, the ADC clock must be between 50 and 200kHz.)
+	ADCSRA |= (1<<ADSC);  	// Start the first conversion to initialize the ADC.
+ 646:	80 91 7a 00 	lds	r24, 0x007A
+ 64a:	80 64       	ori	r24, 0x40	; 64
+ 64c:	80 93 7a 00 	sts	0x007A, r24
+// NOTE:  w/ 16-bit system ticks we can only time 214 seconds at this rate.
+
+// With /64 those times are 0.8192 mSecs and 53 seconds.  We did this for the sake of not missing encoder states.
+
+{
+	PRR&=~(1<<PRTIM0);	// Turn the TMR0 power on.
+ 650:	80 91 64 00 	lds	r24, 0x0064
+ 654:	8f 7d       	andi	r24, 0xDF	; 223
+ 656:	80 93 64 00 	sts	0x0064, r24
+	TIMSK0=0x00;		// Disable all Timer 0 associated interrupts.
+ 65a:	10 92 6e 00 	sts	0x006E, r1
+	TCCR0A=0;			// Normal Ports.
+ 65e:	14 bc       	out	0x24, r1	; 36
+	TCNT0=0;			// Initialize the counter to 0.
+ 660:	16 bc       	out	0x26, r1	; 38
+	TIFR0=0xFF;			// Clear the interrupt flags by writing ones.
+ 662:	15 bb       	out	0x15, r17	; 21
+	systemTicks=0;
+ 664:	10 92 77 01 	sts	0x0177, r1
+ 668:	10 92 76 01 	sts	0x0176, r1
+//	TCCR0B=0x04;		// Start the timer in Normal mode, prescaler at 1/256
+	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
+ 66c:	83 e0       	ldi	r24, 0x03	; 3
+ 66e:	85 bd       	out	0x25, r24	; 37
+
+static void InitSampleClock(void)
+// Get TMR1 ready to generate some equal temperament, or as equal as I can do (for MIDI)
+// Or just turn it on so we can use the Input Capture pin to generate interrupts for the external clock (for the loop sampler).
+{
+	PRR&=~(1<<PRTIM1);	// Turn the TMR1 power on.
+ 670:	80 91 64 00 	lds	r24, 0x0064
+ 674:	87 7f       	andi	r24, 0xF7	; 247
+ 676:	80 93 64 00 	sts	0x0064, r24
+	TIMSK1=0x00;		// Disable all Timer 1 associated interrupts.
+ 67a:	10 92 6f 00 	sts	0x006F, r1
+	OCR1A=65535;		// Set the compare register arbitrarily
+ 67e:	8f ef       	ldi	r24, 0xFF	; 255
+ 680:	9f ef       	ldi	r25, 0xFF	; 255
+ 682:	90 93 89 00 	sts	0x0089, r25
+ 686:	80 93 88 00 	sts	0x0088, r24
+	OCR1B=65535;		// Set the compare register arbitrarily
+ 68a:	90 93 8b 00 	sts	0x008B, r25
+ 68e:	80 93 8a 00 	sts	0x008A, r24
+	TCCR1A=0;			// Normal Ports.
+ 692:	10 92 80 00 	sts	0x0080, r1
+	TCCR1B=0;			// Stop the timer.
+ 696:	10 92 81 00 	sts	0x0081, r1
+	TCNT1=0;			// Initialize the counter to 0.
+ 69a:	10 92 85 00 	sts	0x0085, r1
+ 69e:	10 92 84 00 	sts	0x0084, r1
+	TIFR1=0xFF;			// Clear the interrupt flags by writing ones.
+ 6a2:	16 bb       	out	0x16, r17	; 22
+	InitAdc();
+	InitSoftclock();
+//	InitRandom();
+	InitSampleClock();	// Turns on TIMER1 and gets it ready to generate interrupts.
+
+	newKeys=0;
+ 6a4:	10 92 17 01 	sts	0x0117, r1
+	keyState=0;
+ 6a8:	10 92 16 01 	sts	0x0116, r1
+	cardDetect=false;
+ 6ac:	10 92 18 01 	sts	0x0118, r1
+
+	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
+ 6b0:	78 94       	sei
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void SetState(STATE_FUNC *newState)		// Sets the device to a new state, assumes it should begin at the first minor sub-state.
+{
+	State=newState;
+ 6b2:	80 e6       	ldi	r24, 0x60	; 96
+ 6b4:	94 e0       	ldi	r25, 0x04	; 4
+ 6b6:	90 93 31 01 	sts	0x0131, r25
+ 6ba:	80 93 30 01 	sts	0x0130, r24
+	subState=SS_0;
+ 6be:	10 92 19 01 	sts	0x0119, r1
+				{
+					ledOnOffMask|=(1<<i);
+				}
+				else
+				{
+					ledOnOffMask&=~(1<<i);
+ 6c2:	c1 e0       	ldi	r28, 0x01	; 1
+ 6c4:	d0 e0       	ldi	r29, 0x00	; 0
+static unsigned long GetRandomLongInt(void)
+{
+	random31=(random31<<1);		// Update Random Number.  Roll the random number left.
+	if(random31 & 0x80000000)	// If bit31 set, do the xor.
+	{
+		random31^=0x20AA95B5;	//xor magic number (taps)
+ 6c6:	f5 eb       	ldi	r31, 0xB5	; 181
+ 6c8:	cf 2e       	mov	r12, r31
+ 6ca:	f5 e9       	ldi	r31, 0x95	; 149
+ 6cc:	df 2e       	mov	r13, r31
+ 6ce:	fa ea       	ldi	r31, 0xAA	; 170
+ 6d0:	ef 2e       	mov	r14, r31
+ 6d2:	f0 e2       	ldi	r31, 0x20	; 32
+ 6d4:	ff 2e       	mov	r15, r31
+	static unsigned char
+		lastKeyState;
+	unsigned char
+		sreg;
+
+	if(CheckTimer(TIMER_DEBOUNCE))	// Time to read switches?
+ 6d6:	81 e0       	ldi	r24, 0x01	; 1
+ 6d8:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 6dc:	88 23       	and	r24, r24
+ 6de:	d9 f0       	breq	.+54     	; 0x716 <main+0x15c>
+	{
+		// Pause interrupts, monkey with datalatch, get switch data, resume interrupts.
+		sreg=SREG;
+ 6e0:	9f b7       	in	r25, 0x3f	; 63
+		cli();						// Store sreg, pause interrupts.
+ 6e2:	f8 94       	cli
+		LATCH_PORT=0xFF;			// @@@ Pullups here seem to make the bus turn around less of a mess.
+ 6e4:	15 b9       	out	0x05, r17	; 5
+		LATCH_DDR=0x00;				// Turn the data bus around (AVR's data port to inputs)
+ 6e6:	14 b8       	out	0x04, r1	; 4
+		PORTC&=~Om_SWITCH_LA;		// Enable switch latch outputs (OE Low)
+ 6e8:	43 98       	cbi	0x08, 3	; 8
+		asm volatile("nop"::);		// Needed for bus turnaround time (2 nops)
+ 6ea:	00 00       	nop
+		asm volatile("nop"::);
+ 6ec:	00 00       	nop
+		keyState=~LATCH_INPUT;		// Grab new keystate and invert so that pressed keys are 1s
+ 6ee:	83 b1       	in	r24, 0x03	; 3
+ 6f0:	80 95       	com	r24
+ 6f2:	80 93 16 01 	sts	0x0116, r24
+		PORTC|=Om_SWITCH_LA;		// Tristate switch latch outputs (OE high)
+ 6f6:	43 9a       	sbi	0x08, 3	; 8
+		LATCH_DDR=0xFF;				// Turn the data bus rightside up (AVR gots the bus)
+ 6f8:	14 b9       	out	0x04, r17	; 4
+		SREG=sreg;					// Stop tying up interrupts		
+ 6fa:	9f bf       	out	0x3f, r25	; 63
+
+		if(!(PINC&Im_CARD_DETECT))	// Handle SD card switch (has a real hardware pin)
+ 6fc:	35 99       	sbic	0x06, 5	; 6
+ 6fe:	04 c0       	rjmp	.+8      	; 0x708 <main+0x14e>
+		{
+			cardDetect=true;
+ 700:	81 e0       	ldi	r24, 0x01	; 1
+ 702:	80 93 18 01 	sts	0x0118, r24
+ 706:	02 c0       	rjmp	.+4      	; 0x70c <main+0x152>
+		}
+		else
+		{
+			cardDetect=false;
+ 708:	10 92 18 01 	sts	0x0118, r1
+		}
+
+		SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Reset timer (allow time for bus to turn around)		
+ 70c:	81 e0       	ldi	r24, 0x01	; 1
+ 70e:	66 e2       	ldi	r22, 0x26	; 38
+ 710:	70 e0       	ldi	r23, 0x00	; 0
+ 712:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+	}
+
+	newKeys=((keyState^lastKeyState)&(keyState));		// Flag the keys which have been pressed since the last test.
+ 716:	90 91 16 01 	lds	r25, 0x0116
+ 71a:	80 91 04 01 	lds	r24, 0x0104
+ 71e:	80 95       	com	r24
+ 720:	89 23       	and	r24, r25
+ 722:	80 93 17 01 	sts	0x0117, r24
+	lastKeyState=keyState;								// And store this keystate as old news.
+ 726:	90 93 04 01 	sts	0x0104, r25
+	static unsigned char
+		lastEncoderState=0;
+	static unsigned int
+		lastEncTime=0;
+		
+	if(systemTicks!=lastEncTime)		// Read encoder once every system tick (around 0.8 mSecs)
+ 72a:	20 91 76 01 	lds	r18, 0x0176
+ 72e:	30 91 77 01 	lds	r19, 0x0177
+ 732:	80 91 05 01 	lds	r24, 0x0105
+ 736:	90 91 06 01 	lds	r25, 0x0106
+ 73a:	28 17       	cp	r18, r24
+ 73c:	39 07       	cpc	r19, r25
+ 73e:	b1 f1       	breq	.+108    	; 0x7ac <main+0x1f2>
+	{
+		lastEncTime=systemTicks;					// update last read time.
+ 740:	80 91 76 01 	lds	r24, 0x0176
+ 744:	90 91 77 01 	lds	r25, 0x0177
+ 748:	90 93 06 01 	sts	0x0106, r25
+ 74c:	80 93 05 01 	sts	0x0105, r24
+		encoderState=(PINA&Im_ENCODER_PINS);		// Read encoder state from pins directly.
+ 750:	90 b1       	in	r25, 0x00	; 0
+ 752:	90 7c       	andi	r25, 0xC0	; 192
+ 754:	90 93 1a 01 	sts	0x011A, r25
+
+		if(encoderState!=lastEncoderState)	// Has the encoder value changed?  If so, update the value if the change looks valid.
+ 758:	80 91 07 01 	lds	r24, 0x0107
+ 75c:	98 17       	cp	r25, r24
+ 75e:	31 f1       	breq	.+76     	; 0x7ac <main+0x1f2>
+		{
+			if(encoderState==ENC_POS_A)
+ 760:	99 23       	and	r25, r25
+ 762:	29 f4       	brne	.+10     	; 0x76e <main+0x1b4>
+			{
+				if(lastEncoderState==ENC_POS_D)
+ 764:	80 38       	cpi	r24, 0x80	; 128
+ 766:	a9 f0       	breq	.+42     	; 0x792 <main+0x1d8>
+				{
+//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_B)
+ 768:	80 34       	cpi	r24, 0x40	; 64
+ 76a:	f1 f4       	brne	.+60     	; 0x7a8 <main+0x1ee>
+ 76c:	18 c0       	rjmp	.+48     	; 0x79e <main+0x1e4>
+				{
+//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_B)
+ 76e:	90 34       	cpi	r25, 0x40	; 64
+ 770:	29 f4       	brne	.+10     	; 0x77c <main+0x1c2>
+			{
+				if(lastEncoderState==ENC_POS_A)
+ 772:	88 23       	and	r24, r24
+ 774:	71 f0       	breq	.+28     	; 0x792 <main+0x1d8>
+				{
+//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_C)
+ 776:	80 3c       	cpi	r24, 0xC0	; 192
+ 778:	b9 f4       	brne	.+46     	; 0x7a8 <main+0x1ee>
+ 77a:	11 c0       	rjmp	.+34     	; 0x79e <main+0x1e4>
+				{
+//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_C)
+ 77c:	90 3c       	cpi	r25, 0xC0	; 192
+ 77e:	29 f4       	brne	.+10     	; 0x78a <main+0x1d0>
+			{
+				if(lastEncoderState==ENC_POS_B)
+ 780:	80 34       	cpi	r24, 0x40	; 64
+ 782:	39 f0       	breq	.+14     	; 0x792 <main+0x1d8>
+				{
+//					encoderValue++;
+					encoderValue--;
+				}
+				else if(lastEncoderState==ENC_POS_D)
+ 784:	80 38       	cpi	r24, 0x80	; 128
+ 786:	81 f4       	brne	.+32     	; 0x7a8 <main+0x1ee>
+ 788:	0a c0       	rjmp	.+20     	; 0x79e <main+0x1e4>
+				{
+//					encoderValue--;
+					encoderValue++;
+				}
+			}		
+			else if(encoderState==ENC_POS_D)
+ 78a:	90 38       	cpi	r25, 0x80	; 128
+ 78c:	69 f4       	brne	.+26     	; 0x7a8 <main+0x1ee>
+			{
+				if(lastEncoderState==ENC_POS_C)
+ 78e:	80 3c       	cpi	r24, 0xC0	; 192
+ 790:	21 f4       	brne	.+8      	; 0x79a <main+0x1e0>
+				{
+//					encoderValue++;
+					encoderValue--;
+ 792:	80 91 1b 01 	lds	r24, 0x011B
+ 796:	81 50       	subi	r24, 0x01	; 1
+ 798:	05 c0       	rjmp	.+10     	; 0x7a4 <main+0x1ea>
+				}
+				else if(lastEncoderState==ENC_POS_A)
+ 79a:	88 23       	and	r24, r24
+ 79c:	29 f4       	brne	.+10     	; 0x7a8 <main+0x1ee>
+				{
+//					encoderValue--;
+					encoderValue++;
+ 79e:	80 91 1b 01 	lds	r24, 0x011B
+ 7a2:	8f 5f       	subi	r24, 0xFF	; 255
+ 7a4:	80 93 1b 01 	sts	0x011B, r24
+				}
+			}		
+
+			lastEncoderState=encoderState;		// Keep this state around to evaluate the next one.
+ 7a8:	90 93 07 01 	sts	0x0107, r25
+
+	while(1)
+	{
+		HandleSwitches();		// Flag newKeys.
+		HandleEncoder();		// Keep track of encoder states and increment values.
+		HandleSoftclock();		// Keep the timer timing.
+ 7ac:	0e 94 70 01 	call	0x2e0	; 0x2e0 <HandleSoftclock>
+	static bool
+		toggle;				// Flip flop for blinking.
+	static unsigned char
+		lastLedMask=0;		// Used to see if LEDs have been changed during a given loop.
+
+	if(ledBlinkMask&&CheckTimer(TIMER_BLINK))		// Are we blinking and is it time to toggle?
+ 7b0:	80 91 14 01 	lds	r24, 0x0114
+ 7b4:	88 23       	and	r24, r24
+ 7b6:	09 f4       	brne	.+2      	; 0x7ba <main+0x200>
+ 7b8:	4a c0       	rjmp	.+148    	; 0x84e <main+0x294>
+ 7ba:	82 e0       	ldi	r24, 0x02	; 2
+ 7bc:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 7c0:	88 23       	and	r24, r24
+ 7c2:	09 f4       	brne	.+2      	; 0x7c6 <main+0x20c>
+ 7c4:	44 c0       	rjmp	.+136    	; 0x84e <main+0x294>
+	{
+		for(i=0; i<NUM_LEDS; i++)	// Which LEDs are we blinking?
+		{
+			if(ledBlinkMask&(1<<i))
+ 7c6:	80 91 14 01 	lds	r24, 0x0114
+ 7ca:	68 2f       	mov	r22, r24
+ 7cc:	70 e0       	ldi	r23, 0x00	; 0
+			{
+				if(toggle)			// Flip flop the LEDs we're blinking every time the timer runs out.
+ 7ce:	e0 91 09 01 	lds	r30, 0x0109
+ 7d2:	50 91 13 01 	lds	r21, 0x0113
+ 7d6:	20 e0       	ldi	r18, 0x00	; 0
+ 7d8:	30 e0       	ldi	r19, 0x00	; 0
+
+	if(ledBlinkMask&&CheckTimer(TIMER_BLINK))		// Are we blinking and is it time to toggle?
+	{
+		for(i=0; i<NUM_LEDS; i++)	// Which LEDs are we blinking?
+		{
+			if(ledBlinkMask&(1<<i))
+ 7da:	cb 01       	movw	r24, r22
+ 7dc:	02 2e       	mov	r0, r18
+ 7de:	02 c0       	rjmp	.+4      	; 0x7e4 <main+0x22a>
+ 7e0:	95 95       	asr	r25
+ 7e2:	87 95       	ror	r24
+ 7e4:	0a 94       	dec	r0
+ 7e6:	e2 f7       	brpl	.-8      	; 0x7e0 <main+0x226>
+ 7e8:	80 ff       	sbrs	r24, 0
+ 7ea:	14 c0       	rjmp	.+40     	; 0x814 <main+0x25a>
+			{
+				if(toggle)			// Flip flop the LEDs we're blinking every time the timer runs out.
+ 7ec:	ee 23       	and	r30, r30
+ 7ee:	49 f0       	breq	.+18     	; 0x802 <main+0x248>
+				{
+					ledOnOffMask|=(1<<i);
+ 7f0:	ce 01       	movw	r24, r28
+ 7f2:	02 2e       	mov	r0, r18
+ 7f4:	02 c0       	rjmp	.+4      	; 0x7fa <main+0x240>
+ 7f6:	88 0f       	add	r24, r24
+ 7f8:	99 1f       	adc	r25, r25
+ 7fa:	0a 94       	dec	r0
+ 7fc:	e2 f7       	brpl	.-8      	; 0x7f6 <main+0x23c>
+ 7fe:	58 2b       	or	r21, r24
+ 800:	09 c0       	rjmp	.+18     	; 0x814 <main+0x25a>
+				}
+				else
+				{
+					ledOnOffMask&=~(1<<i);
+ 802:	ce 01       	movw	r24, r28
+ 804:	02 2e       	mov	r0, r18
+ 806:	02 c0       	rjmp	.+4      	; 0x80c <main+0x252>
+ 808:	88 0f       	add	r24, r24
+ 80a:	99 1f       	adc	r25, r25
+ 80c:	0a 94       	dec	r0
+ 80e:	e2 f7       	brpl	.-8      	; 0x808 <main+0x24e>
+ 810:	80 95       	com	r24
+ 812:	58 23       	and	r21, r24
+ 814:	2f 5f       	subi	r18, 0xFF	; 255
+ 816:	3f 4f       	sbci	r19, 0xFF	; 255
+	static unsigned char
+		lastLedMask=0;		// Used to see if LEDs have been changed during a given loop.
+
+	if(ledBlinkMask&&CheckTimer(TIMER_BLINK))		// Are we blinking and is it time to toggle?
+	{
+		for(i=0; i<NUM_LEDS; i++)	// Which LEDs are we blinking?
+ 818:	28 30       	cpi	r18, 0x08	; 8
+ 81a:	31 05       	cpc	r19, r1
+ 81c:	f1 f6       	brne	.-68     	; 0x7da <main+0x220>
+ 81e:	50 93 13 01 	sts	0x0113, r21
+					ledOnOffMask&=~(1<<i);
+				}
+			}
+		}
+
+		toggle=(!toggle);						// flip the sign of the led for next time.
+ 822:	10 92 09 01 	sts	0x0109, r1
+ 826:	ee 23       	and	r30, r30
+ 828:	19 f4       	brne	.+6      	; 0x830 <main+0x276>
+ 82a:	81 e0       	ldi	r24, 0x01	; 1
+ 82c:	80 93 09 01 	sts	0x0109, r24
+		SetTimer(TIMER_BLINK,BLINK_TIME);		// And wait until next time.
+ 830:	82 e0       	ldi	r24, 0x02	; 2
+ 832:	68 e9       	ldi	r22, 0x98	; 152
+ 834:	70 e0       	ldi	r23, 0x00	; 0
+ 836:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+		WriteLedLatch(ledOnOffMask);			// Send the LED value to the latch.
+ 83a:	80 91 13 01 	lds	r24, 0x0113
+// This and the switch handler are the only mainline (non IRQ) code that messes with the databus.
+{
+	unsigned char
+		sreg;
+
+	sreg=SREG;	// Store global interrupt state
+ 83e:	9f b7       	in	r25, 0x3f	; 63
+	cli();		// Clear global interrupts (so we don't get an audio interrupt while messing with OE and WE)
+ 840:	f8 94       	cli
+
+	LATCH_PORT=theMask;				// Put passed data onto bus.
+ 842:	85 b9       	out	0x05, r24	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+ 844:	14 b9       	out	0x04, r17	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+ 846:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.
+ 848:	5f 98       	cbi	0x0b, 7	; 11
+
+	SREG=sreg;						// Restore interrupts.
+ 84a:	9f bf       	out	0x3f, r25	; 63
+ 84c:	11 c0       	rjmp	.+34     	; 0x870 <main+0x2b6>
+
+		toggle=(!toggle);						// flip the sign of the led for next time.
+		SetTimer(TIMER_BLINK,BLINK_TIME);		// And wait until next time.
+		WriteLedLatch(ledOnOffMask);			// Send the LED value to the latch.
+	}
+	else if(lastLedMask!=ledOnOffMask) // If we're not blinking, but our LEDs have been instructed to change...
+ 84e:	90 91 13 01 	lds	r25, 0x0113
+ 852:	80 91 08 01 	lds	r24, 0x0108
+ 856:	89 17       	cp	r24, r25
+ 858:	59 f0       	breq	.+22     	; 0x870 <main+0x2b6>
+// This and the switch handler are the only mainline (non IRQ) code that messes with the databus.
+{
+	unsigned char
+		sreg;
+
+	sreg=SREG;	// Store global interrupt state
+ 85a:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Clear global interrupts (so we don't get an audio interrupt while messing with OE and WE)
+ 85c:	f8 94       	cli
+
+	LATCH_PORT=theMask;				// Put passed data onto bus.
+ 85e:	95 b9       	out	0x05, r25	; 5
+	LATCH_DDR=0xFF;					// Make sure the bus is an output.
+ 860:	14 b9       	out	0x04, r17	; 4
+	PORTD|=(Om_LED_LA);				// Strobe it to the latch output...
+ 862:	5f 9a       	sbi	0x0b, 7	; 11
+	PORTD&=~(Om_LED_LA);			// ...Keep it there.
+ 864:	5f 98       	cbi	0x0b, 7	; 11
+
+	SREG=sreg;						// Restore interrupts.
+ 866:	8f bf       	out	0x3f, r24	; 63
+		WriteLedLatch(ledOnOffMask);			// Send the LED value to the latch.
+	}
+	else if(lastLedMask!=ledOnOffMask) // If we're not blinking, but our LEDs have been instructed to change...
+	{
+		WriteLedLatch(ledOnOffMask);	// ...send the LED value to the latch.
+		lastLedMask=ledOnOffMask;		// And mark it as sent.
+ 868:	80 91 13 01 	lds	r24, 0x0113
+ 86c:	80 93 08 01 	sts	0x0108, r24
+//--------------------------------------
+//--------------------------------------
+
+static unsigned long GetRandomLongInt(void)
+{
+	random31=(random31<<1);		// Update Random Number.  Roll the random number left.
+ 870:	80 91 00 01 	lds	r24, 0x0100
+ 874:	90 91 01 01 	lds	r25, 0x0101
+ 878:	a0 91 02 01 	lds	r26, 0x0102
+ 87c:	b0 91 03 01 	lds	r27, 0x0103
+ 880:	88 0f       	add	r24, r24
+ 882:	99 1f       	adc	r25, r25
+ 884:	aa 1f       	adc	r26, r26
+ 886:	bb 1f       	adc	r27, r27
+ 888:	80 93 00 01 	sts	0x0100, r24
+ 88c:	90 93 01 01 	sts	0x0101, r25
+ 890:	a0 93 02 01 	sts	0x0102, r26
+ 894:	b0 93 03 01 	sts	0x0103, r27
+	if(random31 & 0x80000000)	// If bit31 set, do the xor.
+ 898:	b7 ff       	sbrs	r27, 7
+ 89a:	0c c0       	rjmp	.+24     	; 0x8b4 <main+0x2fa>
+	{
+		random31^=0x20AA95B5;	//xor magic number (taps)
+ 89c:	8c 25       	eor	r24, r12
+ 89e:	9d 25       	eor	r25, r13
+ 8a0:	ae 25       	eor	r26, r14
+ 8a2:	bf 25       	eor	r27, r15
+ 8a4:	80 93 00 01 	sts	0x0100, r24
+ 8a8:	90 93 01 01 	sts	0x0101, r25
+ 8ac:	a0 93 02 01 	sts	0x0102, r26
+ 8b0:	b0 93 03 01 	sts	0x0103, r27
+		HandleEncoder();		// Keep track of encoder states and increment values.
+		HandleSoftclock();		// Keep the timer timing.
+		HandleLeds();			// Keep LEDs updated.
+		GetRandomLongInt();		// Keep random numbers rolling.
+
+		State();				// Execute the current program state.
+ 8b4:	e0 91 30 01 	lds	r30, 0x0130
+ 8b8:	f0 91 31 01 	lds	r31, 0x0131
+ 8bc:	09 95       	icall
+ 8be:	0b cf       	rjmp	.-490    	; 0x6d6 <main+0x11c>
+
+000008c0 <DoFruitcakeIntro>:
+	}
+}
+
+static void DoFruitcakeIntro(void)
+// Oh god why.
+{
+ 8c0:	1f 93       	push	r17
+	static unsigned char
+		i;
+		
+	if(subState==SS_0)
+ 8c2:	10 91 19 01 	lds	r17, 0x0119
+ 8c6:	11 23       	and	r17, r17
+ 8c8:	69 f4       	brne	.+26     	; 0x8e4 <DoFruitcakeIntro+0x24>
+	{
+		KillLeds();
+ 8ca:	0e 94 54 02 	call	0x4a8	; 0x4a8 <KillLeds>
+		i=0;
+ 8ce:	10 92 0a 01 	sts	0x010A, r1
+		ledOnOffMask=0;
+ 8d2:	10 92 13 01 	sts	0x0113, r1
+		subState=SS_1;
+ 8d6:	81 e0       	ldi	r24, 0x01	; 1
+ 8d8:	80 93 19 01 	sts	0x0119, r24
+		SetTimer(TIMER_1,(SECOND/4));
+ 8dc:	80 e0       	ldi	r24, 0x00	; 0
+ 8de:	61 e3       	ldi	r22, 0x31	; 49
+ 8e0:	71 e0       	ldi	r23, 0x01	; 1
+ 8e2:	6a c0       	rjmp	.+212    	; 0x9b8 <DoFruitcakeIntro+0xf8>
+	}
+	else if(subState==SS_1)
+ 8e4:	11 30       	cpi	r17, 0x01	; 1
+ 8e6:	41 f4       	brne	.+16     	; 0x8f8 <DoFruitcakeIntro+0x38>
+	{
+		if(CheckTimer(TIMER_1))
+ 8e8:	80 e0       	ldi	r24, 0x00	; 0
+ 8ea:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 8ee:	88 23       	and	r24, r24
+ 8f0:	09 f4       	brne	.+2      	; 0x8f4 <DoFruitcakeIntro+0x34>
+ 8f2:	91 c0       	rjmp	.+290    	; 0xa16 <DoFruitcakeIntro+0x156>
+		{
+			subState=SS_2;
+ 8f4:	82 e0       	ldi	r24, 0x02	; 2
+ 8f6:	7b c0       	rjmp	.+246    	; 0x9ee <DoFruitcakeIntro+0x12e>
+		}
+	}
+
+	else if(subState==SS_2)
+ 8f8:	12 30       	cpi	r17, 0x02	; 2
+ 8fa:	09 f0       	breq	.+2      	; 0x8fe <DoFruitcakeIntro+0x3e>
+ 8fc:	4a c0       	rjmp	.+148    	; 0x992 <DoFruitcakeIntro+0xd2>
+	{
+		if(i<NUM_LEDS)
+ 8fe:	80 91 0a 01 	lds	r24, 0x010A
+ 902:	88 30       	cpi	r24, 0x08	; 8
+ 904:	f8 f4       	brcc	.+62     	; 0x944 <DoFruitcakeIntro+0x84>
+		{
+			if(CheckTimer(TIMER_1))
+ 906:	80 e0       	ldi	r24, 0x00	; 0
+ 908:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 90c:	88 23       	and	r24, r24
+ 90e:	09 f4       	brne	.+2      	; 0x912 <DoFruitcakeIntro+0x52>
+ 910:	82 c0       	rjmp	.+260    	; 0xa16 <DoFruitcakeIntro+0x156>
+			{
+				ledOnOffMask|=(1<<i);
+ 912:	81 e0       	ldi	r24, 0x01	; 1
+ 914:	90 e0       	ldi	r25, 0x00	; 0
+ 916:	00 90 0a 01 	lds	r0, 0x010A
+ 91a:	02 c0       	rjmp	.+4      	; 0x920 <DoFruitcakeIntro+0x60>
+ 91c:	88 0f       	add	r24, r24
+ 91e:	99 1f       	adc	r25, r25
+ 920:	0a 94       	dec	r0
+ 922:	e2 f7       	brpl	.-8      	; 0x91c <DoFruitcakeIntro+0x5c>
+ 924:	20 91 13 01 	lds	r18, 0x0113
+ 928:	28 2b       	or	r18, r24
+ 92a:	20 93 13 01 	sts	0x0113, r18
+				SetTimer(TIMER_1,(SECOND/20));		
+ 92e:	80 e0       	ldi	r24, 0x00	; 0
+ 930:	6d e3       	ldi	r22, 0x3D	; 61
+ 932:	70 e0       	ldi	r23, 0x00	; 0
+ 934:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+				i++;
+ 938:	80 91 0a 01 	lds	r24, 0x010A
+ 93c:	8f 5f       	subi	r24, 0xFF	; 255
+ 93e:	80 93 0a 01 	sts	0x010A, r24
+ 942:	69 c0       	rjmp	.+210    	; 0xa16 <DoFruitcakeIntro+0x156>
+			}
+		}
+		else
+		{
+			if(CheckTimer(TIMER_1))
+ 944:	80 e0       	ldi	r24, 0x00	; 0
+ 946:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 94a:	88 23       	and	r24, r24
+ 94c:	09 f4       	brne	.+2      	; 0x950 <DoFruitcakeIntro+0x90>
+ 94e:	63 c0       	rjmp	.+198    	; 0xa16 <DoFruitcakeIntro+0x156>
+			{
+				SetTimer(TIMER_1,(SECOND/8));
+ 950:	80 e0       	ldi	r24, 0x00	; 0
+ 952:	68 e9       	ldi	r22, 0x98	; 152
+ 954:	70 e0       	ldi	r23, 0x00	; 0
+ 956:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+				ledPwm=255;
+ 95a:	9f ef       	ldi	r25, 0xFF	; 255
+ 95c:	90 93 15 01 	sts	0x0115, r25
+				// Grudgingly enable pwm hackery.
+
+				PRR&=~(1<<PRTIM2);	// Turn the TMR2 power on.	
+ 960:	80 91 64 00 	lds	r24, 0x0064
+ 964:	8f 7b       	andi	r24, 0xBF	; 191
+ 966:	80 93 64 00 	sts	0x0064, r24
+
+				TCCR2A=0x02;		// Normal ports, begin setting CTC mode.	
+ 96a:	10 93 b0 00 	sts	0x00B0, r17
+				TCCR2B=0x01;		// Finish setting CTC, prescaler to /1, turn clock on.
+ 96e:	81 e0       	ldi	r24, 0x01	; 1
+ 970:	80 93 b1 00 	sts	0x00B1, r24
+				TCNT2=0;			// Init counter reg
+ 974:	10 92 b2 00 	sts	0x00B2, r1
+				OCR2A=128;			// Compare match interrupt when the counter gets to this number.
+ 978:	80 e8       	ldi	r24, 0x80	; 128
+ 97a:	80 93 b3 00 	sts	0x00B3, r24
+				TIFR2=0xFF;			// Writing ones clears the interrupt flags.
+ 97e:	97 bb       	out	0x17, r25	; 23
+				TIMSK2=0x02;		// Enable the compare match interrupt.
+ 980:	10 93 70 00 	sts	0x0070, r17
+
+				PORTA|=(Om_RAM_OE|Om_RAM_WE);	// Disable reading and writing to RAM.
+ 984:	82 b1       	in	r24, 0x02	; 2
+ 986:	86 60       	ori	r24, 0x06	; 6
+ 988:	82 b9       	out	0x02, r24	; 2
+				LATCH_DDR=0xFF;					// Make sure the bus is an output.
+ 98a:	94 b9       	out	0x04, r25	; 4
+				PORTD|=(Om_LED_LA);				// Make our led latch transparent....
+ 98c:	5f 9a       	sbi	0x0b, 7	; 11
+
+				subState=SS_3;		
+ 98e:	83 e0       	ldi	r24, 0x03	; 3
+ 990:	2e c0       	rjmp	.+92     	; 0x9ee <DoFruitcakeIntro+0x12e>
+			}
+		}
+	}
+	else if(subState==SS_3)
+ 992:	13 30       	cpi	r17, 0x03	; 3
+ 994:	79 f5       	brne	.+94     	; 0x9f4 <DoFruitcakeIntro+0x134>
+	{		
+		if(CheckTimer(TIMER_1))
+ 996:	80 e0       	ldi	r24, 0x00	; 0
+ 998:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 99c:	88 23       	and	r24, r24
+ 99e:	d9 f1       	breq	.+118    	; 0xa16 <DoFruitcakeIntro+0x156>
+		{
+			if(ledPwm>1)
+ 9a0:	80 91 15 01 	lds	r24, 0x0115
+ 9a4:	82 30       	cpi	r24, 0x02	; 2
+ 9a6:	58 f0       	brcs	.+22     	; 0x9be <DoFruitcakeIntro+0xfe>
+			{
+				ledPwm-=2;
+ 9a8:	80 91 15 01 	lds	r24, 0x0115
+ 9ac:	82 50       	subi	r24, 0x02	; 2
+ 9ae:	80 93 15 01 	sts	0x0115, r24
+				SetTimer(TIMER_1,(SECOND/256));
+ 9b2:	80 e0       	ldi	r24, 0x00	; 0
+ 9b4:	64 e0       	ldi	r22, 0x04	; 4
+ 9b6:	70 e0       	ldi	r23, 0x00	; 0
+ 9b8:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+ 9bc:	2c c0       	rjmp	.+88     	; 0xa16 <DoFruitcakeIntro+0x156>
+			}
+			else
+			{
+				// Gleefully disable PWM.
+				TIMSK2=0x00;		// Disable all timer 0 interrupts.
+ 9be:	10 92 70 00 	sts	0x0070, r1
+				TCCR2A=0x00;		// Normal ports
+ 9c2:	10 92 b0 00 	sts	0x00B0, r1
+				TCCR2B=0x00;		// Turn clock off.
+ 9c6:	10 92 b1 00 	sts	0x00B1, r1
+				PRR|=(1<<PRTIM2);	// Turn the TMR2 power off.	
+ 9ca:	80 91 64 00 	lds	r24, 0x0064
+ 9ce:	80 64       	ori	r24, 0x40	; 64
+ 9d0:	80 93 64 00 	sts	0x0064, r24
+
+				LATCH_PORT=0x00;		// LEDs off.
+ 9d4:	15 b8       	out	0x05, r1	; 5
+				PORTD&=~(Om_LED_LA);	// ...Keep them off.
+ 9d6:	5f 98       	cbi	0x0b, 7	; 11
+
+				KillLeds();				// App knows leds are off.
+ 9d8:	0e 94 54 02 	call	0x4a8	; 0x4a8 <KillLeds>
+				ledOnOffMask=CURRENT_FIRMWARE_VERSION;	// Convey some useful information at the end of this boondoggle
+ 9dc:	81 e1       	ldi	r24, 0x11	; 17
+ 9de:	80 93 13 01 	sts	0x0113, r24
+				SetTimer(TIMER_1,(SECOND/2));
+ 9e2:	80 e0       	ldi	r24, 0x00	; 0
+ 9e4:	62 e6       	ldi	r22, 0x62	; 98
+ 9e6:	72 e0       	ldi	r23, 0x02	; 2
+ 9e8:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+				subState=SS_4;
+ 9ec:	84 e0       	ldi	r24, 0x04	; 4
+ 9ee:	80 93 19 01 	sts	0x0119, r24
+ 9f2:	11 c0       	rjmp	.+34     	; 0xa16 <DoFruitcakeIntro+0x156>
+			}
+		}
+	}
+	else if(subState==SS_4)
+ 9f4:	14 30       	cpi	r17, 0x04	; 4
+ 9f6:	79 f4       	brne	.+30     	; 0xa16 <DoFruitcakeIntro+0x156>
+	{
+		if(CheckTimer(TIMER_1))
+ 9f8:	80 e0       	ldi	r24, 0x00	; 0
+ 9fa:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ 9fe:	88 23       	and	r24, r24
+ a00:	51 f0       	breq	.+20     	; 0xa16 <DoFruitcakeIntro+0x156>
+		{
+			KillLeds();
+ a02:	0e 94 54 02 	call	0x4a8	; 0x4a8 <KillLeds>
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void SetState(STATE_FUNC *newState)		// Sets the device to a new state, assumes it should begin at the first minor sub-state.
+{
+	State=newState;
+ a06:	8d e0       	ldi	r24, 0x0D	; 13
+ a08:	95 e0       	ldi	r25, 0x05	; 5
+ a0a:	90 93 31 01 	sts	0x0131, r25
+ a0e:	80 93 30 01 	sts	0x0130, r24
+	subState=SS_0;
+ a12:	10 92 19 01 	sts	0x0119, r1
+		{
+			KillLeds();
+			SetState(DoStartupSelect);		// Get crackin.
+		}
+	}
+}
+ a16:	1f 91       	pop	r17
+ a18:	08 95       	ret
+
+00000a1a <DoStartupSelect>:
+
+static void DoStartupSelect(void)
+// Make all our initial state decisions.
+// Give switches time to settle.
+{
+	if(subState==SS_0)
+ a1a:	80 91 19 01 	lds	r24, 0x0119
+ a1e:	88 23       	and	r24, r24
+ a20:	41 f4       	brne	.+16     	; 0xa32 <DoStartupSelect+0x18>
+	{
+		SetTimer(TIMER_1,(SECOND/8));
+ a22:	68 e9       	ldi	r22, 0x98	; 152
+ a24:	70 e0       	ldi	r23, 0x00	; 0
+ a26:	0e 94 78 05 	call	0xaf0	; 0xaf0 <SetTimer>
+		subState=SS_1;
+ a2a:	81 e0       	ldi	r24, 0x01	; 1
+ a2c:	80 93 19 01 	sts	0x0119, r24
+ a30:	08 95       	ret
+	}
+	else
+	{
+		if(CheckTimer(TIMER_1))
+ a32:	80 e0       	ldi	r24, 0x00	; 0
+ a34:	0e 94 8a 05 	call	0xb14	; 0xb14 <CheckTimer>
+ a38:	88 23       	and	r24, r24
+ a3a:	a9 f0       	breq	.+42     	; 0xa66 <DoStartupSelect+0x4c>
+		{
+			if(keyState&Im_SWITCH_0)
+ a3c:	80 91 16 01 	lds	r24, 0x0116
+ a40:	80 ff       	sbrs	r24, 0
+ a42:	09 c0       	rjmp	.+18     	; 0xa56 <DoStartupSelect+0x3c>
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void SetState(STATE_FUNC *newState)		// Sets the device to a new state, assumes it should begin at the first minor sub-state.
+{
+	State=newState;
+ a44:	8b e5       	ldi	r24, 0x5B	; 91
+ a46:	92 e0       	ldi	r25, 0x02	; 2
+ a48:	90 93 31 01 	sts	0x0131, r25
+ a4c:	80 93 30 01 	sts	0x0130, r24
+	subState=SS_0;
+ a50:	10 92 19 01 	sts	0x0119, r1
+ a54:	08 95       	ret
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+static void SetState(STATE_FUNC *newState)		// Sets the device to a new state, assumes it should begin at the first minor sub-state.
+{
+	State=newState;
+ a56:	8f ec       	ldi	r24, 0xCF	; 207
+ a58:	91 e0       	ldi	r25, 0x01	; 1
+ a5a:	90 93 31 01 	sts	0x0131, r25
+ a5e:	80 93 30 01 	sts	0x0130, r24
+	subState=SS_0;
+ a62:	10 92 19 01 	sts	0x0119, r1
+ a66:	08 95       	ret
+
+00000a68 <EepromWrite>:
+// NOTE:  Accepted lore is not to use eeprom address 0 since it's the most likely one to get buggered in a crash.
+
+#include "includes.h"
+
+void EepromWrite(unsigned int theAddress, unsigned char theData)
+{
+ a68:	9c 01       	movw	r18, r24
+	unsigned char 
+		sreg;
+
+	while(EECR&(1<<EEPE))	// Spin until EEPROM is ready.
+ a6a:	f9 99       	sbic	0x1f, 1	; 31
+ a6c:	fe cf       	rjmp	.-4      	; 0xa6a <EepromWrite+0x2>
+		;
+
+	sreg=SREG;	// Keep operations atomic (interrupts can mess up eeprom access)
+ a6e:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Stop interrupts.
+ a70:	f8 94       	cli
+
+	EEAR=theAddress;
+ a72:	32 bd       	out	0x22, r19	; 34
+ a74:	21 bd       	out	0x21, r18	; 33
+	EEDR=theData;
+ a76:	60 bd       	out	0x20, r22	; 32
+	EECR|=(1<<EEMPE);	// Start the write.
+ a78:	fa 9a       	sbi	0x1f, 2	; 31
+	EECR|=(1<<EEPE);	// Second start-write command.
+ a7a:	f9 9a       	sbi	0x1f, 1	; 31
+
+	SREG=sreg;			// Restore interrupts.
+ a7c:	8f bf       	out	0x3f, r24	; 63
+	EEAR=0;				// Point the address away from the registers we care about.
+ a7e:	12 bc       	out	0x22, r1	; 34
+ a80:	11 bc       	out	0x21, r1	; 33
+}
+ a82:	08 95       	ret
+
+00000a84 <EepromRead>:
+
+unsigned char EepromRead(unsigned char theAddress)
+{
+ a84:	28 2f       	mov	r18, r24
+	unsigned char 
+		sreg;
+
+	while(EECR&(1<<EEPE))	// Spin until EEPROM is ready.
+ a86:	f9 99       	sbic	0x1f, 1	; 31
+ a88:	fe cf       	rjmp	.-4      	; 0xa86 <EepromRead+0x2>
+		;
+
+	sreg=SREG;	// Keep operations atomic (interrupts can mess up eeprom access)
+ a8a:	8f b7       	in	r24, 0x3f	; 63
+	cli();		// Stop interrupts.
+ a8c:	f8 94       	cli
+
+	EEAR=theAddress;
+ a8e:	30 e0       	ldi	r19, 0x00	; 0
+ a90:	32 bd       	out	0x22, r19	; 34
+ a92:	21 bd       	out	0x21, r18	; 33
+	EECR|=(1<<EERE);	// Start reading.
+ a94:	f8 9a       	sbi	0x1f, 0	; 31
+
+	SREG=sreg;			// Restore interrupts.
+ a96:	8f bf       	out	0x3f, r24	; 63
+	EEAR=0;				// Point the address away from the registers we care about.
+ a98:	12 bc       	out	0x22, r1	; 34
+ a9a:	11 bc       	out	0x21, r1	; 33
+	
+	return(EEDR);		// Pass the data back from eeprom.
+ a9c:	80 b5       	in	r24, 0x20	; 32
+}
+ a9e:	08 95       	ret
+
+00000aa0 <Uart0GotByte>:
+*/
+
+bool Uart0GotByte(void)
+// Returns true when there is unread data in the UART's receive buffer.
+{
+	if(UCSR0A&(1<<RXC0))	
+ aa0:	80 91 c0 00 	lds	r24, 0x00C0
+	}
+	else
+	{
+		return(false);
+	}
+}
+ aa4:	88 1f       	adc	r24, r24
+ aa6:	88 27       	eor	r24, r24
+ aa8:	88 1f       	adc	r24, r24
+ aaa:	08 95       	ret
+
+00000aac <Uart0GetByte>:
+*/
+
+unsigned char Uart0GetByte(void)
+// Gets the first byte in the UART's receive buffer.
+{
+	return(UDR0);		// Get one byte back from the receive buffer.  Note that there may be (one) more in the FIFO.
+ aac:	80 91 c6 00 	lds	r24, 0x00C6
+}
+ ab0:	08 95       	ret
+
+00000ab2 <InitUart0>:
+void InitUart0(void)
+// This UART setup is for 31250 baud, 8 data bits, one stop bit, no parity, no flow control.
+// Interrupts are disabled.
+// I bet you could make this routine even smarter about configuring its own bits given just CPU frequency and baud...
+{
+	PRR&=~(1<<PRUSART0);					// Turn the USART power on.
+ ab2:	80 91 64 00 	lds	r24, 0x0064
+ ab6:	8d 7f       	andi	r24, 0xFD	; 253
+ ab8:	80 93 64 00 	sts	0x0064, r24
+	UCSR0A&=~(1<<U2X0);						// Sets the USART to "normal rate" mode. 
+ abc:	80 91 c0 00 	lds	r24, 0x00C0
+ ac0:	8d 7f       	andi	r24, 0xFD	; 253
+ ac2:	80 93 c0 00 	sts	0x00C0, r24
+//	UCSR0A|=(1<<U2X0);						// Sets the USART to "double rate". 
+	UCSR0B = ((1<<TXEN0)|(1<<RXEN0)); 		// Tx/Rx enable.  This overrides DDRs.  This turns interrupts off, too.
+ ac6:	88 e1       	ldi	r24, 0x18	; 24
+ ac8:	80 93 c1 00 	sts	0x00C1, r24
+//	UBRR0L = ((F_CPU / (16 * BAUD)) - 1);  	// Formula for baud rate setting when the UART isn't set to double rate.
+	UBRR0L = 39;  							// Value for normal rate 31.25k baud.
+ acc:	87 e2       	ldi	r24, 0x27	; 39
+ ace:	80 93 c4 00 	sts	0x00C4, r24
+//	UBRR0L=64;  							// Value for double rate 38.4k baud, 20MHz.
+	UCSR0C = ((1<<UCSZ00)|(1<<UCSZ01));		// No parity, one stop bit, 8 data bits.
+ ad2:	86 e0       	ldi	r24, 0x06	; 6
+ ad4:	80 93 c2 00 	sts	0x00C2, r24
+//	fdevopen(Uart0PutChar, NULL);
+
+	while(!(UCSR0A&(1<<UDRE0)))				// Waits until the transmit buffer is ready to move on.
+ ad8:	80 91 c0 00 	lds	r24, 0x00C0
+ adc:	85 ff       	sbrs	r24, 5
+ ade:	fc cf       	rjmp	.-8      	; 0xad8 <InitUart0+0x26>
+*/
+
+bool Uart0GotByte(void)
+// Returns true when there is unread data in the UART's receive buffer.
+{
+	if(UCSR0A&(1<<RXC0))	
+ ae0:	80 91 c0 00 	lds	r24, 0x00C0
+ ae4:	87 ff       	sbrs	r24, 7
+ ae6:	03 c0       	rjmp	.+6      	; 0xaee <InitUart0+0x3c>
+*/
+
+unsigned char Uart0GetByte(void)
+// Gets the first byte in the UART's receive buffer.
+{
+	return(UDR0);		// Get one byte back from the receive buffer.  Note that there may be (one) more in the FIFO.
+ ae8:	80 91 c6 00 	lds	r24, 0x00C6
+ aec:	f9 cf       	rjmp	.-14     	; 0xae0 <InitUart0+0x2e>
+ aee:	08 95       	ret
+
+00000af0 <SetTimer>:
+}
+*/
+void SetTimer(unsigned char timerNum, unsigned int ticks_to_wait)
+// Sets a software timer with an entry time and an amount of time before it expires.
+{
+	entryTime[timerNum]=systemTicks;
+ af0:	e8 2f       	mov	r30, r24
+ af2:	f0 e0       	ldi	r31, 0x00	; 0
+ af4:	80 91 76 01 	lds	r24, 0x0176
+ af8:	90 91 77 01 	lds	r25, 0x0177
+ afc:	ee 0f       	add	r30, r30
+ afe:	ff 1f       	adc	r31, r31
+ b00:	df 01       	movw	r26, r30
+ b02:	a0 5e       	subi	r26, 0xE0	; 224
+ b04:	be 4f       	sbci	r27, 0xFE	; 254
+ b06:	8d 93       	st	X+, r24
+ b08:	9c 93       	st	X, r25
+	delayTime[timerNum]=ticks_to_wait;
+ b0a:	e8 5d       	subi	r30, 0xD8	; 216
+ b0c:	fe 4f       	sbci	r31, 0xFE	; 254
+ b0e:	71 83       	std	Z+1, r23	; 0x01
+ b10:	60 83       	st	Z, r22
+}
+ b12:	08 95       	ret
+
+00000b14 <CheckTimer>:
+
+unsigned char CheckTimer(unsigned char timerNum)
+// If the current system time MINUS the entry time is greater than (or equal to) the amount of ticks we're supposed to wait, we've waited long enough.  Return true.
+// Ie, return true if the time is up, and false if it isn't.
+{	
+	if((systemTicks-entryTime[timerNum])>=delayTime[timerNum])
+ b14:	20 91 76 01 	lds	r18, 0x0176
+ b18:	30 91 77 01 	lds	r19, 0x0177
+ b1c:	e8 2f       	mov	r30, r24
+ b1e:	f0 e0       	ldi	r31, 0x00	; 0
+ b20:	40 e0       	ldi	r20, 0x00	; 0
+ b22:	ee 0f       	add	r30, r30
+ b24:	ff 1f       	adc	r31, r31
+ b26:	df 01       	movw	r26, r30
+ b28:	a0 5e       	subi	r26, 0xE0	; 224
+ b2a:	be 4f       	sbci	r27, 0xFE	; 254
+ b2c:	8d 91       	ld	r24, X+
+ b2e:	9c 91       	ld	r25, X
+ b30:	28 1b       	sub	r18, r24
+ b32:	39 0b       	sbc	r19, r25
+ b34:	e8 5d       	subi	r30, 0xD8	; 216
+ b36:	fe 4f       	sbci	r31, 0xFE	; 254
+ b38:	80 81       	ld	r24, Z
+ b3a:	91 81       	ldd	r25, Z+1	; 0x01
+ b3c:	28 17       	cp	r18, r24
+ b3e:	39 07       	cpc	r19, r25
+ b40:	08 f0       	brcs	.+2      	; 0xb44 <CheckTimer+0x30>
+ b42:	41 e0       	ldi	r20, 0x01	; 1
+	}
+	else
+	{
+		return(false);
+	}
+}
+ b44:	84 2f       	mov	r24, r20
+ b46:	08 95       	ret
+
+00000b48 <_exit>:
+ b48:	f8 94       	cli
+
+00000b4a <__stop_program>:
+ b4a:	ff cf       	rjmp	.-2      	; 0xb4a <__stop_program>

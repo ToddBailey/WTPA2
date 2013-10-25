@@ -1,0 +1,690 @@
+Archive member included because of file (symbol)
+
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+                              WTPA.o (__mulsi3)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+                              WTPA.o (__udivmodqi4)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+                              WTPA.o (__divmodhi4)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+                              WTPA.o (__udivmodsi4)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                              /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o (exit)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                              WTPA.o (__do_copy_data)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                              WTPA.o (__do_clear_bss)
+/usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+                              /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o) (__udivmodhi4)
+
+Allocating common symbols
+Common symbol       size              file
+
+UpdateOutput        0x2               WTPA.o
+midiChannelNumberA  0x1               midi.o
+State               0x2               WTPA.o
+midiMessageIncomingFifo
+                    0x18              midi.o
+bankStates          0x46              globals.o
+systemTicks         0x2               globals.o
+midiChannelNumberB  0x1               midi.o
+midiMessageOutgoingFifo
+                    0x18              midi.o
+midiMessagesInIncomingFifo
+                    0x1               midi.o
+midiMessagesInOutgoingFifo
+                    0x1               midi.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+LOAD WTPA.o
+LOAD globals.o
+LOAD eeprom.o
+LOAD uart.o
+LOAD softclock.o
+LOAD midi.o
+LOAD microSD.o
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/libm.a
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0x57a0
+ *(.vectors)
+ .vectors       0x00000000       0x7c /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x00000000                __vectors
+ *(.vectors)
+ *(.progmem.gcc*)
+ .progmem.gcc_sw_table
+                0x0000007c       0x38 WTPA.o
+ *(.progmem*)
+                0x000000b4                . = ALIGN (0x2)
+                0x000000b4                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x000000b4        0x0 linker stubs
+ *(.trampolines*)
+                0x000000b4                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x000000b4                __ctors_start = .
+ *(.ctors)
+                0x000000b4                __ctors_end = .
+                0x000000b4                __dtors_start = .
+ *(.dtors)
+                0x000000b4                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x000000b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x000000b4                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x000000b4        0xc /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x000000c0       0x16 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                0x000000c0                __do_copy_data
+ .init4         0x000000d6       0x10 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                0x000000d6                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x000000e6        0x8 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ *(.init9)
+ *(.text)
+ .text          0x000000ee        0x4 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+                0x000000ee                __vector_22
+                0x000000ee                __vector_28
+                0x000000ee                __vector_1
+                0x000000ee                __vector_24
+                0x000000ee                __bad_interrupt
+                0x000000ee                __vector_3
+                0x000000ee                __vector_23
+                0x000000ee                __vector_30
+                0x000000ee                __vector_25
+                0x000000ee                __vector_11
+                0x000000ee                __vector_17
+                0x000000ee                __vector_19
+                0x000000ee                __vector_7
+                0x000000ee                __vector_27
+                0x000000ee                __vector_5
+                0x000000ee                __vector_4
+                0x000000ee                __vector_2
+                0x000000ee                __vector_21
+                0x000000ee                __vector_15
+                0x000000ee                __vector_29
+                0x000000ee                __vector_8
+                0x000000ee                __vector_26
+                0x000000ee                __vector_16
+                0x000000ee                __vector_18
+                0x000000ee                __vector_20
+ .text          0x000000f2     0x4b68 WTPA.o
+                0x0000121e                __vector_12
+                0x000012ac                __vector_6
+                0x0000133c                __vector_13
+                0x0000146e                __vector_14
+                0x000015a0                __vector_10
+                0x0000194a                __vector_9
+                0x00001980                __vector_default
+                0x00001994                HandleSoftclock
+                0x00002d20                main
+ .text          0x00004c5a        0x0 globals.o
+ .text          0x00004c5a       0x38 eeprom.o
+                0x00004c5a                EepromWrite
+                0x00004c76                EepromRead
+ .text          0x00004c92       0x50 uart.o
+                0x00004c92                Uart0GotByte
+                0x00004c9e                Uart0GetByte
+                0x00004ca4                InitUart0
+ .text          0x00004ce2       0x58 softclock.o
+                0x00004ce2                SetTimer
+                0x00004d06                CheckTimer
+ .text          0x00004d3a      0x440 midi.o
+                0x00004d3a                GetMidiMessageFromIncomingFifo
+                0x00004dee                PutMidiMessageInOutgoingFifo
+                0x00004e3a                InitMidi
+                0x00004e5e                HandleIncomingMidiByte
+                0x00005008                MidiTxBufferNotEmpty
+                0x0000501e                PopOutgoingMidiByte
+ .text          0x0000517a      0x53a microSD.o
+                0x0000517a                UnInitSdInterface
+                0x00005196                InitSdInterface
+                0x000051c4                EndSdTransfer
+                0x000051c8                StartSdTransfer
+                0x000051ce                TransferSdByte
+                0x00005218                SendSdCommand
+                0x00005442                SdBeginSingleBlockRead
+                0x00005466                SdBeginSingleBlockWrite
+                0x0000548a                SdHandshake
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .text          0x000056b4        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+                0x000056b4                . = ALIGN (0x2)
+ *(.text.*)
+ .text.libgcc   0x000056b4       0x3e /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+                0x000056b4                __mulsi3
+ .text.libgcc   0x000056f2       0x18 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+                0x000056f2                __udivmodqi4
+ .text.libgcc   0x0000570a       0x26 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+                0x0000570a                __divmodhi4
+                0x0000570a                _div
+ .text.libgcc   0x00005730       0x44 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+                0x00005730                __udivmodsi4
+ .text.libgcc   0x00005774        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x00005774        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .text.libgcc   0x00005774        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .text.libgcc   0x00005774       0x28 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+                0x00005774                __udivmodhi4
+                0x0000579c                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x0000579c        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                0x0000579c                exit
+                0x0000579c                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x0000579c        0x4 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ *(.fini0)
+                0x000057a0                _etext = .
+
+.data           0x00800100       0x1e load address 0x000057a0
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800100        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ .data          0x00800100       0x1e WTPA.o
+ .data          0x0080011e        0x0 globals.o
+ .data          0x0080011e        0x0 eeprom.o
+ .data          0x0080011e        0x0 uart.o
+ .data          0x0080011e        0x0 softclock.o
+ .data          0x0080011e        0x0 midi.o
+ .data          0x0080011e        0x0 microSD.o
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .data          0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x0080011e                . = ALIGN (0x2)
+                0x0080011e                _edata = .
+                0x0080011e                PROVIDE (__data_end, .)
+
+.bss            0x0080011e      0x544
+                0x0080011e                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x0080011e        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+ .bss           0x0080011e      0x4a7 WTPA.o
+ .bss           0x008005c5        0x0 globals.o
+ .bss           0x008005c5        0x0 eeprom.o
+ .bss           0x008005c5        0x0 uart.o
+ .bss           0x008005c5       0x10 softclock.o
+ .bss           0x008005d5        0xd midi.o
+ .bss           0x008005e2        0x0 microSD.o
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+ .bss           0x008005e2        0x0 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x008005e2        0x4 WTPA.o
+                0x008005e2                UpdateOutput
+                0x008005e4                State
+ COMMON         0x008005e6       0x48 globals.o
+                0x008005e6                bankStates
+                0x0080062c                systemTicks
+ COMMON         0x0080062e       0x34 midi.o
+                0x0080062e                midiChannelNumberA
+                0x0080062f                midiMessageIncomingFifo
+                0x00800647                midiChannelNumberB
+                0x00800648                midiMessageOutgoingFifo
+                0x00800660                midiMessagesInIncomingFifo
+                0x00800661                midiMessagesInOutgoingFifo
+                0x00800662                PROVIDE (__bss_end, .)
+                0x000057a0                __data_load_start = LOADADDR (.data)
+                0x000057be                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x00800662        0x0
+                0x00800662                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x00800662                PROVIDE (__noinit_end, .)
+                0x00800662                _end = .
+                0x00800662                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x00000000      0x6cc
+ *(.stab)
+ .stab          0x00000000      0x6cc /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+
+.stabstr        0x00000000       0x70
+ *(.stabstr)
+ .stabstr       0x00000000       0x70 /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000       0xc0
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 WTPA.o
+ .debug_aranges
+                0x00000020       0x20 eeprom.o
+ .debug_aranges
+                0x00000040       0x20 uart.o
+ .debug_aranges
+                0x00000060       0x20 softclock.o
+ .debug_aranges
+                0x00000080       0x20 midi.o
+ .debug_aranges
+                0x000000a0       0x20 microSD.o
+
+.debug_pubnames
+                0x00000000      0x3b0
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000       0xbd WTPA.o
+ .debug_pubnames
+                0x000000bd       0x31 globals.o
+ .debug_pubnames
+                0x000000ee       0x31 eeprom.o
+ .debug_pubnames
+                0x0000011f       0x42 uart.o
+ .debug_pubnames
+                0x00000161       0x2e softclock.o
+ .debug_pubnames
+                0x0000018f      0x153 midi.o
+ .debug_pubnames
+                0x000002e2       0xce microSD.o
+
+.debug_info     0x00000000     0x2bbd
+ *(.debug_info)
+ .debug_info    0x00000000     0x1d20 WTPA.o
+ .debug_info    0x00001d20      0x1cf globals.o
+ .debug_info    0x00001eef       0xde eeprom.o
+ .debug_info    0x00001fcd       0xdf uart.o
+ .debug_info    0x000020ac      0x112 softclock.o
+ .debug_info    0x000021be      0x458 midi.o
+ .debug_info    0x00002616      0x5a7 microSD.o
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000      0x8bd
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x2dc WTPA.o
+ .debug_abbrev  0x000002dc       0x86 globals.o
+ .debug_abbrev  0x00000362       0x94 eeprom.o
+ .debug_abbrev  0x000003f6       0x7b uart.o
+ .debug_abbrev  0x00000471       0xba softclock.o
+ .debug_abbrev  0x0000052b      0x199 midi.o
+ .debug_abbrev  0x000006c4      0x1f9 microSD.o
+
+.debug_line     0x00000000     0x4064
+ *(.debug_line)
+ .debug_line    0x00000000     0x316c WTPA.o
+ .debug_line    0x0000316c       0x65 globals.o
+ .debug_line    0x000031d1       0xf2 eeprom.o
+ .debug_line    0x000032c3       0xd0 uart.o
+ .debug_line    0x00003393       0x92 softclock.o
+ .debug_line    0x00003425      0x507 midi.o
+ .debug_line    0x0000392c      0x738 microSD.o
+
+.debug_frame    0x00000000      0x410
+ *(.debug_frame)
+ .debug_frame   0x00000000      0x240 WTPA.o
+ .debug_frame   0x00000240       0x30 eeprom.o
+ .debug_frame   0x00000270       0x40 uart.o
+ .debug_frame   0x000002b0       0x30 softclock.o
+ .debug_frame   0x000002e0       0x80 midi.o
+ .debug_frame   0x00000360       0xb0 microSD.o
+
+.debug_str      0x00000000     0x1374
+ *(.debug_str)
+ .debug_str     0x00000000      0xe66 WTPA.o
+                                0xea5 (size before relaxing)
+ .debug_str     0x00000e66        0xa globals.o
+                                0x1ee (size before relaxing)
+ .debug_str     0x00000e70       0x33 eeprom.o
+                                 0xdc (size before relaxing)
+ .debug_str     0x00000ea3       0x2b uart.o
+                                 0xd4 (size before relaxing)
+ .debug_str     0x00000ece       0x4b softclock.o
+                                 0xfb (size before relaxing)
+ .debug_str     0x00000f19      0x386 midi.o
+                                0x607 (size before relaxing)
+ .debug_str     0x0000129f       0xd5 microSD.o
+                                0x1cd (size before relaxing)
+
+.debug_loc      0x00000000     0x1278
+ *(.debug_loc)
+ .debug_loc     0x00000000      0xe4c WTPA.o
+ .debug_loc     0x00000e4c       0x59 eeprom.o
+ .debug_loc     0x00000ea5       0x26 softclock.o
+ .debug_loc     0x00000ecb      0x211 midi.o
+ .debug_loc     0x000010dc      0x19c microSD.o
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(WTPA.elf elf32-avr)
+LOAD linker stubs
+
+.debug_ranges   0x00000000      0x2e8
+ .debug_ranges  0x00000000      0x240 WTPA.o
+ .debug_ranges  0x00000240       0xa8 microSD.o
+
+Cross Reference Table
+
+Symbol                                            File
+CheckTimer                                        softclock.o
+                                                  microSD.o
+                                                  WTPA.o
+EepromRead                                        eeprom.o
+                                                  WTPA.o
+EepromWrite                                       eeprom.o
+                                                  WTPA.o
+EndSdTransfer                                     microSD.o
+                                                  WTPA.o
+GetMidiMessageFromIncomingFifo                    midi.o
+                                                  WTPA.o
+HandleIncomingMidiByte                            midi.o
+                                                  WTPA.o
+HandleSoftclock                                   WTPA.o
+                                                  microSD.o
+InitMidi                                          midi.o
+                                                  WTPA.o
+InitSdInterface                                   microSD.o
+                                                  WTPA.o
+InitUart0                                         uart.o
+                                                  WTPA.o
+MidiTxBufferNotEmpty                              midi.o
+                                                  WTPA.o
+PopOutgoingMidiByte                               midi.o
+                                                  WTPA.o
+PutMidiMessageInOutgoingFifo                      midi.o
+                                                  WTPA.o
+SdBeginSingleBlockRead                            microSD.o
+                                                  WTPA.o
+SdBeginSingleBlockWrite                           microSD.o
+                                                  WTPA.o
+SdHandshake                                       microSD.o
+                                                  WTPA.o
+SendSdCommand                                     microSD.o
+SetTimer                                          softclock.o
+                                                  microSD.o
+                                                  WTPA.o
+StartSdTransfer                                   microSD.o
+State                                             WTPA.o
+TransferSdByte                                    microSD.o
+                                                  WTPA.o
+Uart0GetByte                                      uart.o
+                                                  WTPA.o
+Uart0GotByte                                      uart.o
+                                                  WTPA.o
+UnInitSdInterface                                 microSD.o
+UpdateOutput                                      WTPA.o
+__bad_interrupt                                   /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__bss_end                                         /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+__bss_start                                       /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+__data_end                                        /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__data_load_start                                 /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__data_start                                      /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+__divmodhi4                                       /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+                                                  WTPA.o
+__do_clear_bss                                    /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_clear_bss.o)
+                                                  midi.o
+                                                  softclock.o
+                                                  globals.o
+                                                  WTPA.o
+__do_copy_data                                    /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_copy_data.o)
+                                                  WTPA.o
+__heap_end                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__init                                            /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__mulsi3                                          /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_mulsi3.o)
+                                                  WTPA.o
+__stack                                           /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__udivmodhi4                                      /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodhi4.o)
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+__udivmodqi4                                      /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodqi4.o)
+                                                  WTPA.o
+__udivmodsi4                                      /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_udivmodsi4.o)
+                                                  WTPA.o
+__vector_1                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_10                                       WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_11                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_12                                       WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_13                                       WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_14                                       WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_15                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_16                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_17                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_18                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_19                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_2                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_20                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_21                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_22                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_23                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_24                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_25                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_26                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_27                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_28                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_29                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_3                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_30                                       /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_4                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_5                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_6                                        WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_7                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_8                                        /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_9                                        WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vector_default                                  WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+__vectors                                         /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+_div                                              /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_divmodhi4.o)
+_exit                                             /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+bankStates                                        globals.o
+                                                  WTPA.o
+exit                                              /usr/local/avr/lib/gcc/avr/4.3.4/avr5/libgcc.a(_exit.o)
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+main                                              WTPA.o
+                                                  /usr/local/avr/lib/gcc/avr/4.3.4/../../../../avr/lib/avr5/crtm644p.o
+midiChannelNumberA                                midi.o
+                                                  WTPA.o
+midiChannelNumberB                                midi.o
+                                                  WTPA.o
+midiMessageIncomingFifo                           midi.o
+midiMessageOutgoingFifo                           midi.o
+midiMessagesInIncomingFifo                        midi.o
+                                                  WTPA.o
+midiMessagesInOutgoingFifo                        midi.o
+systemTicks                                       softclock.o
+                                                  globals.o
+                                                  WTPA.o

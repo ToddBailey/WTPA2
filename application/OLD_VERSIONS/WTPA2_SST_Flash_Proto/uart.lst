@@ -1,0 +1,98 @@
+   1               		.file	"uart.c"
+   2               	__SREG__ = 0x3f
+   3               	__SP_H__ = 0x3e
+   4               	__SP_L__ = 0x3d
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.global __do_copy_data
+   8               		.global __do_clear_bss
+  16               	.Ltext0:
+  17               	.global	Uart0GotByte
+  19               	Uart0GotByte:
+  20               	.LFB3:
+  21               	.LM1:
+  22               	/* prologue: function */
+  23               	/* frame size = 0 */
+  24               	.LM2:
+  25 0000 8091 C000 		lds r24,192
+  26               	.LM3:
+  27 0004 881F      		rol r24
+  28 0006 8827      		clr r24
+  29 0008 881F      		rol r24
+  30               	/* epilogue start */
+  31 000a 0895      		ret
+  32               	.LFE3:
+  34               	.global	Uart0GetByte
+  36               	Uart0GetByte:
+  37               	.LFB4:
+  38               	.LM4:
+  39               	/* prologue: function */
+  40               	/* frame size = 0 */
+  41               	.LM5:
+  42 000c 8091 C600 		lds r24,198
+  43               	/* epilogue start */
+  44               	.LM6:
+  45 0010 0895      		ret
+  46               	.LFE4:
+  48               	.global	InitUart0
+  50               	InitUart0:
+  51               	.LFB5:
+  52               	.LM7:
+  53               	/* prologue: function */
+  54               	/* frame size = 0 */
+  55               	.LM8:
+  56 0012 8091 6400 		lds r24,100
+  57 0016 8D7F      		andi r24,lo8(-3)
+  58 0018 8093 6400 		sts 100,r24
+  59               	.LM9:
+  60 001c 8091 C000 		lds r24,192
+  61 0020 8D7F      		andi r24,lo8(-3)
+  62 0022 8093 C000 		sts 192,r24
+  63               	.LM10:
+  64 0026 88E1      		ldi r24,lo8(24)
+  65 0028 8093 C100 		sts 193,r24
+  66               	.LM11:
+  67 002c 87E2      		ldi r24,lo8(39)
+  68 002e 8093 C400 		sts 196,r24
+  69               	.LM12:
+  70 0032 86E0      		ldi r24,lo8(6)
+  71 0034 8093 C200 		sts 194,r24
+  72               	.L7:
+  73               	.LM13:
+  74 0038 8091 C000 		lds r24,192
+  75 003c 85FF      		sbrs r24,5
+  76 003e 00C0      		rjmp .L7
+  77               	.L12:
+  78               	.LBB6:
+  79               	.LBB7:
+  80               	.LM14:
+  81 0040 8091 C000 		lds r24,192
+  82 0044 87FF      		sbrs r24,7
+  83 0046 00C0      		rjmp .L10
+  84               	.LBE7:
+  85               	.LBE6:
+  86               	.LBB8:
+  87               	.LBB9:
+  88               	.LM15:
+  89 0048 8091 C600 		lds r24,198
+  90 004c 00C0      		rjmp .L12
+  91               	.L10:
+  92 004e 0895      		ret
+  93               	.LBE9:
+  94               	.LBE8:
+  95               	.LFE5:
+ 137               	.Letext0:
+DEFINED SYMBOLS
+                            *ABS*:00000000 uart.c
+     /tmp/cca5OxEO.s:2      *ABS*:0000003f __SREG__
+     /tmp/cca5OxEO.s:3      *ABS*:0000003e __SP_H__
+     /tmp/cca5OxEO.s:4      *ABS*:0000003d __SP_L__
+     /tmp/cca5OxEO.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/cca5OxEO.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/cca5OxEO.s:19     .text:00000000 Uart0GotByte
+     /tmp/cca5OxEO.s:36     .text:0000000c Uart0GetByte
+     /tmp/cca5OxEO.s:50     .text:00000012 InitUart0
+
+UNDEFINED SYMBOLS
+__do_copy_data
+__do_clear_bss

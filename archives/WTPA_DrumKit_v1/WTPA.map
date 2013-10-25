@@ -1,0 +1,618 @@
+Archive member included because of file (symbol)
+
+/usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+                              /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o (exit)
+/usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+                              WTPA.o (__do_clear_bss)
+
+Allocating common symbols
+Common symbol       size              file
+
+midiChannelNumberA  0x1               midi.o
+sampleAssignment    0x10              WTPA.o
+midiMessageIncomingFifo
+                    0x18              midi.o
+bankStates          0x44              globals.o
+systemTicks         0x2               globals.o
+midiChannelNumberB  0x1               midi.o
+midiMessageOutgoingFifo
+                    0x18              midi.o
+midiMessagesInIncomingFifo
+                    0x1               midi.o
+midiMessagesInOutgoingFifo
+                    0x1               midi.o
+
+Memory Configuration
+
+Name             Origin             Length             Attributes
+text             0x00000000         0x00020000         xr
+data             0x00800060         0x0000ffa0         rw !x
+eeprom           0x00810000         0x00010000         rw !x
+fuse             0x00820000         0x00000400         rw !x
+lock             0x00830000         0x00000400         rw !x
+signature        0x00840000         0x00000400         rw !x
+*default*        0x00000000         0xffffffff
+
+Linker script and memory map
+
+Address of section .data set to 0x800100
+LOAD /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+LOAD WTPA.o
+LOAD globals.o
+LOAD eeprom.o
+LOAD uart.o
+LOAD softclock.o
+LOAD midi.o
+LOAD microSD.o
+LOAD /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/libm.a
+LOAD /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a
+LOAD /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/libc.a
+LOAD /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a
+
+.hash
+ *(.hash)
+
+.dynsym
+ *(.dynsym)
+
+.dynstr
+ *(.dynstr)
+
+.gnu.version
+ *(.gnu.version)
+
+.gnu.version_d
+ *(.gnu.version_d)
+
+.gnu.version_r
+ *(.gnu.version_r)
+
+.rel.init
+ *(.rel.init)
+
+.rela.init
+ *(.rela.init)
+
+.rel.text
+ *(.rel.text)
+ *(.rel.text.*)
+ *(.rel.gnu.linkonce.t*)
+
+.rela.text
+ *(.rela.text)
+ *(.rela.text.*)
+ *(.rela.gnu.linkonce.t*)
+
+.rel.fini
+ *(.rel.fini)
+
+.rela.fini
+ *(.rela.fini)
+
+.rel.rodata
+ *(.rel.rodata)
+ *(.rel.rodata.*)
+ *(.rel.gnu.linkonce.r*)
+
+.rela.rodata
+ *(.rela.rodata)
+ *(.rela.rodata.*)
+ *(.rela.gnu.linkonce.r*)
+
+.rel.data
+ *(.rel.data)
+ *(.rel.data.*)
+ *(.rel.gnu.linkonce.d*)
+
+.rela.data
+ *(.rela.data)
+ *(.rela.data.*)
+ *(.rela.gnu.linkonce.d*)
+
+.rel.ctors
+ *(.rel.ctors)
+
+.rela.ctors
+ *(.rela.ctors)
+
+.rel.dtors
+ *(.rel.dtors)
+
+.rela.dtors
+ *(.rela.dtors)
+
+.rel.got
+ *(.rel.got)
+
+.rela.got
+ *(.rela.got)
+
+.rel.bss
+ *(.rel.bss)
+
+.rela.bss
+ *(.rela.bss)
+
+.rel.plt
+ *(.rel.plt)
+
+.rela.plt
+ *(.rela.plt)
+
+.text           0x00000000     0x1448
+ *(.vectors)
+ .vectors       0x00000000       0x7c /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+                0x00000000                __vectors
+ *(.vectors)
+ *(.progmem.gcc*)
+ *(.progmem*)
+                0x0000007c                . = ALIGN (0x2)
+                0x0000007c                __trampolines_start = .
+ *(.trampolines)
+ .trampolines   0x0000007c        0x0 linker stubs
+ *(.trampolines*)
+                0x0000007c                __trampolines_end = .
+ *(.jumptables)
+ *(.jumptables*)
+ *(.lowtext)
+ *(.lowtext*)
+                0x0000007c                __ctors_start = .
+ *(.ctors)
+                0x0000007c                __ctors_end = .
+                0x0000007c                __dtors_start = .
+ *(.dtors)
+                0x0000007c                __dtors_end = .
+ SORT(*)(.ctors)
+ SORT(*)(.dtors)
+ *(.init0)
+ .init0         0x0000007c        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+                0x0000007c                __init
+ *(.init0)
+ *(.init1)
+ *(.init1)
+ *(.init2)
+ .init2         0x0000007c        0xc /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+ *(.init2)
+ *(.init3)
+ *(.init3)
+ *(.init4)
+ .init4         0x00000088       0x10 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+                0x00000088                __do_clear_bss
+ *(.init4)
+ *(.init5)
+ *(.init5)
+ *(.init6)
+ *(.init6)
+ *(.init7)
+ *(.init7)
+ *(.init8)
+ *(.init8)
+ *(.init9)
+ .init9         0x00000098        0x8 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+ *(.init9)
+ *(.text)
+ .text          0x000000a0        0x4 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+                0x000000a0                __vector_22
+                0x000000a0                __vector_28
+                0x000000a0                __vector_1
+                0x000000a0                __vector_24
+                0x000000a0                __bad_interrupt
+                0x000000a0                __vector_3
+                0x000000a0                __vector_23
+                0x000000a0                __vector_30
+                0x000000a0                __vector_25
+                0x000000a0                __vector_11
+                0x000000a0                __vector_17
+                0x000000a0                __vector_19
+                0x000000a0                __vector_7
+                0x000000a0                __vector_27
+                0x000000a0                __vector_5
+                0x000000a0                __vector_4
+                0x000000a0                __vector_2
+                0x000000a0                __vector_21
+                0x000000a0                __vector_15
+                0x000000a0                __vector_29
+                0x000000a0                __vector_8
+                0x000000a0                __vector_26
+                0x000000a0                __vector_10
+                0x000000a0                __vector_16
+                0x000000a0                __vector_18
+                0x000000a0                __vector_20
+ .text          0x000000a4      0x946 WTPA.o
+                0x0000027e                __vector_12
+                0x00000368                __vector_6
+                0x0000037c                __vector_13
+                0x000003de                HandleSoftclock
+                0x000003b8                __vector_default
+                0x00000422                main
+                0x000003a4                __vector_9
+                0x00000390                __vector_14
+ .text          0x000009ea        0x0 globals.o
+ .text          0x000009ea       0x38 eeprom.o
+                0x000009ea                EepromWrite
+                0x00000a06                EepromRead
+ .text          0x00000a22       0x50 uart.o
+                0x00000a34                InitUart0
+                0x00000a2e                Uart0GetByte
+                0x00000a22                Uart0GotByte
+ .text          0x00000a72       0x58 softclock.o
+                0x00000a72                SetTimer
+                0x00000a96                CheckTimer
+ .text          0x00000aca      0x440 midi.o
+                0x00000dae                PopOutgoingMidiByte
+                0x00000b7e                PutMidiMessageInOutgoingFifo
+                0x00000bca                InitMidi
+                0x00000d98                MidiTxBufferNotEmpty
+                0x00000bee                HandleIncomingMidiByte
+                0x00000aca                GetMidiMessageFromIncomingFifo
+ .text          0x00000f0a      0x53a microSD.o
+                0x00000f26                InitSdInterface
+                0x000011d2                SdBeginSingleBlockRead
+                0x00000f5e                TransferSdByte
+                0x000011f6                SdBeginSingleBlockWrite
+                0x00000f0a                UnInitSdInterface
+                0x0000121a                SdHandshake
+                0x00000fa8                SendSdCommand
+                0x00000f58                StartSdTransfer
+                0x00000f54                EndSdTransfer
+ .text          0x00001444        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+ .text          0x00001444        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+                0x00001444                . = ALIGN (0x2)
+ *(.text.*)
+ .text.libgcc   0x00001444        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+ .text.libgcc   0x00001444        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+                0x00001444                . = ALIGN (0x2)
+ *(.fini9)
+ .fini9         0x00001444        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+                0x00001444                exit
+                0x00001444                _exit
+ *(.fini9)
+ *(.fini8)
+ *(.fini8)
+ *(.fini7)
+ *(.fini7)
+ *(.fini6)
+ *(.fini6)
+ *(.fini5)
+ *(.fini5)
+ *(.fini4)
+ *(.fini4)
+ *(.fini3)
+ *(.fini3)
+ *(.fini2)
+ *(.fini2)
+ *(.fini1)
+ *(.fini1)
+ *(.fini0)
+ .fini0         0x00001444        0x4 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+ *(.fini0)
+                0x00001448                _etext = .
+
+.data           0x00800100        0x0 load address 0x00001448
+                0x00800100                PROVIDE (__data_start, .)
+ *(.data)
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+ .data          0x00800100        0x0 WTPA.o
+ .data          0x00800100        0x0 globals.o
+ .data          0x00800100        0x0 eeprom.o
+ .data          0x00800100        0x0 uart.o
+ .data          0x00800100        0x0 softclock.o
+ .data          0x00800100        0x0 midi.o
+ .data          0x00800100        0x0 microSD.o
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+ .data          0x00800100        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+ *(.data*)
+ *(.rodata)
+ *(.rodata*)
+ *(.gnu.linkonce.d*)
+                0x00800100                . = ALIGN (0x2)
+                0x00800100                _edata = .
+                0x00800100                PROVIDE (__data_end, .)
+
+.bss            0x00800100      0x2fe
+                0x00800100                PROVIDE (__bss_start, .)
+ *(.bss)
+ .bss           0x00800100        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+ .bss           0x00800100      0x257 WTPA.o
+ .bss           0x00800357        0x0 globals.o
+ .bss           0x00800357        0x0 eeprom.o
+ .bss           0x00800357        0x0 uart.o
+ .bss           0x00800357       0x10 softclock.o
+ .bss           0x00800367        0xd midi.o
+ .bss           0x00800374        0x0 microSD.o
+ .bss           0x00800374        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+ .bss           0x00800374        0x0 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+ *(.bss*)
+ *(COMMON)
+ COMMON         0x00800374       0x10 WTPA.o
+                0x00800374                sampleAssignment
+ COMMON         0x00800384       0x46 globals.o
+                0x00800384                bankStates
+                0x008003c8                systemTicks
+ COMMON         0x008003ca       0x34 midi.o
+                0x008003ca                midiChannelNumberA
+                0x008003cb                midiMessageIncomingFifo
+                0x008003e3                midiChannelNumberB
+                0x008003e4                midiMessageOutgoingFifo
+                0x008003fc                midiMessagesInIncomingFifo
+                0x008003fd                midiMessagesInOutgoingFifo
+                0x008003fe                PROVIDE (__bss_end, .)
+                0x00001448                __data_load_start = LOADADDR (.data)
+                0x00001448                __data_load_end = (__data_load_start + SIZEOF (.data))
+
+.noinit         0x008003fe        0x0
+                0x008003fe                PROVIDE (__noinit_start, .)
+ *(.noinit*)
+                0x008003fe                PROVIDE (__noinit_end, .)
+                0x008003fe                _end = .
+                0x008003fe                PROVIDE (__heap_start, .)
+
+.eeprom         0x00810000        0x0
+ *(.eeprom*)
+                0x00810000                __eeprom_end = .
+
+.fuse
+ *(.fuse)
+ *(.lfuse)
+ *(.hfuse)
+ *(.efuse)
+
+.lock
+ *(.lock*)
+
+.signature
+ *(.signature*)
+
+.stab           0x00000000      0x6b4
+ *(.stab)
+ .stab          0x00000000      0x6b4 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+
+.stabstr        0x00000000       0x82
+ *(.stabstr)
+ .stabstr       0x00000000       0x82 /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+
+.stab.excl
+ *(.stab.excl)
+
+.stab.exclstr
+ *(.stab.exclstr)
+
+.stab.index
+ *(.stab.index)
+
+.stab.indexstr
+ *(.stab.indexstr)
+
+.comment
+ *(.comment)
+
+.debug
+ *(.debug)
+
+.line
+ *(.line)
+
+.debug_srcinfo
+ *(.debug_srcinfo)
+
+.debug_sfnames
+ *(.debug_sfnames)
+
+.debug_aranges  0x00000000       0xc0
+ *(.debug_aranges)
+ .debug_aranges
+                0x00000000       0x20 WTPA.o
+ .debug_aranges
+                0x00000020       0x20 eeprom.o
+ .debug_aranges
+                0x00000040       0x20 uart.o
+ .debug_aranges
+                0x00000060       0x20 softclock.o
+ .debug_aranges
+                0x00000080       0x20 midi.o
+ .debug_aranges
+                0x000000a0       0x20 microSD.o
+
+.debug_pubnames
+                0x00000000      0x39a
+ *(.debug_pubnames)
+ .debug_pubnames
+                0x00000000       0xa7 WTPA.o
+ .debug_pubnames
+                0x000000a7       0x31 globals.o
+ .debug_pubnames
+                0x000000d8       0x31 eeprom.o
+ .debug_pubnames
+                0x00000109       0x42 uart.o
+ .debug_pubnames
+                0x0000014b       0x2e softclock.o
+ .debug_pubnames
+                0x00000179      0x153 midi.o
+ .debug_pubnames
+                0x000002cc       0xce microSD.o
+
+.debug_info     0x00000000     0x15dd
+ *(.debug_info)
+ .debug_info    0x00000000      0x74e WTPA.o
+ .debug_info    0x0000074e      0x1c1 globals.o
+ .debug_info    0x0000090f       0xde eeprom.o
+ .debug_info    0x000009ed       0xdf uart.o
+ .debug_info    0x00000acc      0x112 softclock.o
+ .debug_info    0x00000bde      0x458 midi.o
+ .debug_info    0x00001036      0x5a7 microSD.o
+ *(.gnu.linkonce.wi.*)
+
+.debug_abbrev   0x00000000      0x8ad
+ *(.debug_abbrev)
+ .debug_abbrev  0x00000000      0x2cc WTPA.o
+ .debug_abbrev  0x000002cc       0x86 globals.o
+ .debug_abbrev  0x00000352       0x94 eeprom.o
+ .debug_abbrev  0x000003e6       0x7b uart.o
+ .debug_abbrev  0x00000461       0xba softclock.o
+ .debug_abbrev  0x0000051b      0x199 midi.o
+ .debug_abbrev  0x000006b4      0x1f9 microSD.o
+
+.debug_line     0x00000000     0x1803
+ *(.debug_line)
+ .debug_line    0x00000000      0x90b WTPA.o
+ .debug_line    0x0000090b       0x65 globals.o
+ .debug_line    0x00000970       0xf2 eeprom.o
+ .debug_line    0x00000a62       0xd0 uart.o
+ .debug_line    0x00000b32       0x92 softclock.o
+ .debug_line    0x00000bc4      0x507 midi.o
+ .debug_line    0x000010cb      0x738 microSD.o
+
+.debug_frame    0x00000000      0x2a0
+ *(.debug_frame)
+ .debug_frame   0x00000000       0xd0 WTPA.o
+ .debug_frame   0x000000d0       0x30 eeprom.o
+ .debug_frame   0x00000100       0x40 uart.o
+ .debug_frame   0x00000140       0x30 softclock.o
+ .debug_frame   0x00000170       0x80 midi.o
+ .debug_frame   0x000001f0       0xb0 microSD.o
+
+.debug_str      0x00000000      0xac6
+ *(.debug_str)
+ .debug_str     0x00000000      0x567 WTPA.o
+                                0x5a0 (size before relaxing)
+ .debug_str     0x00000567      0x116 globals.o
+                                0x1dc (size before relaxing)
+ .debug_str     0x0000067d       0x33 eeprom.o
+                                 0xd3 (size before relaxing)
+ .debug_str     0x000006b0       0x2b uart.o
+                                 0xcb (size before relaxing)
+ .debug_str     0x000006db       0x4b softclock.o
+                                 0xf2 (size before relaxing)
+ .debug_str     0x00000726      0x2cb midi.o
+                                0x5fe (size before relaxing)
+ .debug_str     0x000009f1       0xd5 microSD.o
+                                0x1c4 (size before relaxing)
+
+.debug_loc      0x00000000      0x596
+ *(.debug_loc)
+ .debug_loc     0x00000000      0x16a WTPA.o
+ .debug_loc     0x0000016a       0x59 eeprom.o
+ .debug_loc     0x000001c3       0x26 softclock.o
+ .debug_loc     0x000001e9      0x211 midi.o
+ .debug_loc     0x000003fa      0x19c microSD.o
+
+.debug_macinfo
+ *(.debug_macinfo)
+OUTPUT(WTPA.elf elf32-avr)
+LOAD linker stubs
+
+.debug_ranges   0x00000000      0x130
+ .debug_ranges  0x00000000       0x88 WTPA.o
+ .debug_ranges  0x00000088       0xa8 microSD.o
+
+Cross Reference Table
+
+Symbol                                            File
+CheckTimer                                        softclock.o
+                                                  microSD.o
+                                                  WTPA.o
+EepromRead                                        eeprom.o
+EepromWrite                                       eeprom.o
+EndSdTransfer                                     microSD.o
+                                                  WTPA.o
+GetMidiMessageFromIncomingFifo                    midi.o
+                                                  WTPA.o
+HandleIncomingMidiByte                            midi.o
+                                                  WTPA.o
+HandleSoftclock                                   WTPA.o
+                                                  microSD.o
+InitMidi                                          midi.o
+                                                  WTPA.o
+InitSdInterface                                   microSD.o
+                                                  WTPA.o
+InitUart0                                         uart.o
+                                                  WTPA.o
+MidiTxBufferNotEmpty                              midi.o
+PopOutgoingMidiByte                               midi.o
+PutMidiMessageInOutgoingFifo                      midi.o
+SdBeginSingleBlockRead                            microSD.o
+                                                  WTPA.o
+SdBeginSingleBlockWrite                           microSD.o
+SdHandshake                                       microSD.o
+                                                  WTPA.o
+SendSdCommand                                     microSD.o
+SetTimer                                          softclock.o
+                                                  microSD.o
+                                                  WTPA.o
+StartSdTransfer                                   microSD.o
+                                                  WTPA.o
+TransferSdByte                                    microSD.o
+                                                  WTPA.o
+Uart0GetByte                                      uart.o
+                                                  WTPA.o
+Uart0GotByte                                      uart.o
+                                                  WTPA.o
+UnInitSdInterface                                 microSD.o
+                                                  WTPA.o
+__bad_interrupt                                   /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__bss_end                                         /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+__bss_start                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+__do_clear_bss                                    /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_clear_bss.o)
+                                                  midi.o
+                                                  softclock.o
+                                                  globals.o
+                                                  WTPA.o
+__heap_end                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__init                                            /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__stack                                           /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_1                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_10                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_11                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_12                                       WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_13                                       WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_14                                       WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_15                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_16                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_17                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_18                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_19                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_2                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_20                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_21                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_22                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_23                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_24                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_25                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_26                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_27                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_28                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_29                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_3                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_30                                       /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_4                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_5                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_6                                        WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_7                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_8                                        /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_9                                        WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vector_default                                  WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+__vectors                                         /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+_exit                                             /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+bankStates                                        globals.o
+exit                                              /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/avr5/libgcc.a(_exit.o)
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+main                                              WTPA.o
+                                                  /usr/local/CrossPack-AVR-20100115/lib/gcc/avr/4.3.3/../../../../avr/lib/avr5/crtm644p.o
+midiChannelNumberA                                midi.o
+                                                  WTPA.o
+midiChannelNumberB                                midi.o
+                                                  WTPA.o
+midiMessageIncomingFifo                           midi.o
+midiMessageOutgoingFifo                           midi.o
+midiMessagesInIncomingFifo                        midi.o
+midiMessagesInOutgoingFifo                        midi.o
+sampleAssignment                                  WTPA.o
+systemTicks                                       softclock.o
+                                                  globals.o
+                                                  WTPA.o
