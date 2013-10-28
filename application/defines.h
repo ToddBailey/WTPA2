@@ -117,3 +117,16 @@ enum			// Here we enumerate however many banks we're actually implementing.
 #define		Im_BANK			Im_SWITCH_4
 #define		Im_EFFECT		Im_SWITCH_5
 
+
+
+// Mon Oct 28 14:41:18 EDT 2013
+// New WTPA2 key names
+// -------------------------------
+
+// Rec and odub are the same (0 and 1)
+#define		Im_RESTART_LOOP		Im_SWITCH_2
+// Single play is the same (3)
+#define		Im_PAUSE_RESUME		Im_SWITCH_4
+#define		Im_BANK_CHANGE		Im_SWITCH_5
+#define		Im_SHIFT_1			Im_SWITCH_6
+#define		Im_SHIFT_2			Im_SWITCH_7

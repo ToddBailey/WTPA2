@@ -1,836 +1,1473 @@
    1               		.file	"midi.c"
-   2               	__SREG__ = 0x3f
-   3               	__SP_H__ = 0x3e
-   4               	__SP_L__ = 0x3d
-   5               	__CCP__  = 0x34
-   6               	__tmp_reg__ = 0
-   7               	__zero_reg__ = 1
-  15               	.Ltext0:
-  16               	.global	GetMidiMessageFromIncomingFifo
-  18               	GetMidiMessageFromIncomingFifo:
-  19               	.LFB3:
-  20               	.LM1:
-  21               	.LVL0:
-  22 0000 CF93      		push r28
-  23 0002 DF93      		push r29
-  24               	/* prologue: function */
-  25               	/* frame size = 0 */
-  26 0004 EC01      		movw r28,r24
-  27               	.LM2:
-  28 0006 2091 0000 		lds r18,midiMessagesInIncomingFifo
-  29 000a 2223      		tst r18
-  30 000c 01F0      		breq .L4
-  31               	.LVL1:
-  32               	.LM3:
-  33 000e 9091 0000 		lds r25,midiIncomingFifoReadPointer
-  34 0012 E92F      		mov r30,r25
-  35 0014 F0E0      		ldi r31,lo8(0)
-  36 0016 EE0F      		lsl r30
-  37 0018 FF1F      		rol r31
-  38 001a EE0F      		lsl r30
-  39 001c FF1F      		rol r31
-  40 001e DF01      		movw r26,r30
-  41 0020 A050      		subi r26,lo8(-(midiMessageIncomingFifo))
-  42 0022 B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
-  43 0024 1196      		adiw r26,1
-  44 0026 8C91      		ld r24,X
-  45 0028 1197      		sbiw r26,1
-  46 002a 8983      		std Y+1,r24
-  47               	.LM4:
-  48 002c E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
-  49 002e F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
-  50 0030 8081      		ld r24,Z
-  51 0032 8A83      		std Y+2,r24
-  52               	.LM5:
-  53 0034 1396      		adiw r26,3
-  54 0036 8C91      		ld r24,X
-  55 0038 1397      		sbiw r26,3
-  56 003a 8B83      		std Y+3,r24
-  57               	.LM6:
-  58 003c 8C91      		ld r24,X
-  59 003e 8883      		st Y,r24
-  60               	.LM7:
-  61 0040 9F5F      		subi r25,lo8(-(1))
-  62 0042 9093 0000 		sts midiIncomingFifoReadPointer,r25
-  63               	.LM8:
-  64 0046 9630      		cpi r25,lo8(6)
-  65 0048 00F0      		brlo .L3
-  66               	.LM9:
-  67 004a 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
-  68               	.L3:
-  69               	.LM10:
-  70 004e 2150      		subi r18,lo8(-(-1))
-  71 0050 2093 0000 		sts midiMessagesInIncomingFifo,r18
-  72               	.LVL2:
-  73               	.L4:
-  74               	/* epilogue start */
-  75               	.LM11:
-  76 0054 DF91      		pop r29
-  77 0056 CF91      		pop r28
-  78               	.LVL3:
-  79 0058 0895      		ret
-  80               	.LFE3:
-  83               	PutMidiMessageInIncomingFifo:
-  84               	.LFB4:
-  85               	.LM12:
-  86               	.LVL4:
-  87 005a CF93      		push r28
-  88 005c DF93      		push r29
-  89               	/* prologue: function */
-  90               	/* frame size = 0 */
-  91 005e EC01      		movw r28,r24
-  92               	.LM13:
-  93 0060 2091 0000 		lds r18,midiMessagesInIncomingFifo
-  94 0064 2630      		cpi r18,lo8(6)
-  95 0066 00F4      		brsh .L8
-  96               	.LVL5:
-  97               	.LM14:
-  98 0068 9091 0000 		lds r25,midiIncomingFifoWritePointer
-  99 006c E92F      		mov r30,r25
- 100 006e F0E0      		ldi r31,lo8(0)
- 101 0070 EE0F      		lsl r30
- 102 0072 FF1F      		rol r31
- 103 0074 EE0F      		lsl r30
- 104 0076 FF1F      		rol r31
- 105 0078 DF01      		movw r26,r30
- 106 007a A050      		subi r26,lo8(-(midiMessageIncomingFifo))
- 107 007c B040      		sbci r27,hi8(-(midiMessageIncomingFifo))
- 108 007e 8981      		ldd r24,Y+1
- 109 0080 1196      		adiw r26,1
- 110 0082 8C93      		st X,r24
- 111 0084 1197      		sbiw r26,1
- 112               	.LM15:
- 113 0086 E050      		subi r30,lo8(-(midiMessageIncomingFifo+2))
- 114 0088 F040      		sbci r31,hi8(-(midiMessageIncomingFifo+2))
- 115 008a 8A81      		ldd r24,Y+2
- 116 008c 8083      		st Z,r24
- 117               	.LM16:
- 118 008e 8B81      		ldd r24,Y+3
- 119 0090 1396      		adiw r26,3
- 120 0092 8C93      		st X,r24
- 121 0094 1397      		sbiw r26,3
- 122               	.LM17:
- 123 0096 8881      		ld r24,Y
- 124 0098 8C93      		st X,r24
- 125               	.LM18:
- 126 009a 9F5F      		subi r25,lo8(-(1))
- 127 009c 9093 0000 		sts midiIncomingFifoWritePointer,r25
- 128               	.LM19:
- 129 00a0 9630      		cpi r25,lo8(6)
- 130 00a2 00F0      		brlo .L7
- 131               	.LM20:
- 132 00a4 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
- 133               	.L7:
- 134               	.LM21:
- 135 00a8 2F5F      		subi r18,lo8(-(1))
- 136 00aa 2093 0000 		sts midiMessagesInIncomingFifo,r18
- 137               	.LVL6:
- 138               	.L8:
- 139               	/* epilogue start */
- 140               	.LM22:
- 141 00ae DF91      		pop r29
- 142 00b0 CF91      		pop r28
- 143               	.LVL7:
- 144 00b2 0895      		ret
- 145               	.LFE4:
- 147               	.global	PutMidiMessageInOutgoingFifo
- 149               	PutMidiMessageInOutgoingFifo:
- 150               	.LFB6:
- 151               	.LM23:
- 152               	.LVL8:
- 153               	/* prologue: function */
- 154               	/* frame size = 0 */
- 155               	.LM24:
- 156 00b4 3091 0000 		lds r19,midiMessagesInOutgoingFifo
- 157 00b8 3630      		cpi r19,lo8(6)
- 158 00ba 00F4      		brsh .L14
- 159               	.LM25:
- 160 00bc 9091 0000 		lds r25,midiOutgoingFifoWritePointer
- 161 00c0 E92F      		mov r30,r25
- 162 00c2 F0E0      		ldi r31,lo8(0)
- 163 00c4 EE0F      		lsl r30
- 164 00c6 FF1F      		rol r31
- 165 00c8 EE0F      		lsl r30
- 166 00ca FF1F      		rol r31
- 167 00cc DF01      		movw r26,r30
- 168 00ce A050      		subi r26,lo8(-(midiMessageOutgoingFifo))
- 169 00d0 B040      		sbci r27,hi8(-(midiMessageOutgoingFifo))
- 170 00d2 1196      		adiw r26,1
- 171 00d4 6C93      		st X,r22
- 172 00d6 1197      		sbiw r26,1
- 173               	.LM26:
- 174               	.LVL9:
- 175 00d8 E050      		subi r30,lo8(-(midiMessageOutgoingFifo+2))
- 176 00da F040      		sbci r31,hi8(-(midiMessageOutgoingFifo+2))
- 177 00dc 4083      		st Z,r20
- 178               	.LM27:
- 179 00de 1396      		adiw r26,3
- 180 00e0 2C93      		st X,r18
- 181 00e2 1397      		sbiw r26,3
- 182 00e4 8091 0000 		lds r24,midiChannelNumberA
- 183               	.LVL10:
- 184               	.LM28:
- 185 00e8 8C93      		st X,r24
- 186               	.LM29:
- 187 00ea 9F5F      		subi r25,lo8(-(1))
- 188 00ec 9093 0000 		sts midiOutgoingFifoWritePointer,r25
- 189               	.LM30:
- 190 00f0 9630      		cpi r25,lo8(6)
- 191 00f2 00F0      		brlo .L13
- 192               	.LM31:
- 193 00f4 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
- 194               	.L13:
- 195               	.LM32:
- 196 00f8 3F5F      		subi r19,lo8(-(1))
- 197 00fa 3093 0000 		sts midiMessagesInOutgoingFifo,r19
- 198               	.LVL11:
- 199               	.L14:
- 200 00fe 0895      		ret
- 201               	.LFE6:
- 203               	.global	InitMidi
- 205               	InitMidi:
- 206               	.LFB9:
- 207               	.LM33:
- 208               	/* prologue: function */
- 209               	/* frame size = 0 */
- 210               	.LM34:
- 211 0100 89E0      		ldi r24,lo8(9)
- 212 0102 8093 0000 		sts midiIncomingMessageState,r24
- 213               	.LM35:
- 214 0106 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 215               	.LBB8:
- 216               	.LBB9:
- 217               	.LM36:
- 218 010a 1092 0000 		sts midiMessagesInIncomingFifo,__zero_reg__
- 219               	.LM37:
- 220 010e 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
- 221               	.LM38:
- 222 0112 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
- 223               	.LBE9:
- 224               	.LBE8:
- 225               	.LBB10:
- 226               	.LBB11:
- 227               	.LM39:
- 228 0116 1092 0000 		sts midiMessagesInOutgoingFifo,__zero_reg__
- 229               	.LM40:
- 230 011a 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
- 231               	.LM41:
- 232 011e 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
- 233               	/* epilogue start */
- 234               	.LBE11:
- 235               	.LBE10:
- 236               	.LM42:
- 237 0122 0895      		ret
- 238               	.LFE9:
- 240               	.global	HandleIncomingMidiByte
- 242               	HandleIncomingMidiByte:
- 243               	.LFB10:
- 244               	.LM43:
- 245               	.LVL12:
- 246 0124 1F93      		push r17
- 247 0126 DF93      		push r29
- 248 0128 CF93      		push r28
- 249 012a 00D0      		rcall .
- 250 012c 00D0      		rcall .
- 251 012e CDB7      		in r28,__SP_L__
- 252 0130 DEB7      		in r29,__SP_H__
- 253               	/* prologue: function */
- 254               	/* frame size = 4 */
- 255 0132 282F      		mov r18,r24
- 256               	.LM44:
- 257 0134 87FF      		sbrs r24,7
- 258 0136 00C0      		rjmp .L18
- 259               	.LM45:
- 260 0138 682F      		mov r22,r24
- 261 013a 70E0      		ldi r23,lo8(0)
- 262 013c 9B01      		movw r18,r22
- 263 013e 2F70      		andi r18,lo8(15)
- 264 0140 3070      		andi r19,hi8(15)
- 265 0142 8091 0000 		lds r24,midiChannelNumberA
- 266               	.LVL13:
- 267 0146 482F      		mov r20,r24
- 268 0148 50E0      		ldi r21,lo8(0)
- 269 014a 2417      		cp r18,r20
- 270 014c 3507      		cpc r19,r21
- 271 014e 01F0      		breq .L19
- 272 0150 8091 0000 		lds r24,midiChannelNumberB
- 273 0154 90E0      		ldi r25,lo8(0)
- 274 0156 2817      		cp r18,r24
- 275 0158 3907      		cpc r19,r25
- 276 015a 01F0      		breq .+2
- 277 015c 00C0      		rjmp .L32
- 278               	.L19:
- 279               	.LM46:
- 280 015e CB01      		movw r24,r22
- 281 0160 807F      		andi r24,lo8(240)
- 282 0162 9070      		andi r25,hi8(240)
- 283 0164 8039      		cpi r24,144
- 284 0166 9105      		cpc r25,__zero_reg__
- 285 0168 01F4      		brne .L21
- 286               	.LM47:
- 287 016a 1092 0000 		sts midiIncomingMessageState,__zero_reg__
- 288 016e 00C0      		rjmp .L57
- 289               	.L21:
- 290               	.LM48:
- 291 0170 8038      		cpi r24,128
- 292 0172 9105      		cpc r25,__zero_reg__
- 293 0174 01F4      		brne .L24
- 294               	.LM49:
- 295 0176 81E0      		ldi r24,lo8(1)
- 296 0178 8093 0000 		sts midiIncomingMessageState,r24
- 297               	.LM50:
- 298 017c 2417      		cp r18,r20
- 299 017e 3507      		cpc r19,r21
- 300 0180 01F4      		brne .L51
- 301 0182 00C0      		rjmp .L52
- 302               	.L24:
- 303               	.LM51:
- 304 0184 803C      		cpi r24,192
- 305 0186 9105      		cpc r25,__zero_reg__
- 306 0188 01F4      		brne .L26
- 307               	.LM52:
- 308 018a 82E0      		ldi r24,lo8(2)
- 309 018c 00C0      		rjmp .L54
- 310               	.L26:
- 311               	.LM53:
- 312 018e 803E      		cpi r24,224
- 313 0190 9105      		cpc r25,__zero_reg__
- 314 0192 01F4      		brne .L28
- 315               	.LM54:
- 316 0194 87E0      		ldi r24,lo8(7)
- 317 0196 00C0      		rjmp .L54
- 318               	.L28:
- 319               	.LM55:
- 320 0198 803B      		cpi r24,176
- 321 019a 9105      		cpc r25,__zero_reg__
- 322 019c 01F0      		breq .+2
- 323 019e 00C0      		rjmp .L32
- 324               	.LM56:
- 325 01a0 83E0      		ldi r24,lo8(3)
- 326               	.L54:
- 327 01a2 8093 0000 		sts midiIncomingMessageState,r24
- 328               	.L57:
- 329               	.LM57:
- 330 01a6 2417      		cp r18,r20
- 331 01a8 3507      		cpc r19,r21
- 332 01aa 01F4      		brne .L31
- 333               	.L52:
- 334               	.LM58:
- 335 01ac 1092 0000 		sts temporaryChannel.1586,__zero_reg__
- 336 01b0 00C0      		rjmp .L45
- 337               	.L31:
- 338               	.LM59:
- 339 01b2 81E0      		ldi r24,lo8(1)
- 340               	.L51:
- 341 01b4 8093 0000 		sts temporaryChannel.1586,r24
- 342 01b8 00C0      		rjmp .L45
- 343               	.LVL14:
- 344               	.L18:
- 345               	.LM60:
- 346 01ba 1091 0000 		lds r17,midiIncomingMessageState
- 347 01be 1430      		cpi r17,lo8(4)
- 348 01c0 01F4      		brne .+2
- 349 01c2 00C0      		rjmp .L37
- 350 01c4 1530      		cpi r17,lo8(5)
- 351 01c6 00F4      		brsh .L42
- 352 01c8 1130      		cpi r17,lo8(1)
- 353 01ca 01F0      		breq .L34
- 354 01cc 1130      		cpi r17,lo8(1)
- 355 01ce 00F0      		brlo .L33
- 356 01d0 1230      		cpi r17,lo8(2)
- 357 01d2 01F4      		brne .+2
- 358 01d4 00C0      		rjmp .L35
- 359 01d6 1330      		cpi r17,lo8(3)
- 360 01d8 01F0      		breq .+2
- 361 01da 00C0      		rjmp .L32
- 362 01dc 00C0      		rjmp .L58
- 363               	.L42:
- 364 01de 1730      		cpi r17,lo8(7)
- 365 01e0 01F4      		brne .+2
- 366 01e2 00C0      		rjmp .L40
- 367 01e4 1830      		cpi r17,lo8(8)
- 368 01e6 00F4      		brsh .L43
- 369 01e8 1530      		cpi r17,lo8(5)
- 370 01ea 01F0      		breq .L38
- 371 01ec 1630      		cpi r17,lo8(6)
- 372 01ee 01F0      		breq .+2
- 373 01f0 00C0      		rjmp .L32
- 374 01f2 00C0      		rjmp .L59
- 375               	.L43:
- 376 01f4 1830      		cpi r17,lo8(8)
- 377 01f6 01F4      		brne .+2
- 378 01f8 00C0      		rjmp .L41
- 379 01fa 1930      		cpi r17,lo8(9)
- 380 01fc 01F0      		breq .+2
- 381 01fe 00C0      		rjmp .L32
- 382 0200 00C0      		rjmp .L45
- 383               	.L33:
- 384               	.LM61:
- 385 0202 8093 0000 		sts firstDataByte.1585,r24
- 386               	.LM62:
- 387 0206 85E0      		ldi r24,lo8(5)
- 388               	.LVL15:
- 389 0208 00C0      		rjmp .L46
- 390               	.LVL16:
- 391               	.L38:
- 392 020a 3091 0000 		lds r19,firstDataByte.1585
- 393 020e 4091 0000 		lds r20,temporaryChannel.1586
- 394 0212 BE01      		movw r22,r28
- 395 0214 6F5F      		subi r22,lo8(-(1))
- 396 0216 7F4F      		sbci r23,hi8(-(1))
- 397               	.LM63:
- 398 0218 8823      		tst r24
- 399 021a 01F4      		brne .L44
- 400               	.LM64:
- 401 021c 82E0      		ldi r24,lo8(2)
- 402               	.LVL17:
- 403 021e 8A83      		std Y+2,r24
- 404               	.LM65:
- 405 0220 3B83      		std Y+3,r19
- 406               	.LM66:
- 407 0222 1C82      		std Y+4,__zero_reg__
- 408 0224 00C0      		rjmp .L49
- 409               	.LVL18:
- 410               	.L44:
- 411               	.LM67:
- 412 0226 81E0      		ldi r24,lo8(1)
- 413               	.LVL19:
- 414 0228 8A83      		std Y+2,r24
- 415               	.LM68:
- 416 022a 3B83      		std Y+3,r19
- 417               	.LM69:
- 418 022c 2C83      		std Y+4,r18
- 419               	.L49:
- 420               	.LM70:
- 421 022e 4983      		std Y+1,r20
- 422               	.LM71:
- 423 0230 CB01      		movw r24,r22
- 424 0232 0E94 0000 		call PutMidiMessageInIncomingFifo
- 425               	.LVL20:
- 426               	.LM72:
- 427 0236 1092 0000 		sts midiIncomingMessageState,__zero_reg__
- 428 023a 00C0      		rjmp .L45
- 429               	.LVL21:
- 430               	.L34:
- 431               	.LM73:
- 432 023c 8093 0000 		sts firstDataByte.1585,r24
- 433               	.LM74:
- 434 0240 86E0      		ldi r24,lo8(6)
- 435               	.LVL22:
- 436 0242 00C0      		rjmp .L46
- 437               	.LVL23:
- 438               	.L59:
- 439               	.LM75:
- 440 0244 82E0      		ldi r24,lo8(2)
- 441               	.LVL24:
- 442 0246 8A83      		std Y+2,r24
- 443               	.LM76:
- 444 0248 8091 0000 		lds r24,firstDataByte.1585
- 445 024c 8B83      		std Y+3,r24
- 446               	.LM77:
- 447 024e 2C83      		std Y+4,r18
- 448               	.LM78:
- 449 0250 8091 0000 		lds r24,temporaryChannel.1586
- 450 0254 8983      		std Y+1,r24
- 451               	.LM79:
- 452 0256 CE01      		movw r24,r28
- 453 0258 0196      		adiw r24,1
- 454 025a 0E94 0000 		call PutMidiMessageInIncomingFifo
- 455               	.LVL25:
- 456               	.LM80:
- 457 025e 81E0      		ldi r24,lo8(1)
- 458 0260 00C0      		rjmp .L46
- 459               	.LVL26:
- 460               	.L35:
- 461               	.LM81:
- 462 0262 83E0      		ldi r24,lo8(3)
- 463               	.LVL27:
- 464 0264 8A83      		std Y+2,r24
- 465               	.LM82:
- 466 0266 2B83      		std Y+3,r18
- 467               	.LM83:
- 468 0268 1C82      		std Y+4,__zero_reg__
- 469 026a 00C0      		rjmp .L48
- 470               	.LVL28:
- 471               	.L58:
- 472               	.LM84:
- 473 026c 8093 0000 		sts firstDataByte.1585,r24
- 474               	.LM85:
- 475 0270 84E0      		ldi r24,lo8(4)
- 476               	.LVL29:
- 477 0272 00C0      		rjmp .L46
- 478               	.LVL30:
- 479               	.L37:
- 480               	.LM86:
- 481 0274 1A83      		std Y+2,r17
- 482               	.LM87:
- 483 0276 8091 0000 		lds r24,firstDataByte.1585
- 484               	.LVL31:
- 485 027a 8B83      		std Y+3,r24
- 486               	.LM88:
- 487 027c 2C83      		std Y+4,r18
- 488               	.LM89:
- 489 027e 8091 0000 		lds r24,temporaryChannel.1586
- 490 0282 8983      		std Y+1,r24
- 491               	.LM90:
- 492 0284 CE01      		movw r24,r28
- 493 0286 0196      		adiw r24,1
- 494 0288 0E94 0000 		call PutMidiMessageInIncomingFifo
- 495               	.LVL32:
- 496               	.LM91:
- 497 028c 83E0      		ldi r24,lo8(3)
- 498 028e 00C0      		rjmp .L46
- 499               	.LVL33:
- 500               	.L40:
- 501               	.LM92:
- 502 0290 8093 0000 		sts firstDataByte.1585,r24
- 503               	.LM93:
- 504 0294 88E0      		ldi r24,lo8(8)
- 505               	.LVL34:
- 506 0296 00C0      		rjmp .L46
- 507               	.LVL35:
- 508               	.L41:
- 509               	.LM94:
- 510 0298 17E0      		ldi r17,lo8(7)
- 511 029a 1A83      		std Y+2,r17
- 512               	.LM95:
- 513 029c 8091 0000 		lds r24,firstDataByte.1585
- 514               	.LVL36:
- 515 02a0 8B83      		std Y+3,r24
- 516               	.LM96:
- 517 02a2 2C83      		std Y+4,r18
- 518               	.L48:
- 519               	.LM97:
- 520 02a4 8091 0000 		lds r24,temporaryChannel.1586
- 521 02a8 8983      		std Y+1,r24
- 522               	.LM98:
- 523 02aa CE01      		movw r24,r28
- 524 02ac 0196      		adiw r24,1
- 525 02ae 0E94 0000 		call PutMidiMessageInIncomingFifo
- 526               	.LVL37:
- 527               	.LM99:
- 528 02b2 1093 0000 		sts midiIncomingMessageState,r17
- 529 02b6 00C0      		rjmp .L45
- 530               	.LVL38:
- 531               	.L32:
- 532               	.LM100:
- 533 02b8 89E0      		ldi r24,lo8(9)
- 534               	.LVL39:
- 535               	.L46:
- 536 02ba 8093 0000 		sts midiIncomingMessageState,r24
- 537               	.LVL40:
- 538               	.L45:
- 539               	/* epilogue start */
- 540               	.LM101:
- 541 02be 0F90      		pop __tmp_reg__
- 542 02c0 0F90      		pop __tmp_reg__
- 543 02c2 0F90      		pop __tmp_reg__
- 544 02c4 0F90      		pop __tmp_reg__
- 545 02c6 CF91      		pop r28
- 546 02c8 DF91      		pop r29
- 547 02ca 1F91      		pop r17
- 548 02cc 0895      		ret
- 549               	.LFE10:
- 551               	.global	MidiTxBufferNotEmpty
- 553               	MidiTxBufferNotEmpty:
- 554               	.LFB11:
- 555               	.LM102:
- 556               	/* prologue: function */
- 557               	/* frame size = 0 */
- 558               	.LM103:
- 559 02ce 8091 0000 		lds r24,midiMessagesInOutgoingFifo
- 560 02d2 8823      		tst r24
- 561 02d4 01F0      		breq .L61
- 562 02d6 81E0      		ldi r24,lo8(1)
- 563 02d8 0895      		ret
- 564               	.L61:
- 565 02da 8091 0000 		lds r24,midiOutgoingMessageState
- 566 02de 8111      		cpse r24,__zero_reg__
- 567 02e0 81E0      		ldi r24,lo8(1)
- 568               	.L62:
- 569               	.LM104:
- 570 02e2 0895      		ret
- 571               	.LFE11:
- 573               	.global	PopOutgoingMidiByte
- 575               	PopOutgoingMidiByte:
- 576               	.LFB12:
- 577               	.LM105:
- 578               	/* prologue: function */
- 579               	/* frame size = 0 */
- 580               	.LM106:
- 581 02e4 8091 0000 		lds r24,midiOutgoingMessageState
- 582 02e8 8330      		cpi r24,lo8(3)
- 583 02ea 01F4      		brne .+2
- 584 02ec 00C0      		rjmp .L70
- 585 02ee 8430      		cpi r24,lo8(4)
- 586 02f0 00F4      		brsh .L75
- 587 02f2 8130      		cpi r24,lo8(1)
- 588 02f4 01F4      		brne .+2
- 589 02f6 00C0      		rjmp .L68
- 590 02f8 8230      		cpi r24,lo8(2)
- 591 02fa 00F0      		brlo .+2
- 592 02fc 00C0      		rjmp .L69
- 593 02fe 00C0      		rjmp .L93
- 594               	.L75:
- 595 0300 8530      		cpi r24,lo8(5)
- 596 0302 01F4      		brne .+2
- 597 0304 00C0      		rjmp .L72
- 598 0306 8530      		cpi r24,lo8(5)
- 599 0308 00F4      		brsh .+2
- 600 030a 00C0      		rjmp .L71
- 601 030c 8630      		cpi r24,lo8(6)
- 602 030e 01F4      		brne .+2
- 603 0310 00C0      		rjmp .L73
- 604 0312 8730      		cpi r24,lo8(7)
- 605 0314 01F0      		breq .+2
- 606 0316 00C0      		rjmp .L66
- 607 0318 00C0      		rjmp .L94
- 608               	.L93:
- 609               	.LBB12:
- 610               	.LBB13:
- 611               	.LM107:
- 612 031a 2091 0000 		lds r18,midiMessagesInOutgoingFifo
- 613 031e 2223      		tst r18
- 614 0320 01F0      		breq .L76
- 615               	.LM108:
- 616 0322 9091 0000 		lds r25,midiOutgoingFifoReadPointer
- 617 0326 E92F      		mov r30,r25
- 618 0328 F0E0      		ldi r31,lo8(0)
- 619 032a EE0F      		lsl r30
- 620 032c FF1F      		rol r31
- 621 032e EE0F      		lsl r30
- 622 0330 FF1F      		rol r31
- 623 0332 DF01      		movw r26,r30
- 624 0334 A050      		subi r26,lo8(-(midiMessageOutgoingFifo))
- 625 0336 B040      		sbci r27,hi8(-(midiMessageOutgoingFifo))
- 626 0338 1196      		adiw r26,1
- 627 033a 8C91      		ld r24,X
- 628 033c 1197      		sbiw r26,1
- 629 033e 8093 0000 		sts theMessage.1626+1,r24
- 630               	.LM109:
- 631 0342 E050      		subi r30,lo8(-(midiMessageOutgoingFifo+2))
- 632 0344 F040      		sbci r31,hi8(-(midiMessageOutgoingFifo+2))
- 633 0346 8081      		ld r24,Z
- 634 0348 8093 0000 		sts theMessage.1626+2,r24
- 635               	.LM110:
- 636 034c 1396      		adiw r26,3
- 637 034e 8C91      		ld r24,X
- 638 0350 1397      		sbiw r26,3
- 639 0352 8093 0000 		sts theMessage.1626+3,r24
- 640               	.LM111:
- 641 0356 8C91      		ld r24,X
- 642 0358 8093 0000 		sts theMessage.1626,r24
- 643               	.LM112:
- 644 035c 9F5F      		subi r25,lo8(-(1))
- 645 035e 9093 0000 		sts midiOutgoingFifoReadPointer,r25
- 646               	.LM113:
- 647 0362 9630      		cpi r25,lo8(6)
- 648 0364 00F0      		brlo .L77
- 649               	.LM114:
- 650 0366 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
- 651               	.L77:
- 652               	.LM115:
- 653 036a 2150      		subi r18,lo8(-(-1))
- 654 036c 2093 0000 		sts midiMessagesInOutgoingFifo,r18
- 655               	.L76:
- 656               	.LBE13:
- 657               	.LBE12:
- 658               	.LM116:
- 659 0370 2091 0000 		lds r18,theMessage.1626+1
- 660 0374 2230      		cpi r18,lo8(2)
- 661 0376 01F0      		breq .L79
- 662 0378 2330      		cpi r18,lo8(3)
- 663 037a 00F4      		brsh .L82
- 664 037c 2130      		cpi r18,lo8(1)
- 665 037e 01F0      		breq .+2
- 666 0380 00C0      		rjmp .L66
- 667 0382 00C0      		rjmp .L95
- 668               	.L82:
- 669 0384 2330      		cpi r18,lo8(3)
- 670 0386 01F0      		breq .L80
- 671 0388 2430      		cpi r18,lo8(4)
- 672 038a 01F0      		breq .+2
- 673 038c 00C0      		rjmp .L66
- 674 038e 00C0      		rjmp .L96
- 675               	.L95:
- 676               	.LM117:
- 677 0390 9091 0000 		lds r25,theMessage.1626
- 678               	.LVL41:
- 679 0394 9069      		ori r25,lo8(-112)
- 680               	.LM118:
- 681 0396 8091 0000 		lds r24,lastStatusByte.1628
- 682 039a 8917      		cp r24,r25
- 683 039c 01F4      		brne .L85
- 684               	.LM119:
- 685 039e 9091 0000 		lds r25,theMessage.1626+2
- 686               	.LM120:
- 687 03a2 83E0      		ldi r24,lo8(3)
- 688 03a4 00C0      		rjmp .L90
- 689               	.LVL42:
- 690               	.L79:
- 691               	.LM121:
- 692 03a6 9091 0000 		lds r25,theMessage.1626
- 693               	.LVL43:
- 694 03aa 9069      		ori r25,lo8(-112)
- 695               	.LM122:
- 696 03ac 8091 0000 		lds r24,lastStatusByte.1628
- 697 03b0 8917      		cp r24,r25
- 698 03b2 01F4      		brne .L85
- 699               	.LM123:
- 700 03b4 9091 0000 		lds r25,theMessage.1626+2
- 701               	.LM124:
- 702 03b8 84E0      		ldi r24,lo8(4)
- 703 03ba 00C0      		rjmp .L90
- 704               	.L85:
- 705               	.LM125:
- 706 03bc 9093 0000 		sts lastStatusByte.1628,r25
- 707               	.LM126:
- 708 03c0 2093 0000 		sts midiOutgoingMessageState,r18
- 709 03c4 00C0      		rjmp .L84
- 710               	.LVL44:
- 711               	.L80:
- 712               	.LM127:
- 713 03c6 9091 0000 		lds r25,theMessage.1626
- 714               	.LVL45:
- 715 03ca 906C      		ori r25,lo8(-64)
- 716               	.LM128:
- 717 03cc 8091 0000 		lds r24,lastStatusByte.1628
- 718 03d0 8917      		cp r24,r25
- 719 03d2 01F4      		brne .L86
- 720               	.LM129:
- 721 03d4 9091 0000 		lds r25,theMessage.1626+2
- 722               	.LM130:
- 723 03d8 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 724 03dc 00C0      		rjmp .L84
- 725               	.L86:
- 726               	.LM131:
- 727 03de 9093 0000 		sts lastStatusByte.1628,r25
- 728               	.LM132:
- 729 03e2 85E0      		ldi r24,lo8(5)
- 730 03e4 00C0      		rjmp .L90
- 731               	.LVL46:
- 732               	.L96:
- 733               	.LM133:
- 734 03e6 9091 0000 		lds r25,theMessage.1626
- 735               	.LVL47:
- 736 03ea 906B      		ori r25,lo8(-80)
- 737               	.LM134:
- 738 03ec 8091 0000 		lds r24,lastStatusByte.1628
- 739 03f0 8917      		cp r24,r25
- 740 03f2 01F4      		brne .L87
- 741               	.LM135:
- 742 03f4 9091 0000 		lds r25,theMessage.1626+2
- 743               	.LM136:
- 744 03f8 87E0      		ldi r24,lo8(7)
- 745               	.L90:
- 746 03fa 8093 0000 		sts midiOutgoingMessageState,r24
- 747 03fe 00C0      		rjmp .L84
- 748               	.L87:
- 749               	.LM137:
- 750 0400 9093 0000 		sts lastStatusByte.1628,r25
- 751               	.LM138:
- 752 0404 86E0      		ldi r24,lo8(6)
- 753 0406 00C0      		rjmp .L90
- 754               	.LVL48:
- 755               	.L68:
- 756               	.LM139:
- 757 0408 83E0      		ldi r24,lo8(3)
- 758 040a 00C0      		rjmp .L91
- 759               	.L69:
- 760               	.LM140:
- 761 040c 84E0      		ldi r24,lo8(4)
- 762 040e 00C0      		rjmp .L91
- 763               	.L70:
- 764               	.LM141:
- 765 0410 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 766 0414 90E4      		ldi r25,lo8(64)
- 767               	.LVL49:
- 768 0416 00C0      		rjmp .L84
- 769               	.LVL50:
- 770               	.L71:
- 771               	.LM142:
- 772 0418 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 773 041c 00C0      		rjmp .L66
- 774               	.L72:
- 775               	.LM143:
- 776 041e 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 777 0422 00C0      		rjmp .L92
- 778               	.L73:
- 779               	.LM144:
- 780 0424 87E0      		ldi r24,lo8(7)
- 781               	.L91:
- 782 0426 8093 0000 		sts midiOutgoingMessageState,r24
- 783               	.L92:
- 784               	.LM145:
- 785 042a 9091 0000 		lds r25,theMessage.1626+2
- 786               	.LVL51:
- 787 042e 00C0      		rjmp .L84
- 788               	.LVL52:
- 789               	.L94:
- 790               	.LM146:
- 791 0430 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
- 792               	.LM147:
- 793 0434 9091 0000 		lds r25,theMessage.1626+3
- 794               	.LVL53:
- 795 0438 00C0      		rjmp .L84
- 796               	.LVL54:
- 797               	.L66:
- 798 043a 90E0      		ldi r25,lo8(0)
- 799               	.LVL55:
- 800               	.L84:
- 801               	.LM148:
- 802 043c 892F      		mov r24,r25
- 803               	/* epilogue start */
- 804 043e 0895      		ret
- 805               	.LFE12:
- 807               		.lcomm lastStatusByte.1628,1
- 808               		.lcomm theMessage.1626,4
- 809               		.lcomm temporaryChannel.1586,1
- 810               		.lcomm firstDataByte.1585,1
- 811               		.lcomm midiIncomingFifoWritePointer,1
- 812               		.lcomm midiIncomingFifoReadPointer,1
- 813               		.lcomm midiIncomingMessageState,1
- 814               		.lcomm midiOutgoingFifoWritePointer,1
- 815               		.lcomm midiOutgoingFifoReadPointer,1
- 816               		.lcomm midiOutgoingMessageState,1
- 817               		.comm midiMessageIncomingFifo,24,1
- 818               		.comm midiMessageOutgoingFifo,24,1
- 819               		.comm midiChannelNumberA,1,1
- 820               		.comm midiChannelNumberB,1,1
- 821               		.comm midiMessagesInIncomingFifo,1,1
- 822               		.comm midiMessagesInOutgoingFifo,1,1
- 895               	.Letext0:
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  11               	PutMidiMessageInIncomingFifo:
+  12               	.LFB2:
+  13               		.file 1 "midi.c"
+   1:midi.c        **** // MIDI Library for WTPA.
+   2:midi.c        **** // There's a lot of MIDI crap implemented here, but there's always room for more.
+   3:midi.c        **** // Wed Dec  3 20:28:45 CST 2008
+   4:midi.c        **** 
+   5:midi.c        **** // Fri Apr 10 13:12:15 CDT 2009
+   6:midi.c        **** // Added multiple channel support (two, currently) and updated the idea of MIDI_MESSAGE to support 
+   7:midi.c        **** // Used for WTPA.
+   8:midi.c        **** 
+   9:midi.c        **** // 	Sun Apr 12 17:28:45 CDT 2009
+  10:midi.c        **** //	Changed MIDI stack to bail on any running status if it gets a status byte it doesn't understand 
+  11:midi.c        **** 
+  12:midi.c        **** #include "includes.h"
+  13:midi.c        **** 
+  14:midi.c        **** // Programming Defines and Variables:
+  15:midi.c        **** //-------------------------------------
+  16:midi.c        **** // (The canonical list of message types is in midi.h)
+  17:midi.c        **** 
+  18:midi.c        **** MIDI_MESSAGE
+  19:midi.c        **** 	midiMessageIncomingFifo[MIDI_MESSAGE_INCOMING_FIFO_SIZE];		// Make an array of MIDI_MESSAGE struct
+  20:midi.c        **** MIDI_MESSAGE
+  21:midi.c        **** 	midiMessageOutgoingFifo[MIDI_MESSAGE_OUTGOING_FIFO_SIZE];		// Make an array of MIDI_MESSAGE struct
+  22:midi.c        **** 
+  23:midi.c        **** /*
+  24:midi.c        **** enum					// How many channels are we interpreting?  This data is passed to the midi handler / sound
+  25:midi.c        **** {
+  26:midi.c        **** 	MIDI_CHANNEL_A=0,
+  27:midi.c        **** 	MIDI_CHANNEL_B,
+  28:midi.c        **** 	MIDI_CHANNEL_ALL,
+  29:midi.c        **** };
+  30:midi.c        **** */
+  31:midi.c        **** 
+  32:midi.c        **** unsigned char
+  33:midi.c        **** 	midiChannelNumberA,				// This is one midi channel our hardware is assigned to -- @@@ make this an
+  34:midi.c        **** 	midiChannelNumberB,				// This is one midi channel our hardware is assigned to.
+  35:midi.c        **** 	midiMessagesInIncomingFifo,		// How many messages in the rx queue?
+  36:midi.c        **** 	midiMessagesInOutgoingFifo;		// How many messages in the tx queue?
+  37:midi.c        **** 
+  38:midi.c        **** static unsigned char
+  39:midi.c        **** 	midiIncomingFifoWritePointer,	// Where is our next write going in the fifo?
+  40:midi.c        **** 	midiIncomingFifoReadPointer,	// Where is our next read coming from in the fifo?
+  41:midi.c        **** 	midiIncomingMessageState;		// Keeps track of the state out MIDI message receiving routine is in.
+  42:midi.c        **** 
+  43:midi.c        **** static unsigned char
+  44:midi.c        **** 	midiOutgoingFifoWritePointer,	// Where is our next write going in the fifo?
+  45:midi.c        **** 	midiOutgoingFifoReadPointer,	// Where is our next read coming from in the fifo?
+  46:midi.c        **** 	midiOutgoingMessageState;		// Keeps track of the state out MIDI message receiving routine is in.
+  47:midi.c        **** 
+  48:midi.c        **** //-----------------------------------------------------------------------
+  49:midi.c        **** //-----------------------------------------------------------------------
+  50:midi.c        **** // MIDI Functions.
+  51:midi.c        **** //-----------------------------------------------------------------------
+  52:midi.c        **** //-----------------------------------------------------------------------
+  53:midi.c        **** void GetMidiMessageFromIncomingFifo(MIDI_MESSAGE *theMessage)
+  54:midi.c        **** // Returns an entire 3-byte midi message if there are any in the fifo.
+  55:midi.c        **** // If there are no messages in the fifo, do nothing.
+  56:midi.c        **** // These "midi messages" have been formatted to something that makes sense to the sampler from the 
+  57:midi.c        **** // Wed Apr 15 15:36:49 CDT 2009 -- added channel number info to midi messages to support multi-timb
+  58:midi.c        **** {
+  59:midi.c        **** 	if(midiMessagesInIncomingFifo>0)			// Any messages in the fifo?
+  60:midi.c        **** 	{
+  61:midi.c        **** 		(*theMessage).messageType=midiMessageIncomingFifo[midiIncomingFifoReadPointer].messageType;		// G
+  62:midi.c        **** 		(*theMessage).dataByteOne=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteOne;
+  63:midi.c        **** 		(*theMessage).dataByteTwo=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteTwo;	
+  64:midi.c        **** 		(*theMessage).channelNumber=midiMessageIncomingFifo[midiIncomingFifoReadPointer].channelNumber;	
+  65:midi.c        **** 
+  66:midi.c        **** 		midiIncomingFifoReadPointer++;			// read from the next element next time
+  67:midi.c        **** 		if(midiIncomingFifoReadPointer>=MIDI_MESSAGE_INCOMING_FIFO_SIZE)	// handle wrapping at the end
+  68:midi.c        **** 		{
+  69:midi.c        **** 			midiIncomingFifoReadPointer=0;
+  70:midi.c        **** 		}
+  71:midi.c        **** 
+  72:midi.c        **** 		midiMessagesInIncomingFifo--;		// One less message in the fifo.
+  73:midi.c        **** 	}
+  74:midi.c        **** }
+  75:midi.c        **** 
+  76:midi.c        **** static void PutMidiMessageInIncomingFifo(MIDI_MESSAGE *theMessage)
+  77:midi.c        **** // If there is room in the fifo, put a MIDI message into it.
+  78:midi.c        **** // If the fifo is full, don't do anything.
+  79:midi.c        **** {
+  14               		.loc 1 79 0
+  15               		.cfi_startproc
+  16               	.LVL0:
+  17               	/* prologue: function */
+  18               	/* frame size = 0 */
+  19               	/* stack size = 0 */
+  20               	.L__stack_usage = 0
+  21 0000 DC01      		movw r26,r24
+  80:midi.c        **** 	if(midiMessagesInIncomingFifo<MIDI_MESSAGE_INCOMING_FIFO_SIZE)		// Have room in the fifo?
+  22               		.loc 1 80 0
+  23 0002 8091 0000 		lds r24,midiMessagesInIncomingFifo
+  24               	.LVL1:
+  25 0006 8630      		cpi r24,lo8(6)
+  26 0008 00F4      		brsh .L1
+  81:midi.c        **** 	{
+  82:midi.c        **** 		midiMessageIncomingFifo[midiIncomingFifoWritePointer].messageType=(*theMessage).messageType;	// T
+  27               		.loc 1 82 0
+  28 000a 9091 0000 		lds r25,midiIncomingFifoWritePointer
+  29 000e 1196      		adiw r26, 1
+  30 0010 2C91      		ld r18,X
+  31 0012 1197      		sbiw r26, 1
+  32 0014 34E0      		ldi r19,lo8(4)
+  33 0016 939F      		mul r25,r19
+  34 0018 F001      		movw r30,r0
+  35 001a 1124      		clr __zero_reg__
+  36 001c E050      		subi r30,lo8(-(midiMessageIncomingFifo))
+  37 001e F040      		sbci r31,hi8(-(midiMessageIncomingFifo))
+  38 0020 2183      		std Z+1,r18
+  83:midi.c        **** 		midiMessageIncomingFifo[midiIncomingFifoWritePointer].dataByteOne=(*theMessage).dataByteOne;
+  39               		.loc 1 83 0
+  40 0022 1296      		adiw r26, 2
+  41 0024 2C91      		ld r18,X
+  42 0026 1297      		sbiw r26, 2
+  43 0028 2283      		std Z+2,r18
+  84:midi.c        **** 		midiMessageIncomingFifo[midiIncomingFifoWritePointer].dataByteTwo=(*theMessage).dataByteTwo;
+  44               		.loc 1 84 0
+  45 002a 1396      		adiw r26, 3
+  46 002c 2C91      		ld r18,X
+  47 002e 1397      		sbiw r26, 3
+  48 0030 2383      		std Z+3,r18
+  85:midi.c        **** 		midiMessageIncomingFifo[midiIncomingFifoWritePointer].channelNumber=(*theMessage).channelNumber;
+  49               		.loc 1 85 0
+  50 0032 2C91      		ld r18,X
+  51 0034 2083      		st Z,r18
+  86:midi.c        **** 	
+  87:midi.c        **** 		midiIncomingFifoWritePointer++;			// write to the next element next time
+  52               		.loc 1 87 0
+  53 0036 9F5F      		subi r25,lo8(-(1))
+  88:midi.c        **** 		if(midiIncomingFifoWritePointer>=MIDI_MESSAGE_INCOMING_FIFO_SIZE)	// handle wrapping at the end
+  54               		.loc 1 88 0
+  55 0038 9630      		cpi r25,lo8(6)
+  56 003a 00F4      		brsh .L3
+  87:midi.c        **** 		midiIncomingFifoWritePointer++;			// write to the next element next time
+  57               		.loc 1 87 0
+  58 003c 9093 0000 		sts midiIncomingFifoWritePointer,r25
+  59 0040 00C0      		rjmp .L4
+  60               	.L3:
+  89:midi.c        **** 		{
+  90:midi.c        **** 			midiIncomingFifoWritePointer=0;
+  61               		.loc 1 90 0
+  62 0042 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+  63               	.L4:
+  91:midi.c        **** 		}
+  92:midi.c        **** 		
+  93:midi.c        **** 		midiMessagesInIncomingFifo++;								// One more message in the fifo.
+  64               		.loc 1 93 0
+  65 0046 8F5F      		subi r24,lo8(-(1))
+  66 0048 8093 0000 		sts midiMessagesInIncomingFifo,r24
+  67               	.L1:
+  68 004c 0895      		ret
+  69               		.cfi_endproc
+  70               	.LFE2:
+  72               	.global	GetMidiMessageFromIncomingFifo
+  74               	GetMidiMessageFromIncomingFifo:
+  75               	.LFB1:
+  58:midi.c        **** {
+  76               		.loc 1 58 0
+  77               		.cfi_startproc
+  78               	.LVL2:
+  79               	/* prologue: function */
+  80               	/* frame size = 0 */
+  81               	/* stack size = 0 */
+  82               	.L__stack_usage = 0
+  83 004e DC01      		movw r26,r24
+  59:midi.c        **** 	if(midiMessagesInIncomingFifo>0)			// Any messages in the fifo?
+  84               		.loc 1 59 0
+  85 0050 8091 0000 		lds r24,midiMessagesInIncomingFifo
+  86               	.LVL3:
+  87 0054 8823      		tst r24
+  88 0056 01F0      		breq .L5
+  61:midi.c        **** 		(*theMessage).messageType=midiMessageIncomingFifo[midiIncomingFifoReadPointer].messageType;		// G
+  89               		.loc 1 61 0
+  90 0058 9091 0000 		lds r25,midiIncomingFifoReadPointer
+  91 005c 24E0      		ldi r18,lo8(4)
+  92 005e 929F      		mul r25,r18
+  93 0060 F001      		movw r30,r0
+  94 0062 1124      		clr __zero_reg__
+  95 0064 E050      		subi r30,lo8(-(midiMessageIncomingFifo))
+  96 0066 F040      		sbci r31,hi8(-(midiMessageIncomingFifo))
+  97 0068 2181      		ldd r18,Z+1
+  98 006a 1196      		adiw r26,1
+  99 006c 2C93      		st X,r18
+ 100 006e 1197      		sbiw r26,1
+  62:midi.c        **** 		(*theMessage).dataByteOne=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteOne;
+ 101               		.loc 1 62 0
+ 102 0070 2281      		ldd r18,Z+2
+ 103 0072 1296      		adiw r26,2
+ 104 0074 2C93      		st X,r18
+ 105 0076 1297      		sbiw r26,2
+  63:midi.c        **** 		(*theMessage).dataByteTwo=midiMessageIncomingFifo[midiIncomingFifoReadPointer].dataByteTwo;	
+ 106               		.loc 1 63 0
+ 107 0078 2381      		ldd r18,Z+3
+ 108 007a 1396      		adiw r26,3
+ 109 007c 2C93      		st X,r18
+ 110 007e 1397      		sbiw r26,3
+  64:midi.c        **** 		(*theMessage).channelNumber=midiMessageIncomingFifo[midiIncomingFifoReadPointer].channelNumber;	
+ 111               		.loc 1 64 0
+ 112 0080 2081      		ld r18,Z
+ 113 0082 2C93      		st X,r18
+  66:midi.c        **** 		midiIncomingFifoReadPointer++;			// read from the next element next time
+ 114               		.loc 1 66 0
+ 115 0084 9F5F      		subi r25,lo8(-(1))
+  67:midi.c        **** 		if(midiIncomingFifoReadPointer>=MIDI_MESSAGE_INCOMING_FIFO_SIZE)	// handle wrapping at the end
+ 116               		.loc 1 67 0
+ 117 0086 9630      		cpi r25,lo8(6)
+ 118 0088 00F4      		brsh .L7
+  66:midi.c        **** 		midiIncomingFifoReadPointer++;			// read from the next element next time
+ 119               		.loc 1 66 0
+ 120 008a 9093 0000 		sts midiIncomingFifoReadPointer,r25
+ 121 008e 00C0      		rjmp .L8
+ 122               	.L7:
+  69:midi.c        **** 			midiIncomingFifoReadPointer=0;
+ 123               		.loc 1 69 0
+ 124 0090 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
+ 125               	.L8:
+  72:midi.c        **** 		midiMessagesInIncomingFifo--;		// One less message in the fifo.
+ 126               		.loc 1 72 0
+ 127 0094 8150      		subi r24,lo8(-(-1))
+ 128 0096 8093 0000 		sts midiMessagesInIncomingFifo,r24
+ 129               	.L5:
+ 130 009a 0895      		ret
+ 131               		.cfi_endproc
+ 132               	.LFE1:
+ 134               	.global	PutMidiMessageInOutgoingFifo
+ 136               	PutMidiMessageInOutgoingFifo:
+ 137               	.LFB4:
+  94:midi.c        **** 	}
+  95:midi.c        **** }
+  96:midi.c        **** 
+  97:midi.c        **** static void GetMidiMessageFromOutgoingFifo(MIDI_MESSAGE *theMessage)
+  98:midi.c        **** // Returns the data the sampler put into the output fifo.  This is generalized data and is turned i
+  99:midi.c        **** // If there are no messages in the fifo, do nothing.
+ 100:midi.c        **** {
+ 101:midi.c        **** 	if(midiMessagesInOutgoingFifo>0)			// Any messages in the fifo?
+ 102:midi.c        **** 	{
+ 103:midi.c        **** 		(*theMessage).messageType=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].messageType;		// G
+ 104:midi.c        **** 		(*theMessage).dataByteOne=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteOne;
+ 105:midi.c        **** 		(*theMessage).dataByteTwo=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteTwo;	
+ 106:midi.c        **** 		(*theMessage).channelNumber=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].channelNumber;	
+ 107:midi.c        **** 
+ 108:midi.c        **** 		midiOutgoingFifoReadPointer++;										// read from the next element next time
+ 109:midi.c        **** 		if(midiOutgoingFifoReadPointer>=MIDI_MESSAGE_OUTGOING_FIFO_SIZE)	// handle wrapping at the end
+ 110:midi.c        **** 		{
+ 111:midi.c        **** 			midiOutgoingFifoReadPointer=0;
+ 112:midi.c        **** 		}
+ 113:midi.c        **** 
+ 114:midi.c        **** 		midiMessagesInOutgoingFifo--;		// One less message in the fifo.
+ 115:midi.c        **** 	}
+ 116:midi.c        **** }
+ 117:midi.c        **** 
+ 118:midi.c        **** void PutMidiMessageInOutgoingFifo(unsigned char theBank, unsigned char theMessage, unsigned char th
+ 119:midi.c        **** // If there is room in the fifo, put a MIDI message into it.  Again, this is the sampler's idea of 
+ 120:midi.c        **** // The format for passing in variables is slightly different as well (we use variables and not a po
+ 121:midi.c        **** // If the fifo is full, don't do anything.
+ 122:midi.c        **** {
+ 138               		.loc 1 122 0
+ 139               		.cfi_startproc
+ 140               	.LVL4:
+ 141               	/* prologue: function */
+ 142               	/* frame size = 0 */
+ 143               	/* stack size = 0 */
+ 144               	.L__stack_usage = 0
+ 123:midi.c        **** 	if(midiMessagesInOutgoingFifo<MIDI_MESSAGE_OUTGOING_FIFO_SIZE)		// Have room in the fifo?
+ 145               		.loc 1 123 0
+ 146 009c 8091 0000 		lds r24,midiMessagesInOutgoingFifo
+ 147               	.LVL5:
+ 148 00a0 8630      		cpi r24,lo8(6)
+ 149 00a2 00F4      		brsh .L12
+ 124:midi.c        **** 	{
+ 125:midi.c        **** 		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].messageType=theMessage;
+ 150               		.loc 1 125 0
+ 151 00a4 9091 0000 		lds r25,midiOutgoingFifoWritePointer
+ 152 00a8 34E0      		ldi r19,lo8(4)
+ 153 00aa 939F      		mul r25,r19
+ 154 00ac F001      		movw r30,r0
+ 155 00ae 1124      		clr __zero_reg__
+ 156 00b0 E050      		subi r30,lo8(-(midiMessageOutgoingFifo))
+ 157 00b2 F040      		sbci r31,hi8(-(midiMessageOutgoingFifo))
+ 158 00b4 6183      		std Z+1,r22
+ 126:midi.c        **** 		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].dataByteOne=theDataByteOne;
+ 159               		.loc 1 126 0
+ 160 00b6 4283      		std Z+2,r20
+ 127:midi.c        **** 		midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].dataByteTwo=theDataByteTwo;
+ 161               		.loc 1 127 0
+ 162 00b8 2383      		std Z+3,r18
+ 163 00ba 2091 0000 		lds r18,midiChannelNumberA
+ 164               	.LVL6:
+ 128:midi.c        **** 		if(theBank==BANK_0)
+ 129:midi.c        **** 		{
+ 130:midi.c        **** 			midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].channelNumber=midiChannelNumberA;
+ 131:midi.c        **** 		}
+ 132:midi.c        **** 		else
+ 133:midi.c        **** 		{
+ 134:midi.c        **** 			midiMessageOutgoingFifo[midiOutgoingFifoWritePointer].channelNumber=midiChannelNumberA;		
+ 165               		.loc 1 134 0
+ 166 00be 2083      		st Z,r18
+ 135:midi.c        **** 		}
+ 136:midi.c        **** 	
+ 137:midi.c        **** 		midiOutgoingFifoWritePointer++;			// write to the next element next time
+ 167               		.loc 1 137 0
+ 168 00c0 9F5F      		subi r25,lo8(-(1))
+ 138:midi.c        **** 		if(midiOutgoingFifoWritePointer>=MIDI_MESSAGE_OUTGOING_FIFO_SIZE)	// handle wrapping at the end
+ 169               		.loc 1 138 0
+ 170 00c2 9630      		cpi r25,lo8(6)
+ 171 00c4 00F4      		brsh .L16
+ 137:midi.c        **** 		midiOutgoingFifoWritePointer++;			// write to the next element next time
+ 172               		.loc 1 137 0
+ 173 00c6 9093 0000 		sts midiOutgoingFifoWritePointer,r25
+ 174 00ca 00C0      		rjmp .L17
+ 175               	.L16:
+ 139:midi.c        **** 		{
+ 140:midi.c        **** 			midiOutgoingFifoWritePointer=0;
+ 176               		.loc 1 140 0
+ 177 00cc 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
+ 178               	.L17:
+ 141:midi.c        **** 		}
+ 142:midi.c        **** 		
+ 143:midi.c        **** 		midiMessagesInOutgoingFifo++;								// One more message in the fifo.
+ 179               		.loc 1 143 0
+ 180 00d0 8F5F      		subi r24,lo8(-(1))
+ 181 00d2 8093 0000 		sts midiMessagesInOutgoingFifo,r24
+ 182               	.LVL7:
+ 183               	.L12:
+ 184 00d6 0895      		ret
+ 185               		.cfi_endproc
+ 186               	.LFE4:
+ 188               	.global	InitMidi
+ 190               	InitMidi:
+ 191               	.LFB7:
+ 144:midi.c        **** 	}
+ 145:midi.c        **** }
+ 146:midi.c        **** 
+ 147:midi.c        **** static void InitMidiIncomingFifo(void)
+ 148:midi.c        **** // Initialize the MIDI receive fifo to empty.
+ 149:midi.c        **** {
+ 150:midi.c        **** 	midiMessagesInIncomingFifo=0;		// No messages in FIFO yet.
+ 151:midi.c        **** 	midiIncomingFifoWritePointer=0;		// Next write is to 0.
+ 152:midi.c        **** 	midiIncomingFifoReadPointer=0;		// Next read is at 0.
+ 153:midi.c        **** }
+ 154:midi.c        **** 
+ 155:midi.c        **** static void InitMidiOutgoingFifo(void)
+ 156:midi.c        **** // Initialize the MIDI transmit fifo to empty.
+ 157:midi.c        **** {
+ 158:midi.c        **** 	midiMessagesInOutgoingFifo=0;		// No messages in FIFO yet.
+ 159:midi.c        **** 	midiOutgoingFifoWritePointer=0;		// Next write is to 0.
+ 160:midi.c        **** 	midiOutgoingFifoReadPointer=0;		// Next read is at 0.
+ 161:midi.c        **** }
+ 162:midi.c        **** 
+ 163:midi.c        **** void InitMidi(void)
+ 164:midi.c        **** {
+ 192               		.loc 1 164 0
+ 193               		.cfi_startproc
+ 194               	/* prologue: function */
+ 195               	/* frame size = 0 */
+ 196               	/* stack size = 0 */
+ 197               	.L__stack_usage = 0
+ 165:midi.c        **** 	midiIncomingMessageState=IGNORE_ME;					// Reset the midi message gathering state machine -- We ne
+ 198               		.loc 1 165 0
+ 199 00d8 89E0      		ldi r24,lo8(9)
+ 200 00da 8093 0000 		sts midiIncomingMessageState,r24
+ 166:midi.c        **** 	midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Output state machine ready to begin sending by
+ 201               		.loc 1 166 0
+ 202 00de 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 203               	.LBB6:
+ 204               	.LBB7:
+ 150:midi.c        **** 	midiMessagesInIncomingFifo=0;		// No messages in FIFO yet.
+ 205               		.loc 1 150 0
+ 206 00e2 1092 0000 		sts midiMessagesInIncomingFifo,__zero_reg__
+ 151:midi.c        **** 	midiIncomingFifoWritePointer=0;		// Next write is to 0.
+ 207               		.loc 1 151 0
+ 208 00e6 1092 0000 		sts midiIncomingFifoWritePointer,__zero_reg__
+ 152:midi.c        **** 	midiIncomingFifoReadPointer=0;		// Next read is at 0.
+ 209               		.loc 1 152 0
+ 210 00ea 1092 0000 		sts midiIncomingFifoReadPointer,__zero_reg__
+ 211               	.LBE7:
+ 212               	.LBE6:
+ 213               	.LBB8:
+ 214               	.LBB9:
+ 158:midi.c        **** 	midiMessagesInOutgoingFifo=0;		// No messages in FIFO yet.
+ 215               		.loc 1 158 0
+ 216 00ee 1092 0000 		sts midiMessagesInOutgoingFifo,__zero_reg__
+ 159:midi.c        **** 	midiOutgoingFifoWritePointer=0;		// Next write is to 0.
+ 217               		.loc 1 159 0
+ 218 00f2 1092 0000 		sts midiOutgoingFifoWritePointer,__zero_reg__
+ 160:midi.c        **** 	midiOutgoingFifoReadPointer=0;		// Next read is at 0.
+ 219               		.loc 1 160 0
+ 220 00f6 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
+ 221 00fa 0895      		ret
+ 222               	.LBE9:
+ 223               	.LBE8:
+ 224               		.cfi_endproc
+ 225               	.LFE7:
+ 227               	.global	HandleIncomingMidiByte
+ 229               	HandleIncomingMidiByte:
+ 230               	.LFB8:
+ 167:midi.c        **** 	InitMidiIncomingFifo();								// Set up the receiving buffer.
+ 168:midi.c        **** 	InitMidiOutgoingFifo();								// Set up xmit buffer.
+ 169:midi.c        **** }
+ 170:midi.c        **** 
+ 171:midi.c        **** void HandleIncomingMidiByte(unsigned char theByte)
+ 172:midi.c        **** // In this routine we sort out the bytes coming in over the UART and decide what to do.  It is stat
+ 173:midi.c        **** // This function allows for us to either act on received messages OR just toss them out and keep th
+ 174:midi.c        **** // more than a MIDI byte time.
+ 175:midi.c        **** // NOTE:  We don't (yet) account for all the types of MIDI messages that exist in the world -- righ
+ 176:midi.c        **** // and what would be useful for CyberTracker to receive, because that's what I'm working with.  A l
+ 177:midi.c        **** // This function is fed incoming midi bytes from the UART.  First, we check to see if the byte is a
+ 178:midi.c        **** // type of status byte.  If the byte wasn't a status byte, we plug it into the state machine to see
+ 179:midi.c        **** // So, for instance, if we get a NOTE_ON status byte, we keep the NOTE_ON context for data bytes un
+ 180:midi.c        **** // This allows for expansion to handle different types of status messages, and makes sure we can ha
+ 181:midi.c        **** // Real time messages don't mung up the channel message state machine (they don't break running sta
+ 182:midi.c        **** // According to the MIDI spec, any voice / channel message should allow for running status, but it 
+ 183:midi.c        **** {
+ 231               		.loc 1 183 0
+ 232               		.cfi_startproc
+ 233               	.LVL8:
+ 234 00fc 1F93      		push r17
+ 235               	.LCFI0:
+ 236               		.cfi_def_cfa_offset 3
+ 237               		.cfi_offset 17, -2
+ 238 00fe CF93      		push r28
+ 239               	.LCFI1:
+ 240               		.cfi_def_cfa_offset 4
+ 241               		.cfi_offset 28, -3
+ 242 0100 DF93      		push r29
+ 243               	.LCFI2:
+ 244               		.cfi_def_cfa_offset 5
+ 245               		.cfi_offset 29, -4
+ 246 0102 00D0      		rcall .
+ 247 0104 00D0      		rcall .
+ 248               	.LCFI3:
+ 249               		.cfi_def_cfa_offset 9
+ 250 0106 CDB7      		in r28,__SP_L__
+ 251 0108 DEB7      		in r29,__SP_H__
+ 252               	.LCFI4:
+ 253               		.cfi_def_cfa_register 28
+ 254               	/* prologue: function */
+ 255               	/* frame size = 4 */
+ 256               	/* stack size = 7 */
+ 257               	.L__stack_usage = 7
+ 184:midi.c        **** 	static unsigned char	// Use this to store the first data byte of a midi message while we get the s
+ 185:midi.c        **** 		firstDataByte;
+ 186:midi.c        **** 	static unsigned char
+ 187:midi.c        **** 		temporaryChannel;	// Use this to store the channel we think we're going to update while we collec
+ 188:midi.c        **** 
+ 189:midi.c        **** 	MIDI_MESSAGE
+ 190:midi.c        **** 		theMessage;
+ 191:midi.c        **** 	
+ 192:midi.c        **** 	if(theByte&0x80)									// First Check to if this byte is a status message.  Unimplemented status
+ 258               		.loc 1 192 0
+ 259 010a 87FF      		sbrs r24,7
+ 260 010c 00C0      		rjmp .L20
+ 193:midi.c        **** 	{
+ 194:midi.c        **** /*
+ 195:midi.c        **** 		// Check now to see if this is a system message which is applicable to all MIDI channels.
+ 196:midi.c        **** 		// For now we only handle these Real Time messages: Timing Clock, Start, and Stop.  Real time mes
+ 197:midi.c        **** 		// @@@ When we implement these realtime messages we will need to implement a theMessage.channelNu
+ 198:midi.c        **** 
+ 199:midi.c        **** 		if(theByte==MIDI_TIMING_CLOCK)
+ 200:midi.c        **** 		{
+ 201:midi.c        **** //			UpdateMidiClock();				// @@@ Unimplemented.		
+ 202:midi.c        **** 		}
+ 203:midi.c        **** 		else if(theByte==MIDI_REAL_TIME_START)
+ 204:midi.c        **** 		{
+ 205:midi.c        **** 			// Queue midi message
+ 206:midi.c        **** //			theMessage.messageType=MESSAGE_TYPE_MIDI_START;		// What kind of message is this?
+ 207:midi.c        **** //			theMessage.dataByteOne=0;							// No databytes.
+ 208:midi.c        **** //			theMessage.dataByteTwo=0;							// And what velocity?
+ 209:midi.c        **** 
+ 210:midi.c        **** //			PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 211:midi.c        **** 		}
+ 212:midi.c        **** 		else if(theByte==MIDI_REAL_TIME_STOP)
+ 213:midi.c        **** 		{
+ 214:midi.c        **** 			// Queue midi message
+ 215:midi.c        **** //			theMessage.messageType=MESSAGE_TYPE_MIDI_STOP;		// What kind of message is this?
+ 216:midi.c        **** //			theMessage.dataByteOne=0;							// No databytes.
+ 217:midi.c        **** //			theMessage.dataByteTwo=0;							// And what velocity?
+ 218:midi.c        **** 
+ 219:midi.c        **** //			PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 220:midi.c        **** 		}		
+ 221:midi.c        **** 
+ 222:midi.c        **** 		// Not a system message we care about.  Channel / Voice Message on our channel?
+ 223:midi.c        **** */
+ 224:midi.c        **** 		if(((theByte&0x0F)==midiChannelNumberA)||((theByte&0x0F)==midiChannelNumberB))		// Are you talkin
+ 261               		.loc 1 224 0
+ 262 010e 982F      		mov r25,r24
+ 263 0110 9F70      		andi r25,lo8(15)
+ 264 0112 2091 0000 		lds r18,midiChannelNumberA
+ 265 0116 9217      		cp r25,r18
+ 266 0118 01F0      		breq .L21
+ 267               		.loc 1 224 0 is_stmt 0 discriminator 1
+ 268 011a 3091 0000 		lds r19,midiChannelNumberB
+ 269 011e 9313      		cpse r25,r19
+ 270 0120 00C0      		rjmp .L34
+ 271               	.L21:
+ 225:midi.c        **** 		{
+ 226:midi.c        **** 			if((theByte&0xF0)==MIDI_NOTE_ON_MASK)				// Is the byte a NOTE_ON status byte?  Two Data bytes.
+ 272               		.loc 1 226 0 is_stmt 1
+ 273 0122 807F      		andi r24,lo8(-16)
+ 274               	.LVL9:
+ 275 0124 8039      		cpi r24,lo8(-112)
+ 276 0126 01F4      		brne .L23
+ 227:midi.c        **** 			{
+ 228:midi.c        **** 				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_ONE;		// Cool.  We're starting a new NOTE_ON sta
+ 277               		.loc 1 228 0
+ 278 0128 1092 0000 		sts midiIncomingMessageState,__zero_reg__
+ 279 012c 00C0      		rjmp .L61
+ 280               	.L23:
+ 229:midi.c        **** 
+ 230:midi.c        **** 				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+ 231:midi.c        **** 				{
+ 232:midi.c        **** 					temporaryChannel=BANK_0;
+ 233:midi.c        **** 				}
+ 234:midi.c        **** 				else
+ 235:midi.c        **** 				{
+ 236:midi.c        **** 					temporaryChannel=BANK_1;
+ 237:midi.c        **** 				}
+ 238:midi.c        **** 			}
+ 239:midi.c        **** 			else if((theByte&0xF0)==MIDI_NOTE_OFF_MASK)			// Is the byte a NOTE_OFF status byte?
+ 281               		.loc 1 239 0
+ 282 012e 8038      		cpi r24,lo8(-128)
+ 283 0130 01F4      		brne .L26
+ 240:midi.c        **** 			{
+ 241:midi.c        **** 				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_ONE;	// We're starting NOTE_OFFs.  2 data bytes
+ 284               		.loc 1 241 0
+ 285 0132 81E0      		ldi r24,lo8(1)
+ 286 0134 8093 0000 		sts midiIncomingMessageState,r24
+ 242:midi.c        **** 
+ 243:midi.c        **** 				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+ 287               		.loc 1 243 0
+ 288 0138 9213      		cpse r25,r18
+ 289 013a 00C0      		rjmp .L55
+ 290 013c 00C0      		rjmp .L56
+ 291               	.L26:
+ 244:midi.c        **** 				{
+ 245:midi.c        **** 					temporaryChannel=BANK_0;
+ 246:midi.c        **** 				}
+ 247:midi.c        **** 				else
+ 248:midi.c        **** 				{
+ 249:midi.c        **** 					temporaryChannel=BANK_1;
+ 250:midi.c        **** 				}
+ 251:midi.c        **** 			}
+ 252:midi.c        **** 			else if((theByte&0xF0)==MIDI_PROGRAM_CHANGE_MASK)	// Program change started.  One data byte.
+ 292               		.loc 1 252 0
+ 293 013e 803C      		cpi r24,lo8(-64)
+ 294 0140 01F4      		brne .L28
+ 253:midi.c        **** 			{
+ 254:midi.c        **** 				midiIncomingMessageState=GET_PROGRAM_CHANGE_DATA_BYTE;	// One data byte.  Running status applie
+ 295               		.loc 1 254 0
+ 296 0142 82E0      		ldi r24,lo8(2)
+ 297 0144 00C0      		rjmp .L58
+ 298               	.L28:
+ 255:midi.c        **** 
+ 256:midi.c        **** 				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+ 257:midi.c        **** 				{
+ 258:midi.c        **** 					temporaryChannel=BANK_0;
+ 259:midi.c        **** 				}
+ 260:midi.c        **** 				else
+ 261:midi.c        **** 				{
+ 262:midi.c        **** 					temporaryChannel=BANK_1;
+ 263:midi.c        **** 				}
+ 264:midi.c        **** 			}
+ 265:midi.c        **** 			else if((theByte&0xF0)==MIDI_PITCH_WHEEL_MASK)		// Getting Pitch Wheel Data.  Pitch wheel is two
+ 299               		.loc 1 265 0
+ 300 0146 803E      		cpi r24,lo8(-32)
+ 301 0148 01F4      		brne .L30
+ 266:midi.c        **** 			{
+ 267:midi.c        **** 				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_LSB;		// LSB then MSB.  AFAICT running status app
+ 302               		.loc 1 267 0
+ 303 014a 87E0      		ldi r24,lo8(7)
+ 304 014c 00C0      		rjmp .L58
+ 305               	.L30:
+ 268:midi.c        **** 
+ 269:midi.c        **** 				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+ 270:midi.c        **** 				{
+ 271:midi.c        **** 					temporaryChannel=BANK_0;
+ 272:midi.c        **** 				}
+ 273:midi.c        **** 				else
+ 274:midi.c        **** 				{
+ 275:midi.c        **** 					temporaryChannel=BANK_1;
+ 276:midi.c        **** 				}
+ 277:midi.c        **** 			}
+ 278:midi.c        **** 			else if((theByte&0xF0)==MIDI_CONTROL_CHANGE_MASK)	// Control Changes (low res) have 2 data bytes
+ 306               		.loc 1 278 0
+ 307 014e 803B      		cpi r24,lo8(-80)
+ 308 0150 01F0      		breq .+2
+ 309 0152 00C0      		rjmp .L34
+ 279:midi.c        **** 			{
+ 280:midi.c        **** 				midiIncomingMessageState=GET_CONTROL_CHANGE_CONTROLLER_NUM;		// Control number, then value.  AF
+ 310               		.loc 1 280 0
+ 311 0154 83E0      		ldi r24,lo8(3)
+ 312               	.L58:
+ 313 0156 8093 0000 		sts midiIncomingMessageState,r24
+ 314               	.L61:
+ 281:midi.c        **** 
+ 282:midi.c        **** 				if((theByte&0x0F)==midiChannelNumberA)				// Log the channel we're concerned with.
+ 315               		.loc 1 282 0
+ 316 015a 9213      		cpse r25,r18
+ 317 015c 00C0      		rjmp .L33
+ 318               	.L56:
+ 283:midi.c        **** 				{
+ 284:midi.c        **** 					temporaryChannel=BANK_0;
+ 319               		.loc 1 284 0
+ 320 015e 1092 0000 		sts temporaryChannel.1692,__zero_reg__
+ 321 0162 00C0      		rjmp .L19
+ 322               	.L33:
+ 285:midi.c        **** 				}
+ 286:midi.c        **** 				else
+ 287:midi.c        **** 				{
+ 288:midi.c        **** 					temporaryChannel=BANK_1;
+ 323               		.loc 1 288 0
+ 324 0164 81E0      		ldi r24,lo8(1)
+ 325               	.L55:
+ 326 0166 8093 0000 		sts temporaryChannel.1692,r24
+ 327 016a 00C0      		rjmp .L19
+ 328               	.LVL10:
+ 329               	.L20:
+ 289:midi.c        **** 				}
+ 290:midi.c        **** 			}			
+ 291:midi.c        **** 			else
+ 292:midi.c        **** 			{
+ 293:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;		// We don't understand this status byte, so drop out of ru
+ 294:midi.c        **** 			}
+ 295:midi.c        **** 		}	
+ 296:midi.c        **** 		else
+ 297:midi.c        **** 		{
+ 298:midi.c        **** 			midiIncomingMessageState=IGNORE_ME;		// Message is for a different channel, or otherwise unloved
+ 299:midi.c        **** 		}
+ 300:midi.c        **** 	}
+ 301:midi.c        **** 	else
+ 302:midi.c        **** 	// The byte we got wasn't a status byte.  Fall through to the state machine that handles data byte
+ 303:midi.c        **** 	{
+ 304:midi.c        **** 		switch(midiIncomingMessageState)
+ 330               		.loc 1 304 0
+ 331 016c 1091 0000 		lds r17,midiIncomingMessageState
+ 332 0170 1430      		cpi r17,lo8(4)
+ 333 0172 01F4      		brne .+2
+ 334 0174 00C0      		rjmp .L39
+ 335 0176 00F4      		brsh .L44
+ 336 0178 1130      		cpi r17,lo8(1)
+ 337 017a 01F0      		breq .L36
+ 338 017c 00F0      		brlo .L35
+ 339 017e 1230      		cpi r17,lo8(2)
+ 340 0180 01F4      		brne .+2
+ 341 0182 00C0      		rjmp .L37
+ 342 0184 1330      		cpi r17,lo8(3)
+ 343 0186 01F0      		breq .+2
+ 344 0188 00C0      		rjmp .L34
+ 345 018a 00C0      		rjmp .L38
+ 346               	.L44:
+ 347 018c 1730      		cpi r17,lo8(7)
+ 348 018e 01F4      		brne .+2
+ 349 0190 00C0      		rjmp .L42
+ 350 0192 00F4      		brsh .L45
+ 351 0194 1530      		cpi r17,lo8(5)
+ 352 0196 01F0      		breq .L40
+ 353 0198 1630      		cpi r17,lo8(6)
+ 354 019a 01F0      		breq .+2
+ 355 019c 00C0      		rjmp .L34
+ 356 019e 00C0      		rjmp .L41
+ 357               	.L45:
+ 358 01a0 1830      		cpi r17,lo8(8)
+ 359 01a2 01F4      		brne .+2
+ 360 01a4 00C0      		rjmp .L43
+ 361 01a6 1930      		cpi r17,lo8(9)
+ 362 01a8 01F0      		breq .+2
+ 363 01aa 00C0      		rjmp .L34
+ 364 01ac 00C0      		rjmp .L19
+ 365               	.L35:
+ 305:midi.c        **** 		{
+ 306:midi.c        **** 			case GET_NOTE_ON_DATA_BYTE_ONE:				// Get the note value for the NOTE_ON.
+ 307:midi.c        **** 			if(theByte>127)								// SHOULD NEVER  HAPPEN.  If the note value is out of range (a status byt
+ 308:midi.c        **** 			{
+ 309:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 310:midi.c        **** 			}
+ 311:midi.c        **** 			else
+ 312:midi.c        **** 			{
+ 313:midi.c        **** 				firstDataByte=theByte;							// Got a note on, got a valid note -- now we need to get the veloc
+ 366               		.loc 1 313 0
+ 367 01ae 8093 0000 		sts firstDataByte.1691,r24
+ 314:midi.c        **** 				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_TWO;
+ 368               		.loc 1 314 0
+ 369 01b2 85E0      		ldi r24,lo8(5)
+ 370               	.LVL11:
+ 371 01b4 00C0      		rjmp .L50
+ 372               	.LVL12:
+ 373               	.L40:
+ 374 01b6 9091 0000 		lds r25,firstDataByte.1691
+ 315:midi.c        **** 			}
+ 316:midi.c        **** 			break;
+ 317:midi.c        **** 
+ 318:midi.c        **** 			case GET_NOTE_ON_DATA_BYTE_TWO:					// Check velocity, and make the hardware do a note on, note 
+ 319:midi.c        **** 			if(theByte==0)									// This "note on" is really a "note off".
+ 375               		.loc 1 319 0
+ 376 01ba 8111      		cpse r24,__zero_reg__
+ 377 01bc 00C0      		rjmp .L46
+ 320:midi.c        **** 			{
+ 321:midi.c        **** 				// Queue midi message
+ 322:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_NOTE_OFF;		// What kind of message is this?
+ 378               		.loc 1 322 0
+ 379 01be 82E0      		ldi r24,lo8(2)
+ 380               	.LVL13:
+ 381 01c0 8A83      		std Y+2,r24
+ 323:midi.c        **** 				theMessage.dataByteOne=firstDataByte;				// For what note?
+ 382               		.loc 1 323 0
+ 383 01c2 9B83      		std Y+3,r25
+ 324:midi.c        **** 				theMessage.dataByteTwo=theByte;						// And what velocity?
+ 384               		.loc 1 324 0
+ 385 01c4 1C82      		std Y+4,__zero_reg__
+ 386 01c6 00C0      		rjmp .L53
+ 387               	.LVL14:
+ 388               	.L46:
+ 325:midi.c        **** 				theMessage.channelNumber=temporaryChannel;			// And what channel?
+ 326:midi.c        **** 
+ 327:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 328:midi.c        **** 	
+ 329:midi.c        **** 				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_ONE;	// And continue dealing with NOTE_ONs until
+ 330:midi.c        **** 			}
+ 331:midi.c        **** 			else if(theByte>127)
+ 332:midi.c        **** 			{
+ 333:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;					// Something got messed up.  The velocity value is inva
+ 334:midi.c        **** 			}
+ 335:midi.c        **** 			else											// Real note on, real value.
+ 336:midi.c        **** 			{
+ 337:midi.c        **** 				// Queue midi message
+ 338:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_NOTE_ON;	// What kind of message is this?
+ 389               		.loc 1 338 0
+ 390 01c8 21E0      		ldi r18,lo8(1)
+ 391 01ca 2A83      		std Y+2,r18
+ 339:midi.c        **** 				theMessage.dataByteOne=firstDataByte;			// For what note?
+ 392               		.loc 1 339 0
+ 393 01cc 9B83      		std Y+3,r25
+ 340:midi.c        **** 				theMessage.dataByteTwo=theByte;					// And what velocity?
+ 394               		.loc 1 340 0
+ 395 01ce 8C83      		std Y+4,r24
+ 396               	.LVL15:
+ 397               	.L53:
+ 341:midi.c        **** 				theMessage.channelNumber=temporaryChannel;		// And what channel?
+ 398               		.loc 1 341 0
+ 399 01d0 8091 0000 		lds r24,temporaryChannel.1692
+ 400 01d4 8983      		std Y+1,r24
+ 342:midi.c        **** 
+ 343:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 401               		.loc 1 343 0
+ 402 01d6 CE01      		movw r24,r28
+ 403 01d8 0196      		adiw r24,1
+ 404 01da 0E94 0000 		call PutMidiMessageInIncomingFifo
+ 405               	.LVL16:
+ 344:midi.c        **** 
+ 345:midi.c        **** 				midiIncomingMessageState=GET_NOTE_ON_DATA_BYTE_ONE; // And continue dealing with NOTE_ONs until
+ 406               		.loc 1 345 0
+ 407 01de 1092 0000 		sts midiIncomingMessageState,__zero_reg__
+ 408 01e2 00C0      		rjmp .L19
+ 409               	.LVL17:
+ 410               	.L36:
+ 346:midi.c        **** 			}
+ 347:midi.c        **** 			break;
+ 348:midi.c        **** 
+ 349:midi.c        **** 			case GET_NOTE_OFF_DATA_BYTE_ONE:			// Get the note value to turn off, check validity.
+ 350:midi.c        **** 			if(theByte>127)								// If the note value is out of range, ignore and wait for new status. 
+ 351:midi.c        **** 			{
+ 352:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 353:midi.c        **** 			}
+ 354:midi.c        **** 			else
+ 355:midi.c        **** 			{
+ 356:midi.c        **** 				firstDataByte=theByte;								// Got a note off for a valid note.  Get Velocity, like we care.
+ 411               		.loc 1 356 0
+ 412 01e4 8093 0000 		sts firstDataByte.1691,r24
+ 357:midi.c        **** 				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_TWO;
+ 413               		.loc 1 357 0
+ 414 01e8 86E0      		ldi r24,lo8(6)
+ 415               	.LVL18:
+ 416 01ea 00C0      		rjmp .L50
+ 417               	.LVL19:
+ 418               	.L41:
+ 358:midi.c        **** 			}		
+ 359:midi.c        **** 			break;
+ 360:midi.c        **** 
+ 361:midi.c        **** 			case GET_NOTE_OFF_DATA_BYTE_TWO:			// Get a valid velocity and turn the note off.
+ 362:midi.c        **** 			if(theByte>127)								// If the note value is out of range, ignore and wait for new status. 
+ 363:midi.c        **** 			{
+ 364:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 365:midi.c        **** 			}
+ 366:midi.c        **** 			else
+ 367:midi.c        **** 			{
+ 368:midi.c        **** 				// Queue midi message
+ 369:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_NOTE_OFF;		// What kind of message is this?
+ 419               		.loc 1 369 0
+ 420 01ec 92E0      		ldi r25,lo8(2)
+ 421 01ee 9A83      		std Y+2,r25
+ 370:midi.c        **** 				theMessage.dataByteOne=firstDataByte;				// For what note?
+ 422               		.loc 1 370 0
+ 423 01f0 9091 0000 		lds r25,firstDataByte.1691
+ 424 01f4 9B83      		std Y+3,r25
+ 371:midi.c        **** 				theMessage.dataByteTwo=theByte;						// And what velocity?
+ 425               		.loc 1 371 0
+ 426 01f6 8C83      		std Y+4,r24
+ 372:midi.c        **** 				theMessage.channelNumber=temporaryChannel;			// And what channel?
+ 427               		.loc 1 372 0
+ 428 01f8 8091 0000 		lds r24,temporaryChannel.1692
+ 429               	.LVL20:
+ 430 01fc 8983      		std Y+1,r24
+ 373:midi.c        **** 
+ 374:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 431               		.loc 1 374 0
+ 432 01fe CE01      		movw r24,r28
+ 433 0200 0196      		adiw r24,1
+ 434 0202 0E94 0000 		call PutMidiMessageInIncomingFifo
+ 435               	.LVL21:
+ 375:midi.c        **** 
+ 376:midi.c        **** 				midiIncomingMessageState=GET_NOTE_OFF_DATA_BYTE_ONE;	// And continue dealing with NOTE_OFFs unt
+ 436               		.loc 1 376 0
+ 437 0206 81E0      		ldi r24,lo8(1)
+ 438 0208 00C0      		rjmp .L50
+ 439               	.LVL22:
+ 440               	.L37:
+ 377:midi.c        **** 			}		
+ 378:midi.c        **** 			break;
+ 379:midi.c        **** 		
+ 380:midi.c        **** 			case GET_PROGRAM_CHANGE_DATA_BYTE:			// We got a request for program change.  Check validity and
+ 381:midi.c        **** 			if(theByte>127)								// If the note value is out of range, ignore and wait for new status. 
+ 382:midi.c        **** 			{
+ 383:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 384:midi.c        **** 			}
+ 385:midi.c        **** 			else
+ 386:midi.c        **** 			{
+ 387:midi.c        **** 				// Queue midi message
+ 388:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_PROGRAM_CHANGE;		// A program change...
+ 441               		.loc 1 388 0
+ 442 020a 93E0      		ldi r25,lo8(3)
+ 443 020c 9A83      		std Y+2,r25
+ 389:midi.c        **** 				theMessage.dataByteOne=theByte;							// ...To this program
+ 444               		.loc 1 389 0
+ 445 020e 8B83      		std Y+3,r24
+ 390:midi.c        **** 				theMessage.dataByteTwo=0;								// And no second data byte.
+ 446               		.loc 1 390 0
+ 447 0210 1C82      		std Y+4,__zero_reg__
+ 448 0212 00C0      		rjmp .L52
+ 449               	.L38:
+ 391:midi.c        **** 				theMessage.channelNumber=temporaryChannel;				// And what channel?
+ 392:midi.c        **** 				
+ 393:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);			// Send that to the fifo.
+ 394:midi.c        **** 
+ 395:midi.c        **** 				midiIncomingMessageState=GET_PROGRAM_CHANGE_DATA_BYTE;	// AFAICT, theoretically, program change
+ 396:midi.c        **** 			}		
+ 397:midi.c        **** 			break;
+ 398:midi.c        **** 
+ 399:midi.c        **** 			case GET_CONTROL_CHANGE_CONTROLLER_NUM:			// Get the controller number, check validity.
+ 400:midi.c        **** 			if(theByte>127)									// If the value is out of range, ignore and wait for new status. 
+ 401:midi.c        **** 			{
+ 402:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 403:midi.c        **** 			}
+ 404:midi.c        **** 			else
+ 405:midi.c        **** 			{
+ 406:midi.c        **** 				firstDataByte=theByte;								// Got a valid CC number.  Get the value next.
+ 450               		.loc 1 406 0
+ 451 0214 8093 0000 		sts firstDataByte.1691,r24
+ 407:midi.c        **** 				midiIncomingMessageState=GET_CONTROL_CHANGE_VALUE;
+ 452               		.loc 1 407 0
+ 453 0218 84E0      		ldi r24,lo8(4)
+ 454               	.LVL23:
+ 455 021a 00C0      		rjmp .L50
+ 456               	.LVL24:
+ 457               	.L39:
+ 408:midi.c        **** 			}		
+ 409:midi.c        **** 			break;
+ 410:midi.c        **** 
+ 411:midi.c        **** 			case GET_CONTROL_CHANGE_VALUE:				// Get a valid value and queue it.
+ 412:midi.c        **** 			if(theByte>127)								// If the value is out of range, ignore and wait for new status. 
+ 413:midi.c        **** 			{
+ 414:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 415:midi.c        **** 			}
+ 416:midi.c        **** 			else
+ 417:midi.c        **** 			{
+ 418:midi.c        **** 				// Queue midi message
+ 419:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_CONTROL_CHANGE;		// What kind of message is this?
+ 458               		.loc 1 419 0
+ 459 021c 1A83      		std Y+2,r17
+ 420:midi.c        **** 				theMessage.dataByteOne=firstDataByte;					// This is the CC number.
+ 460               		.loc 1 420 0
+ 461 021e 9091 0000 		lds r25,firstDataByte.1691
+ 462 0222 9B83      		std Y+3,r25
+ 421:midi.c        **** 				theMessage.dataByteTwo=theByte;							// And the value.
+ 463               		.loc 1 421 0
+ 464 0224 8C83      		std Y+4,r24
+ 422:midi.c        **** 				theMessage.channelNumber=temporaryChannel;				// And what channel?
+ 465               		.loc 1 422 0
+ 466 0226 8091 0000 		lds r24,temporaryChannel.1692
+ 467               	.LVL25:
+ 468 022a 8983      		std Y+1,r24
+ 423:midi.c        **** 
+ 424:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);						// Send that to yr fifo.
+ 469               		.loc 1 424 0
+ 470 022c CE01      		movw r24,r28
+ 471 022e 0196      		adiw r24,1
+ 472 0230 0E94 0000 		call PutMidiMessageInIncomingFifo
+ 473               	.LVL26:
+ 425:midi.c        **** 
+ 426:midi.c        **** 				midiIncomingMessageState=GET_CONTROL_CHANGE_CONTROLLER_NUM;		// Unlikely to see running status 
+ 474               		.loc 1 426 0
+ 475 0234 83E0      		ldi r24,lo8(3)
+ 476 0236 00C0      		rjmp .L50
+ 477               	.LVL27:
+ 478               	.L42:
+ 427:midi.c        **** 			}		
+ 428:midi.c        **** 			break;
+ 429:midi.c        **** 
+ 430:midi.c        **** 			case GET_PITCH_WHEEL_DATA_LSB:				// Began wanking on pitch wheel, check validity.
+ 431:midi.c        **** 			if(theByte>127)								// If the note value is out of range, ignore and wait for new status. 
+ 432:midi.c        **** 			{
+ 433:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 434:midi.c        **** 			}
+ 435:midi.c        **** 			else
+ 436:midi.c        **** 			{
+ 437:midi.c        **** 				firstDataByte=theByte;								// Got an LSB for the pitch wheel, now get the _important_ byte.
+ 479               		.loc 1 437 0
+ 480 0238 8093 0000 		sts firstDataByte.1691,r24
+ 438:midi.c        **** 				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_MSB;
+ 481               		.loc 1 438 0
+ 482 023c 88E0      		ldi r24,lo8(8)
+ 483               	.LVL28:
+ 484 023e 00C0      		rjmp .L50
+ 485               	.LVL29:
+ 486               	.L43:
+ 439:midi.c        **** 			}		
+ 440:midi.c        **** 			break;
+ 441:midi.c        **** 
+ 442:midi.c        **** 			case GET_PITCH_WHEEL_DATA_MSB:				// Get a valid MSB and queue.
+ 443:midi.c        **** 			if(theByte>127)								// If the note value is out of range, ignore and wait for new status. 
+ 444:midi.c        **** 			{
+ 445:midi.c        **** 				midiIncomingMessageState=IGNORE_ME;
+ 446:midi.c        **** 			}
+ 447:midi.c        **** 			else
+ 448:midi.c        **** 			{
+ 449:midi.c        **** 				// Queue midi message
+ 450:midi.c        **** 				theMessage.messageType=MESSAGE_TYPE_PITCH_WHEEL;	// What kind of message is this?
+ 487               		.loc 1 450 0
+ 488 0240 17E0      		ldi r17,lo8(7)
+ 489 0242 1A83      		std Y+2,r17
+ 451:midi.c        **** 				theMessage.dataByteOne=firstDataByte;				// LSB
+ 490               		.loc 1 451 0
+ 491 0244 9091 0000 		lds r25,firstDataByte.1691
+ 492 0248 9B83      		std Y+3,r25
+ 452:midi.c        **** 				theMessage.dataByteTwo=theByte;						// MSB
+ 493               		.loc 1 452 0
+ 494 024a 8C83      		std Y+4,r24
+ 495               	.L52:
+ 453:midi.c        **** 				theMessage.channelNumber=temporaryChannel;			// And what channel?
+ 496               		.loc 1 453 0
+ 497 024c 8091 0000 		lds r24,temporaryChannel.1692
+ 498               	.LVL30:
+ 499 0250 8983      		std Y+1,r24
+ 454:midi.c        **** 
+ 455:midi.c        **** 				PutMidiMessageInIncomingFifo(&theMessage);					// Send that to the fifo.
+ 500               		.loc 1 455 0
+ 501 0252 CE01      		movw r24,r28
+ 502 0254 0196      		adiw r24,1
+ 503 0256 0E94 0000 		call PutMidiMessageInIncomingFifo
+ 504               	.LVL31:
+ 456:midi.c        **** 
+ 457:midi.c        **** 				midiIncomingMessageState=GET_PITCH_WHEEL_DATA_LSB;			// And continue dealing with Pitch Wheel w
+ 505               		.loc 1 457 0
+ 506 025a 1093 0000 		sts midiIncomingMessageState,r17
+ 507 025e 00C0      		rjmp .L19
+ 508               	.L34:
+ 458:midi.c        **** 			}		
+ 459:midi.c        **** 			break;
+ 460:midi.c        **** 
+ 461:midi.c        **** 
+ 462:midi.c        **** 			case IGNORE_ME:
+ 463:midi.c        **** 			// Don't do anything with the byte; it isn't something we care about.
+ 464:midi.c        **** 			break;
+ 465:midi.c        **** 
+ 466:midi.c        **** 			default:
+ 467:midi.c        **** 			midiIncomingMessageState=IGNORE_ME;			// @@@ Should never happen.		
+ 509               		.loc 1 467 0
+ 510 0260 89E0      		ldi r24,lo8(9)
+ 511               	.L50:
+ 512 0262 8093 0000 		sts midiIncomingMessageState,r24
+ 513               	.L19:
+ 514               	/* epilogue start */
+ 468:midi.c        **** 			break;
+ 469:midi.c        **** 		}	
+ 470:midi.c        **** 	}
+ 471:midi.c        **** }
+ 515               		.loc 1 471 0
+ 516 0266 0F90      		pop __tmp_reg__
+ 517 0268 0F90      		pop __tmp_reg__
+ 518 026a 0F90      		pop __tmp_reg__
+ 519 026c 0F90      		pop __tmp_reg__
+ 520 026e DF91      		pop r29
+ 521 0270 CF91      		pop r28
+ 522 0272 1F91      		pop r17
+ 523 0274 0895      		ret
+ 524               		.cfi_endproc
+ 525               	.LFE8:
+ 527               	.global	MidiTxBufferNotEmpty
+ 529               	MidiTxBufferNotEmpty:
+ 530               	.LFB9:
+ 472:midi.c        **** 
+ 473:midi.c        **** bool MidiTxBufferNotEmpty(void)
+ 474:midi.c        **** {
+ 531               		.loc 1 474 0
+ 532               		.cfi_startproc
+ 533               	/* prologue: function */
+ 534               	/* frame size = 0 */
+ 535               	/* stack size = 0 */
+ 536               	.L__stack_usage = 0
+ 475:midi.c        **** 	if(midiMessagesInOutgoingFifo||(midiOutgoingMessageState!=READY_FOR_NEW_MESSAGE))		// Got somethin
+ 537               		.loc 1 475 0
+ 538 0276 8091 0000 		lds r24,midiMessagesInOutgoingFifo
+ 539 027a 8111      		cpse r24,__zero_reg__
+ 540 027c 00C0      		rjmp .L65
+ 541               		.loc 1 475 0 is_stmt 0 discriminator 1
+ 542 027e 81E0      		ldi r24,lo8(1)
+ 543 0280 9091 0000 		lds r25,midiOutgoingMessageState
+ 544 0284 9111      		cpse r25,__zero_reg__
+ 545 0286 00C0      		rjmp .L63
+ 546 0288 80E0      		ldi r24,0
+ 547 028a 0895      		ret
+ 548               	.L65:
+ 476:midi.c        **** 	{
+ 477:midi.c        **** 		return(true);
+ 549               		.loc 1 477 0 is_stmt 1
+ 550 028c 81E0      		ldi r24,lo8(1)
+ 551               	.L63:
+ 478:midi.c        **** 	}
+ 479:midi.c        **** 	else
+ 480:midi.c        **** 	{
+ 481:midi.c        **** 		return(false);
+ 482:midi.c        **** 	}
+ 483:midi.c        **** }
+ 552               		.loc 1 483 0
+ 553 028e 0895      		ret
+ 554               		.cfi_endproc
+ 555               	.LFE9:
+ 557               	.global	PopOutgoingMidiByte
+ 559               	PopOutgoingMidiByte:
+ 560               	.LFB10:
+ 484:midi.c        **** 
+ 485:midi.c        **** unsigned char PopOutgoingMidiByte(void)
+ 486:midi.c        **** // This looks through our outgoing midi message fifo and pops the message bytes off one by one.
+ 487:midi.c        **** // It is smart enough to throw out bytes if it can use running status and make NOTE_OFFs into NOTE_
+ 488:midi.c        **** // It is the caller's responsibility to make sure there are messages in the outgoing FIFO before ca
+ 489:midi.c        **** // It is generally not as flexible as the midi input handler since it never has to worry about the 
+ 490:midi.c        **** // NOTE:  this stack doesn't include handling for real-time events which would happen OUTSIDE of ru
+ 491:midi.c        **** // NOTE:  this stack sends generic velocity data.
+ 492:midi.c        **** // NOTE:  this stack always sends a NOTE_ON with a velocity of zero when it wants to turn a NOTE_OF
+ 493:midi.c        **** {
+ 561               		.loc 1 493 0
+ 562               		.cfi_startproc
+ 563               	/* prologue: function */
+ 564               	/* frame size = 0 */
+ 565               	/* stack size = 0 */
+ 566               	.L__stack_usage = 0
+ 494:midi.c        **** 	static MIDI_MESSAGE
+ 495:midi.c        **** 		theMessage;
+ 496:midi.c        **** 
+ 497:midi.c        **** 	unsigned char
+ 498:midi.c        **** 		theByte;
+ 499:midi.c        **** 
+ 500:midi.c        **** 	static unsigned char
+ 501:midi.c        **** 		lastStatusByte;		// Used to calculate running status.
+ 502:midi.c        **** 
+ 503:midi.c        **** 	switch(midiOutgoingMessageState)
+ 567               		.loc 1 503 0
+ 568 0290 8091 0000 		lds r24,midiOutgoingMessageState
+ 569 0294 8330      		cpi r24,lo8(3)
+ 570 0296 01F4      		brne .+2
+ 571 0298 00C0      		rjmp .L71
+ 572 029a 00F4      		brsh .L76
+ 573 029c 8130      		cpi r24,lo8(1)
+ 574 029e 01F4      		brne .+2
+ 575 02a0 00C0      		rjmp .L69
+ 576 02a2 00F0      		brlo .+2
+ 577 02a4 00C0      		rjmp .L70
+ 578 02a6 00C0      		rjmp .L94
+ 579               	.L76:
+ 580 02a8 8530      		cpi r24,lo8(5)
+ 581 02aa 01F4      		brne .+2
+ 582 02ac 00C0      		rjmp .L73
+ 583 02ae 00F4      		brsh .+2
+ 584 02b0 00C0      		rjmp .L72
+ 585 02b2 8630      		cpi r24,lo8(6)
+ 586 02b4 01F4      		brne .+2
+ 587 02b6 00C0      		rjmp .L74
+ 588 02b8 8730      		cpi r24,lo8(7)
+ 589 02ba 01F0      		breq .+2
+ 590 02bc 00C0      		rjmp .L90
+ 591 02be 00C0      		rjmp .L75
+ 592               	.L94:
+ 593               	.LVL32:
+ 594               	.LBB12:
+ 595               	.LBB13:
+ 101:midi.c        **** 	if(midiMessagesInOutgoingFifo>0)			// Any messages in the fifo?
+ 596               		.loc 1 101 0
+ 597 02c0 8091 0000 		lds r24,midiMessagesInOutgoingFifo
+ 598 02c4 8823      		tst r24
+ 599 02c6 01F0      		breq .L77
+ 103:midi.c        **** 		(*theMessage).messageType=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].messageType;		// G
+ 600               		.loc 1 103 0
+ 601 02c8 9091 0000 		lds r25,midiOutgoingFifoReadPointer
+ 602 02cc 24E0      		ldi r18,lo8(4)
+ 603 02ce 929F      		mul r25,r18
+ 604 02d0 F001      		movw r30,r0
+ 605 02d2 1124      		clr __zero_reg__
+ 606 02d4 E050      		subi r30,lo8(-(midiMessageOutgoingFifo))
+ 607 02d6 F040      		sbci r31,hi8(-(midiMessageOutgoingFifo))
+ 608 02d8 2181      		ldd r18,Z+1
+ 609 02da 2093 0000 		sts theMessage.1712+1,r18
+ 104:midi.c        **** 		(*theMessage).dataByteOne=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteOne;
+ 610               		.loc 1 104 0
+ 611 02de 2281      		ldd r18,Z+2
+ 612 02e0 2093 0000 		sts theMessage.1712+2,r18
+ 105:midi.c        **** 		(*theMessage).dataByteTwo=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].dataByteTwo;	
+ 613               		.loc 1 105 0
+ 614 02e4 2381      		ldd r18,Z+3
+ 615 02e6 2093 0000 		sts theMessage.1712+3,r18
+ 106:midi.c        **** 		(*theMessage).channelNumber=midiMessageOutgoingFifo[midiOutgoingFifoReadPointer].channelNumber;	
+ 616               		.loc 1 106 0
+ 617 02ea 2081      		ld r18,Z
+ 618 02ec 2093 0000 		sts theMessage.1712,r18
+ 108:midi.c        **** 		midiOutgoingFifoReadPointer++;										// read from the next element next time
+ 619               		.loc 1 108 0
+ 620 02f0 9F5F      		subi r25,lo8(-(1))
+ 109:midi.c        **** 		if(midiOutgoingFifoReadPointer>=MIDI_MESSAGE_OUTGOING_FIFO_SIZE)	// handle wrapping at the end
+ 621               		.loc 1 109 0
+ 622 02f2 9630      		cpi r25,lo8(6)
+ 623 02f4 00F4      		brsh .L78
+ 108:midi.c        **** 		midiOutgoingFifoReadPointer++;										// read from the next element next time
+ 624               		.loc 1 108 0
+ 625 02f6 9093 0000 		sts midiOutgoingFifoReadPointer,r25
+ 626 02fa 00C0      		rjmp .L79
+ 627               	.L78:
+ 111:midi.c        **** 			midiOutgoingFifoReadPointer=0;
+ 628               		.loc 1 111 0
+ 629 02fc 1092 0000 		sts midiOutgoingFifoReadPointer,__zero_reg__
+ 630               	.L79:
+ 114:midi.c        **** 		midiMessagesInOutgoingFifo--;		// One less message in the fifo.
+ 631               		.loc 1 114 0
+ 632 0300 8150      		subi r24,lo8(-(-1))
+ 633 0302 8093 0000 		sts midiMessagesInOutgoingFifo,r24
+ 634               	.L77:
+ 635               	.LBE13:
+ 636               	.LBE12:
+ 504:midi.c        **** 	{
+ 505:midi.c        **** 		case READY_FOR_NEW_MESSAGE:						// Finished popping off the last message.
+ 506:midi.c        **** 		GetMidiMessageFromOutgoingFifo(&theMessage);	// Get the next one.
+ 507:midi.c        **** 
+ 508:midi.c        **** 		switch(theMessage.messageType)					// What's the new status byte.
+ 637               		.loc 1 508 0
+ 638 0306 9091 0000 		lds r25,theMessage.1712+1
+ 639 030a 9230      		cpi r25,lo8(2)
+ 640 030c 01F0      		breq .L81
+ 641 030e 00F4      		brsh .L84
+ 642 0310 9130      		cpi r25,lo8(1)
+ 643 0312 01F0      		breq .+2
+ 644 0314 00C0      		rjmp .L90
+ 645 0316 00C0      		rjmp .L80
+ 646               	.L84:
+ 647 0318 9330      		cpi r25,lo8(3)
+ 648 031a 01F0      		breq .L82
+ 649 031c 9430      		cpi r25,lo8(4)
+ 650 031e 01F0      		breq .+2
+ 651 0320 00C0      		rjmp .L90
+ 652 0322 00C0      		rjmp .L83
+ 653               	.L80:
+ 509:midi.c        **** 		{
+ 510:midi.c        **** 			case MESSAGE_TYPE_NOTE_ON:
+ 511:midi.c        **** 			theByte=(MIDI_NOTE_ON_MASK)|(theMessage.channelNumber);	// Note on, current channel (status mess
+ 654               		.loc 1 511 0
+ 655 0324 8091 0000 		lds r24,theMessage.1712
+ 656 0328 8069      		ori r24,lo8(-112)
+ 657               	.LVL33:
+ 512:midi.c        **** 			if(lastStatusByte==theByte)								// Same status byte as last time?
+ 658               		.loc 1 512 0
+ 659 032a 2091 0000 		lds r18,lastStatusByte.1714
+ 660 032e 2813      		cpse r18,r24
+ 661 0330 00C0      		rjmp .L86
+ 513:midi.c        **** 			{
+ 514:midi.c        **** 				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (the note number) 
+ 662               		.loc 1 514 0
+ 663 0332 8091 0000 		lds r24,theMessage.1712+2
+ 664               	.LVL34:
+ 515:midi.c        **** 				midiOutgoingMessageState=NOTE_ON_DATA_BYTE_TWO;		// Skip to second data byte next time.
+ 665               		.loc 1 515 0
+ 666 0336 93E0      		ldi r25,lo8(3)
+ 667 0338 00C0      		rjmp .L96
+ 668               	.LVL35:
+ 669               	.L81:
+ 516:midi.c        **** 			}	
+ 517:midi.c        **** 			else
+ 518:midi.c        **** 			{
+ 519:midi.c        **** 				lastStatusByte=theByte;								// Update current running status.
+ 520:midi.c        **** 				midiOutgoingMessageState=NOTE_ON_DATA_BYTE_ONE;		// Next time send the data byte.
+ 521:midi.c        **** 
+ 522:midi.c        **** 			}
+ 523:midi.c        **** 			break;
+ 524:midi.c        **** 
+ 525:midi.c        **** 			case MESSAGE_TYPE_NOTE_OFF:
+ 526:midi.c        **** 			theByte=(MIDI_NOTE_ON_MASK)|(theMessage.channelNumber);		// Note off, current channel -- THIS IS
+ 670               		.loc 1 526 0
+ 671 033a 8091 0000 		lds r24,theMessage.1712
+ 672 033e 8069      		ori r24,lo8(-112)
+ 673               	.LVL36:
+ 527:midi.c        **** 			if(lastStatusByte==theByte)									// Same status byte as last time (this method keeps running 
+ 674               		.loc 1 527 0
+ 675 0340 2091 0000 		lds r18,lastStatusByte.1714
+ 676 0344 2813      		cpse r18,r24
+ 677 0346 00C0      		rjmp .L86
+ 528:midi.c        **** 			{
+ 529:midi.c        **** 				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (the note number)
+ 678               		.loc 1 529 0
+ 679 0348 8091 0000 		lds r24,theMessage.1712+2
+ 680               	.LVL37:
+ 530:midi.c        **** 				midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_TWO;	// Skip to second data byte next time.
+ 681               		.loc 1 530 0
+ 682 034c 94E0      		ldi r25,lo8(4)
+ 683 034e 00C0      		rjmp .L96
+ 684               	.L86:
+ 531:midi.c        **** 			}	
+ 532:midi.c        **** 			else
+ 533:midi.c        **** 			{
+ 534:midi.c        **** 				lastStatusByte=theByte;								// Update current running status.
+ 685               		.loc 1 534 0
+ 686 0350 8093 0000 		sts lastStatusByte.1714,r24
+ 687 0354 00C0      		rjmp .L96
+ 688               	.LVL38:
+ 689               	.L82:
+ 535:midi.c        **** 				midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_ONE;	// Next time send the data byte.
+ 536:midi.c        **** 
+ 537:midi.c        **** 			}
+ 538:midi.c        **** 			break;
+ 539:midi.c        **** 
+ 540:midi.c        **** 			case MESSAGE_TYPE_PROGRAM_CHANGE:
+ 541:midi.c        **** 			theByte=(MIDI_PROGRAM_CHANGE_MASK)|(theMessage.channelNumber);	// Program change, current channe
+ 690               		.loc 1 541 0
+ 691 0356 8091 0000 		lds r24,theMessage.1712
+ 692 035a 806C      		ori r24,lo8(-64)
+ 693               	.LVL39:
+ 542:midi.c        **** 			if(lastStatusByte==theByte)										// Same status byte as last time?
+ 694               		.loc 1 542 0
+ 695 035c 9091 0000 		lds r25,lastStatusByte.1714
+ 696 0360 9813      		cpse r25,r24
+ 697 0362 00C0      		rjmp .L87
+ 543:midi.c        **** 			{
+ 544:midi.c        **** 				theByte=theMessage.dataByteOne;						// Set up to return the first data byte (skip the status b
+ 698               		.loc 1 544 0
+ 699 0364 8091 0000 		lds r24,theMessage.1712+2
+ 700               	.LVL40:
+ 545:midi.c        **** 				midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Restart state machine (PC messages only hav
+ 701               		.loc 1 545 0
+ 702 0368 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 703 036c 0895      		ret
+ 704               	.L87:
+ 546:midi.c        **** 			}	
+ 547:midi.c        **** 			else
+ 548:midi.c        **** 			{
+ 549:midi.c        **** 				lastStatusByte=theByte;								// Update current running status.
+ 705               		.loc 1 549 0
+ 706 036e 8093 0000 		sts lastStatusByte.1714,r24
+ 550:midi.c        **** 				midiOutgoingMessageState=PROGRAM_CHANGE_DATA_BYTE;	// Next time send the data byte.
+ 707               		.loc 1 550 0
+ 708 0372 95E0      		ldi r25,lo8(5)
+ 709 0374 00C0      		rjmp .L96
+ 710               	.LVL41:
+ 711               	.L83:
+ 551:midi.c        **** 
+ 552:midi.c        **** 			}
+ 553:midi.c        **** 			break;
+ 554:midi.c        **** 
+ 555:midi.c        **** 			case MESSAGE_TYPE_CONTROL_CHANGE:
+ 556:midi.c        **** 			theByte=(MIDI_CONTROL_CHANGE_MASK)|(theMessage.channelNumber);	// CC, current channel (status me
+ 712               		.loc 1 556 0
+ 713 0376 8091 0000 		lds r24,theMessage.1712
+ 714 037a 806B      		ori r24,lo8(-80)
+ 715               	.LVL42:
+ 557:midi.c        **** 			if(lastStatusByte==theByte)										// Same status byte as last time?
+ 716               		.loc 1 557 0
+ 717 037c 9091 0000 		lds r25,lastStatusByte.1714
+ 718 0380 9813      		cpse r25,r24
+ 719 0382 00C0      		rjmp .L88
+ 558:midi.c        **** 			{
+ 559:midi.c        **** 				theByte=theMessage.dataByteOne;								// Set up to return the first data byte (the note number
+ 720               		.loc 1 559 0
+ 721 0384 8091 0000 		lds r24,theMessage.1712+2
+ 722               	.LVL43:
+ 560:midi.c        **** 				midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_TWO;		// Skip to second data byte next time.
+ 723               		.loc 1 560 0
+ 724 0388 97E0      		ldi r25,lo8(7)
+ 725 038a 00C0      		rjmp .L96
+ 726               	.L88:
+ 561:midi.c        **** 			}	
+ 562:midi.c        **** 			else
+ 563:midi.c        **** 			{
+ 564:midi.c        **** 				lastStatusByte=theByte;										// Update current running status.
+ 727               		.loc 1 564 0
+ 728 038c 8093 0000 		sts lastStatusByte.1714,r24
+ 565:midi.c        **** 				midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_ONE;		// Next time send the data byte.
+ 729               		.loc 1 565 0
+ 730 0390 96E0      		ldi r25,lo8(6)
+ 731               	.L96:
+ 732 0392 9093 0000 		sts midiOutgoingMessageState,r25
+ 733 0396 0895      		ret
+ 734               	.LVL44:
+ 735               	.L69:
+ 566:midi.c        **** 
+ 567:midi.c        **** 			}
+ 568:midi.c        **** 			break;
+ 569:midi.c        **** 
+ 570:midi.c        **** 			default:
+ 571:midi.c        **** 			theByte=0;		// Make compiler happy.
+ 572:midi.c        **** 			break;
+ 573:midi.c        **** 		}
+ 574:midi.c        **** 		return(theByte);		// Send out our byte.
+ 575:midi.c        **** 		break;
+ 576:midi.c        **** 		
+ 577:midi.c        **** 		case NOTE_ON_DATA_BYTE_ONE:
+ 578:midi.c        **** 		midiOutgoingMessageState=NOTE_ON_DATA_BYTE_TWO;		// Skip to second data byte next time.
+ 736               		.loc 1 578 0
+ 737 0398 83E0      		ldi r24,lo8(3)
+ 738 039a 00C0      		rjmp .L97
+ 739               	.L70:
+ 579:midi.c        **** 		return(theMessage.dataByteOne);						// Return the first data byte.
+ 580:midi.c        **** 		break;
+ 581:midi.c        **** 
+ 582:midi.c        **** 		case NOTE_OFF_DATA_BYTE_ONE:
+ 583:midi.c        **** 		midiOutgoingMessageState=NOTE_OFF_DATA_BYTE_TWO;	// Skip to second data byte next time.
+ 740               		.loc 1 583 0
+ 741 039c 84E0      		ldi r24,lo8(4)
+ 742               	.L97:
+ 743 039e 8093 0000 		sts midiOutgoingMessageState,r24
+ 744               	.L98:
+ 584:midi.c        **** 		return(theMessage.dataByteOne);						// Return the first data byte.
+ 745               		.loc 1 584 0
+ 746 03a2 8091 0000 		lds r24,theMessage.1712+2
+ 747 03a6 0895      		ret
+ 748               	.L71:
+ 585:midi.c        **** 		break;
+ 586:midi.c        **** 
+ 587:midi.c        **** 		case NOTE_ON_DATA_BYTE_TWO:
+ 588:midi.c        **** 		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+ 749               		.loc 1 588 0
+ 750 03a8 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 589:midi.c        **** 		return(MIDI_GENERIC_VELOCITY);						// Return generic "note on" velocity.
+ 751               		.loc 1 589 0
+ 752 03ac 80E4      		ldi r24,lo8(64)
+ 753 03ae 0895      		ret
+ 754               	.L72:
+ 590:midi.c        **** 		break;
+ 591:midi.c        **** 
+ 592:midi.c        **** 		case NOTE_OFF_DATA_BYTE_TWO:
+ 593:midi.c        **** 		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+ 755               		.loc 1 593 0
+ 756 03b0 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 757 03b4 00C0      		rjmp .L90
+ 758               	.L73:
+ 594:midi.c        **** 		return(0);											// Return a velocity of 0 (this means a note off)
+ 595:midi.c        **** 		break;
+ 596:midi.c        **** 
+ 597:midi.c        **** 		case PROGRAM_CHANGE_DATA_BYTE:
+ 598:midi.c        **** 		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+ 759               		.loc 1 598 0
+ 760 03b6 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 761 03ba 00C0      		rjmp .L98
+ 762               	.L74:
+ 599:midi.c        **** 		return(theMessage.dataByteOne);						// Return the first (only) data byte.
+ 600:midi.c        **** 		break;
+ 601:midi.c        **** 
+ 602:midi.c        **** 		case CONTROL_CHANGE_DATA_BYTE_ONE:
+ 603:midi.c        **** 		midiOutgoingMessageState=CONTROL_CHANGE_DATA_BYTE_TWO;		// Skip to second data byte next time.
+ 763               		.loc 1 603 0
+ 764 03bc 87E0      		ldi r24,lo8(7)
+ 765 03be 00C0      		rjmp .L97
+ 766               	.L75:
+ 604:midi.c        **** 		return(theMessage.dataByteOne);								// Return the first data byte.
+ 605:midi.c        **** 		break;	
+ 606:midi.c        **** 
+ 607:midi.c        **** 		case CONTROL_CHANGE_DATA_BYTE_TWO:
+ 608:midi.c        **** 		midiOutgoingMessageState=READY_FOR_NEW_MESSAGE;		// Start state machine over.
+ 767               		.loc 1 608 0
+ 768 03c0 1092 0000 		sts midiOutgoingMessageState,__zero_reg__
+ 609:midi.c        **** 		return(theMessage.dataByteTwo);						// Return the second data byte.
+ 769               		.loc 1 609 0
+ 770 03c4 8091 0000 		lds r24,theMessage.1712+3
+ 771 03c8 0895      		ret
+ 772               	.L90:
+ 571:midi.c        **** 			theByte=0;		// Make compiler happy.
+ 773               		.loc 1 571 0
+ 774 03ca 80E0      		ldi r24,0
+ 610:midi.c        **** 		break;
+ 611:midi.c        **** 
+ 612:midi.c        **** 		default:
+ 613:midi.c        **** 		return(0);
+ 614:midi.c        **** 		break;
+ 615:midi.c        **** 	}
+ 616:midi.c        **** }
+ 775               		.loc 1 616 0
+ 776 03cc 0895      		ret
+ 777               		.cfi_endproc
+ 778               	.LFE10:
+ 780               		.comm	midiMessagesInOutgoingFifo,1,1
+ 781               		.comm	midiMessagesInIncomingFifo,1,1
+ 782               		.comm	midiChannelNumberB,1,1
+ 783               		.comm	midiChannelNumberA,1,1
+ 784               		.comm	midiMessageOutgoingFifo,24,1
+ 785               		.comm	midiMessageIncomingFifo,24,1
+ 786               		.local	midiIncomingFifoReadPointer
+ 787               		.comm	midiIncomingFifoReadPointer,1,1
+ 788               		.local	midiOutgoingFifoWritePointer
+ 789               		.comm	midiOutgoingFifoWritePointer,1,1
+ 790               		.local	midiIncomingMessageState
+ 791               		.comm	midiIncomingMessageState,1,1
+ 792               		.local	midiOutgoingMessageState
+ 793               		.comm	midiOutgoingMessageState,1,1
+ 794               		.local	midiIncomingFifoWritePointer
+ 795               		.comm	midiIncomingFifoWritePointer,1,1
+ 796               		.local	midiOutgoingFifoReadPointer
+ 797               		.comm	midiOutgoingFifoReadPointer,1,1
+ 798               		.local	temporaryChannel.1692
+ 799               		.comm	temporaryChannel.1692,1,1
+ 800               		.local	firstDataByte.1691
+ 801               		.comm	firstDataByte.1691,1,1
+ 802               		.local	theMessage.1712
+ 803               		.comm	theMessage.1712,4,1
+ 804               		.local	lastStatusByte.1714
+ 805               		.comm	lastStatusByte.1714,1,1
+ 806               	.Letext0:
+ 807               		.file 2 "defines.h"
+ 808               		.file 3 "midi.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 midi.c
-     /tmp/cc0gXewD.s:2      *ABS*:0000003f __SREG__
-     /tmp/cc0gXewD.s:3      *ABS*:0000003e __SP_H__
-     /tmp/cc0gXewD.s:4      *ABS*:0000003d __SP_L__
-     /tmp/cc0gXewD.s:5      *ABS*:00000034 __CCP__
-     /tmp/cc0gXewD.s:6      *ABS*:00000000 __tmp_reg__
-     /tmp/cc0gXewD.s:7      *ABS*:00000001 __zero_reg__
-     /tmp/cc0gXewD.s:18     .text:00000000 GetMidiMessageFromIncomingFifo
+     /tmp/ccPapznu.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccPapznu.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccPapznu.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccPapznu.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccPapznu.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccPapznu.s:11     .text:00000000 PutMidiMessageInIncomingFifo
                             *COM*:00000001 midiMessagesInIncomingFifo
-     /tmp/cc0gXewD.s:811    .bss:00000008 midiIncomingFifoReadPointer
+     /tmp/ccPapznu.s:793    .bss:00000004 midiIncomingFifoWritePointer
                             *COM*:00000018 midiMessageIncomingFifo
-     /tmp/cc0gXewD.s:83     .text:0000005a PutMidiMessageInIncomingFifo
-     /tmp/cc0gXewD.s:810    .bss:00000007 midiIncomingFifoWritePointer
-     /tmp/cc0gXewD.s:149    .text:000000b4 PutMidiMessageInOutgoingFifo
+     /tmp/ccPapznu.s:74     .text:0000004e GetMidiMessageFromIncomingFifo
+                             .bss:00000000 midiIncomingFifoReadPointer
+     /tmp/ccPapznu.s:136    .text:0000009c PutMidiMessageInOutgoingFifo
                             *COM*:00000001 midiMessagesInOutgoingFifo
-     /tmp/cc0gXewD.s:813    .bss:0000000a midiOutgoingFifoWritePointer
+     /tmp/ccPapznu.s:787    .bss:00000001 midiOutgoingFifoWritePointer
                             *COM*:00000018 midiMessageOutgoingFifo
                             *COM*:00000001 midiChannelNumberA
-     /tmp/cc0gXewD.s:205    .text:00000100 InitMidi
-     /tmp/cc0gXewD.s:812    .bss:00000009 midiIncomingMessageState
-     /tmp/cc0gXewD.s:815    .bss:0000000c midiOutgoingMessageState
-     /tmp/cc0gXewD.s:814    .bss:0000000b midiOutgoingFifoReadPointer
-     /tmp/cc0gXewD.s:242    .text:00000124 HandleIncomingMidiByte
+     /tmp/ccPapznu.s:190    .text:000000d8 InitMidi
+     /tmp/ccPapznu.s:789    .bss:00000002 midiIncomingMessageState
+     /tmp/ccPapznu.s:791    .bss:00000003 midiOutgoingMessageState
+     /tmp/ccPapznu.s:795    .bss:00000005 midiOutgoingFifoReadPointer
+     /tmp/ccPapznu.s:229    .text:000000fc HandleIncomingMidiByte
                             *COM*:00000001 midiChannelNumberB
-     /tmp/cc0gXewD.s:808    .bss:00000005 temporaryChannel.1586
-     /tmp/cc0gXewD.s:809    .bss:00000006 firstDataByte.1585
-     /tmp/cc0gXewD.s:553    .text:000002ce MidiTxBufferNotEmpty
-     /tmp/cc0gXewD.s:575    .text:000002e4 PopOutgoingMidiByte
-     /tmp/cc0gXewD.s:807    .bss:00000001 theMessage.1626
-                             .bss:00000000 lastStatusByte.1628
+     /tmp/ccPapznu.s:797    .bss:00000006 temporaryChannel.1692
+     /tmp/ccPapznu.s:799    .bss:00000007 firstDataByte.1691
+     /tmp/ccPapznu.s:529    .text:00000276 MidiTxBufferNotEmpty
+     /tmp/ccPapznu.s:559    .text:00000290 PopOutgoingMidiByte
+     /tmp/ccPapznu.s:801    .bss:00000008 theMessage.1712
+     /tmp/ccPapznu.s:803    .bss:0000000c lastStatusByte.1714
 
 UNDEFINED SYMBOLS
 __do_clear_bss

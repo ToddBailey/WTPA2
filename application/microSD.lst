@@ -1,1137 +1,1299 @@
    1               		.file	"microSD.c"
-   2               	__SREG__ = 0x3f
-   3               	__SP_H__ = 0x3e
-   4               	__SP_L__ = 0x3d
-   5               	__CCP__  = 0x34
-   6               	__tmp_reg__ = 0
-   7               	__zero_reg__ = 1
-  15               	.Ltext0:
-  16               	.global	UnInitSdInterface
-  18               	UnInitSdInterface:
-  19               	.LFB3:
-  20               	.LM1:
-  21               	/* prologue: function */
-  22               	/* frame size = 0 */
-  23               	.LM2:
-  24 0000 8AB1      		in r24,42-32
-  25 0002 8F7C      		andi r24,lo8(-49)
-  26 0004 8AB9      		out 42-32,r24
-  27               	.LM3:
-  28 0006 8BB1      		in r24,43-32
-  29 0008 8063      		ori r24,lo8(48)
-  30 000a 8BB9      		out 43-32,r24
-  31               	.LM4:
-  32 000c 1092 C900 		sts 201,__zero_reg__
-  33               	.LM5:
-  34 0010 E4E6      		ldi r30,lo8(100)
-  35 0012 F0E0      		ldi r31,hi8(100)
-  36 0014 8081      		ld r24,Z
-  37 0016 8061      		ori r24,lo8(16)
-  38 0018 8083      		st Z,r24
-  39               	/* epilogue start */
-  40               	.LM6:
-  41 001a 0895      		ret
-  42               	.LFE3:
-  44               	.global	InitSdInterface
-  46               	InitSdInterface:
-  47               	.LFB4:
-  48               	.LM7:
-  49               	/* prologue: function */
-  50               	/* frame size = 0 */
-  51               	.LM8:
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	UnInitSdInterface
+  12               	UnInitSdInterface:
+  13               	.LFB1:
+  14               		.file 1 "microSD.c"
+   1:microSD.c     **** // Micro SD handling for WTPA2
+   2:microSD.c     **** // Thu Jun  9 10:20:45 EDT 2011
+   3:microSD.c     **** // Todd Michael Bailey
+   4:microSD.c     **** 
+   5:microSD.c     **** // NOTE -- This takes a lot from an earlier flash interface I wrote for an AVR Atmega644p talking t
+   6:microSD.c     **** // using the AVR's UART1 in "Master SPI Mode".  Some notes may still linger from that time.
+   7:microSD.c     **** 
+   8:microSD.c     **** // It has been updated to deal with normal-capacity SD cards, and will not handle MMC cards or SDHC
+   9:microSD.c     **** // Big thanks are due to ChaN (of elm-chan.org) who wrote some really great docs about this process
+  10:microSD.c     **** 
+  11:microSD.c     **** // "Card In" is determined in this hardware by a card-detect switch in the socket.
+  12:microSD.c     **** // There's a bi-directional level translator in between the AVR and the flash, which should be pret
+  13:microSD.c     **** 
+  14:microSD.c     **** // All instructions, addresses, and data are transferred with the most significant bit (MSb) first.
+  15:microSD.c     **** // We're starting with SCK = (Fosc / 4) or 5MHz with a 20MHz crystal.
+  16:microSD.c     **** // SD cards like "SPI Mode 0"
+  17:microSD.c     **** 
+  18:microSD.c     **** // Note -- ChaN suggests starting the init with a slow clock (100-400kHz) but I suspect that's to s
+  19:microSD.c     **** // @@@ Another couple of notes require pullup resistors. This seems like a great idea, but is not i
+  20:microSD.c     **** // NOTE -- once all the protocols were correct, all cards tested worked fine with a 5MHz clock (als
+  21:microSD.c     **** 
+  22:microSD.c     **** // NOTE -- SDSC cards can indicate busy after a write for up to 250mS (see spec, actually 500mS aft
+  23:microSD.c     **** // DEPENDENCIES -- This library assumes that TCNT0 is running and uses it to generate timeouts.  Th
+  24:microSD.c     **** 
+  25:microSD.c     **** // NOTE -- PADDING is for real, yo.  There seem to be lots of cases where the SD card needs an extr
+  26:microSD.c     **** // "Padding (actually sending clock bits) is required and is specified for the MMC / SD implementat
+  27:microSD.c     **** // -- Asmallri, Nov 19 2005
+  28:microSD.c     **** // I wonder if this is left over from the MMC spec.
+  29:microSD.c     **** // I've implemented pads both before and after the commands.  The pad before is actually really imp
+  30:microSD.c     **** // NOTE -- This is card dependent, too.  The kingston 2GB card I have does not need this, the sandi
+  31:microSD.c     **** 
+  32:microSD.c     **** // NOTE -- At 5Mhz clock:
+  33:microSD.c     **** //			Timing SanDisk 2GB card, we read a block (512 bytes) in about 2.7mSec total, with 1mSec of tha
+  34:microSD.c     **** //			SanDisk 2GB #2	==		2.19 mSec total, 0.76 mSec waiting	(228 kB/Sec)
+  35:microSD.c     **** //			Kingston 2GB #1 ==		2.54 mS total, 1.11 waiting
+  36:microSD.c     **** //			Kingston 2GB #2 ==		2.59 mS total, 1.16 waiting	
+  37:microSD.c     **** 
+  38:microSD.c     **** // ON SD COMMUNICATION (SPI):
+  39:microSD.c     **** // ============================
+  40:microSD.c     **** 
+  41:microSD.c     **** // COMMANDS:
+  42:microSD.c     **** //-----------
+  43:microSD.c     **** // SD Cards take "Commands" over the data input.
+  44:microSD.c     **** // An entire command "frame" is a 6-byte affair.  The first byte is the "command index".  This is r
+  45:microSD.c     **** // All SD command indexes start with a start bit (a zero) followed by a transmission bit (a 1).  So
+  46:microSD.c     **** // An "ACMD" in the literature is an "application specific" command (?) which just means send a CMD
+  47:microSD.c     **** // The next four bytes are the "argument" to the command.  The last byte is a CRC of the command fr
+  48:microSD.c     **** // Even if it is gibberish, the CRC must always be present.  The CRC is a 7-bit CRC and always ends
+  49:microSD.c     **** 
+  50:microSD.c     **** // The card responds with different kinds of responses based on different commands.  These are give
+  51:microSD.c     **** // Most responses in SPI are "R1" responses, which is a one byte response.  It is a leading 0 follo
+  52:microSD.c     **** // So, most commands are 7 transfers at least, sometimes with wait bytes and longer responses.
+  53:microSD.c     **** 
+  54:microSD.c     **** // DATA PACKETS:
+  55:microSD.c     **** //---------------
+  56:microSD.c     **** // These are very slightly different for SD "Standard Capacity" than SDHC or SDXC.
+  57:microSD.c     **** // The address specified in the read/write commands is in BYTES for SDSC and BLOCKS of 512 for SDHC
+  58:microSD.c     **** // Block Length can be set to anything <= 512 for SDSC (the high capacity guys have a set block len
+  59:microSD.c     **** // AFAICT they always happen if you try and write a block misaligned, but usually you can read some
+  60:microSD.c     **** // -- Partial read of blocks is always allowed in SDSC, but @@@ I'm not sure this matters since we 
+  61:microSD.c     **** // -- "Write block misalign" (whether you can write one block across 512 byte boundaries) is not sp
+  62:microSD.c     **** // -- "Read block misalign" (whether you can read a block across 512 byte boundaries) is also not s
+  63:microSD.c     **** // -- Max block length is 1024 for 2GB cards I think, but setting the R/W block size to 512 won't h
+  64:microSD.c     **** 
+  65:microSD.c     **** // So, a packet works like this:
+  66:microSD.c     **** // Wait, token, packet, crc (then padding)
+  67:microSD.c     **** 
+  68:microSD.c     **** #include "includes.h"
+  69:microSD.c     **** 
+  70:microSD.c     **** // Programming Defines and Variables:
+  71:microSD.c     **** //-------------------------------------
+  72:microSD.c     **** 
+  73:microSD.c     **** // None, yet
+  74:microSD.c     **** 
+  75:microSD.c     **** //-----------------------------------------------------------------------
+  76:microSD.c     **** //-----------------------------------------------------------------------
+  77:microSD.c     **** // Hardware Init Functions:
+  78:microSD.c     **** //-----------------------------------------------------------------------
+  79:microSD.c     **** //-----------------------------------------------------------------------
+  80:microSD.c     **** 
+  81:microSD.c     **** void UnInitSdInterface(void)
+  82:microSD.c     **** {
+  15               		.loc 1 82 0
+  16               		.cfi_startproc
+  17               	/* prologue: function */
+  18               	/* frame size = 0 */
+  19               	/* stack size = 0 */
+  20               	.L__stack_usage = 0
+  83:microSD.c     **** 	DDRD&=~(Om_SD_CS|Om_SD_CLK);	// Flash specific outputs back to inputs.
+  21               		.loc 1 83 0
+  22 0000 8AB1      		in r24,0xa
+  23 0002 8F7C      		andi r24,lo8(-49)
+  24 0004 8AB9      		out 0xa,r24
+  84:microSD.c     **** 	PORTD|=(Om_SD_CS|Om_SD_CLK);	// Pullup pins so they don't float
+  25               		.loc 1 84 0
+  26 0006 8BB1      		in r24,0xb
+  27 0008 8063      		ori r24,lo8(48)
+  28 000a 8BB9      		out 0xb,r24
+  85:microSD.c     **** 	UCSR1B=0;						// Disable transmission / reception
+  29               		.loc 1 85 0
+  30 000c 1092 C900 		sts 201,__zero_reg__
+  86:microSD.c     **** 	PRR|=(1<<PRUSART1);				// Power off the UART.	
+  31               		.loc 1 86 0
+  32 0010 E4E6      		ldi r30,lo8(100)
+  33 0012 F0E0      		ldi r31,0
+  34 0014 8081      		ld r24,Z
+  35 0016 8061      		ori r24,lo8(16)
+  36 0018 8083      		st Z,r24
+  37 001a 0895      		ret
+  38               		.cfi_endproc
+  39               	.LFE1:
+  41               	.global	InitSdInterface
+  43               	InitSdInterface:
+  44               	.LFB2:
+  87:microSD.c     **** }
+  88:microSD.c     **** 
+  89:microSD.c     **** void InitSdInterface(void)
+  90:microSD.c     **** // Initializes the AVR's hardware to talk to the SD card.
+  91:microSD.c     **** // Because the command sequence which initializes the SD card needs CS to be high (CMD is what the 
+  92:microSD.c     **** // SD cards prefer SPI mode 0, although they can apparently work OK in mode 3.
+  93:microSD.c     **** // All instructions, addresses, and data are transferred with the most significant bit (MSb) first.
+  94:microSD.c     **** // We're starting with SCK = (Fosc / 4) or 5MHz with a 20MHz crystal.
+  95:microSD.c     **** {
+  45               		.loc 1 95 0
+  46               		.cfi_startproc
+  47               	/* prologue: function */
+  48               	/* frame size = 0 */
+  49               	/* stack size = 0 */
+  50               	.L__stack_usage = 0
+  96:microSD.c     **** 	PRR&=~(1<<PRUSART1);				// Power on the UART.
+  51               		.loc 1 96 0
   52 001c E4E6      		ldi r30,lo8(100)
-  53 001e F0E0      		ldi r31,hi8(100)
+  53 001e F0E0      		ldi r31,0
   54 0020 8081      		ld r24,Z
   55 0022 8F7E      		andi r24,lo8(-17)
   56 0024 8083      		st Z,r24
-  57               	.LM9:
-  58 0026 ECEC      		ldi r30,lo8(204)
-  59 0028 F0E0      		ldi r31,hi8(204)
+  97:microSD.c     **** 	UBRR1=0;							// The baud rate register must be 0 when the transmitter is enabled.
+  57               		.loc 1 97 0
+  58 0026 ECEC      		ldi r30,lo8(-52)
+  59 0028 F0E0      		ldi r31,0
   60 002a 1182      		std Z+1,__zero_reg__
   61 002c 1082      		st Z,__zero_reg__
-  62               	.LM10:
-  63 002e 549A      		sbi 42-32,4
-  64               	.LM11:
+  98:microSD.c     **** 	DDRD|=(Om_SD_CLK);					// Set the XCK1 (normally the UART external clock, now the SCK out) to an o
+  62               		.loc 1 98 0
+  63 002e 549A      		sbi 0xa,4
+  99:microSD.c     **** 	UCSR1C=((1<<UMSEL11) | (1<<UMSEL10));	// Set the USART to MPSIM mode, SPI mode 0, MSB first.
+  64               		.loc 1 99 0
   65 0030 80EC      		ldi r24,lo8(-64)
   66 0032 8093 CA00 		sts 202,r24
-  67               	.LM12:
+ 100:microSD.c     **** 	UCSR1B=((1<<RXEN1)|(1<<TXEN1)); 	// Enable the transmitter and receiver.
+  67               		.loc 1 100 0
   68 0036 88E1      		ldi r24,lo8(24)
   69 0038 8093 C900 		sts 201,r24
-  70               	.LM13:
+ 101:microSD.c     **** 	UBRR1=1;							// According to the datasheet this should be "5MBaud" or a 5MHz clock.  NOTE:  The 
+  70               		.loc 1 101 0
   71 003c 81E0      		ldi r24,lo8(1)
-  72 003e 90E0      		ldi r25,hi8(1)
+  72 003e 90E0      		ldi r25,0
   73 0040 9183      		std Z+1,r25
   74 0042 8083      		st Z,r24
-  75               	.LM14:
-  76 0044 559A      		sbi 42-32,5
-  77               	.LM15:
-  78 0046 5D9A      		sbi 43-32,5
-  79               	/* epilogue start */
-  80               	.LM16:
-  81 0048 0895      		ret
-  82               	.LFE4:
-  84               	.global	EndSdTransfer
-  86               	EndSdTransfer:
-  87               	.LFB5:
-  88               	.LM17:
+ 102:microSD.c     **** //	UBRR1=99;							// 100kHz clock for testing
+ 103:microSD.c     **** 
+ 104:microSD.c     **** 	DDRD|=Om_SD_CS;			// CS pin to output.
+  75               		.loc 1 104 0
+  76 0044 559A      		sbi 0xa,5
+ 105:microSD.c     **** 	PORTD|=Om_SD_CS;		// And start with CS low.
+  77               		.loc 1 105 0
+  78 0046 5D9A      		sbi 0xb,5
+  79 0048 0895      		ret
+  80               		.cfi_endproc
+  81               	.LFE2:
+  83               	.global	EndSdTransfer
+  85               	EndSdTransfer:
+  86               	.LFB3:
+ 106:microSD.c     **** }
+ 107:microSD.c     **** 
+ 108:microSD.c     **** //-----------------------------------------------------------------------
+ 109:microSD.c     **** //-----------------------------------------------------------------------
+ 110:microSD.c     **** // Low Level Transfer Functions
+ 111:microSD.c     **** //-----------------------------------------------------------------------
+ 112:microSD.c     **** //-----------------------------------------------------------------------
+ 113:microSD.c     **** 
+ 114:microSD.c     **** void EndSdTransfer(void)
+ 115:microSD.c     **** // This ends an SPI transfer.  If called while the CS line is already high or there is no transfer 
+ 116:microSD.c     **** {
+  87               		.loc 1 116 0
+  88               		.cfi_startproc
   89               	/* prologue: function */
   90               	/* frame size = 0 */
-  91               	.LM18:
-  92 004a 5D9A      		sbi 43-32,5
-  93               	/* epilogue start */
-  94               	.LM19:
+  91               	/* stack size = 0 */
+  92               	.L__stack_usage = 0
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+  93               		.loc 1 117 0
+  94 004a 5D9A      		sbi 0xb,5
   95 004c 0895      		ret
-  96               	.LFE5:
-  98               	.global	StartSdTransfer
- 100               	StartSdTransfer:
- 101               	.LFB6:
- 102               	.LM20:
- 103               	/* prologue: function */
- 104               	/* frame size = 0 */
- 105               	.LM21:
- 106 004e 5D9A      		sbi 43-32,5
- 107               	.LM22:
- 108 0050 5D98      		cbi 43-32,5
- 109               	/* epilogue start */
- 110               	.LM23:
- 111 0052 0895      		ret
- 112               	.LFE6:
- 114               	.global	TransferSdByte
- 116               	TransferSdByte:
- 117               	.LFB7:
- 118               	.LM24:
- 119               	.LVL0:
- 120               	/* prologue: function */
- 121               	/* frame size = 0 */
- 122 0054 982F      		mov r25,r24
- 123               	.LVL1:
- 124               	.L10:
- 125               	.LM25:
- 126 0056 8091 C800 		lds r24,200
- 127 005a 85FF      		sbrs r24,5
- 128 005c 00C0      		rjmp .L10
- 129               	.LM26:
- 130 005e 9093 CE00 		sts 206,r25
- 131               	.L11:
- 132               	.LM27:
- 133 0062 8091 C800 		lds r24,200
- 134 0066 87FF      		sbrs r24,7
- 135 0068 00C0      		rjmp .L11
- 136               	.LM28:
- 137 006a 8091 CE00 		lds r24,206
- 138               	/* epilogue start */
- 139               	.LM29:
- 140 006e 0895      		ret
- 141               	.LFE7:
- 144               	SendDummyByte:
- 145               	.LFB8:
- 146               	.LM30:
- 147               	/* prologue: function */
- 148               	/* frame size = 0 */
- 149               	.LM31:
- 150 0070 8091 C800 		lds r24,200
- 151 0074 8064      		ori r24,lo8(64)
- 152 0076 8093 C800 		sts 200,r24
- 153               	.L16:
- 154               	.LBB84:
- 155               	.LBB85:
- 156               	.LM32:
- 157 007a 8091 C800 		lds r24,200
- 158 007e 85FF      		sbrs r24,5
- 159 0080 00C0      		rjmp .L16
- 160               	.LM33:
- 161 0082 8FEF      		ldi r24,lo8(-1)
- 162 0084 8093 CE00 		sts 206,r24
- 163               	.L17:
- 164               	.LM34:
- 165 0088 8091 C800 		lds r24,200
- 166 008c 87FF      		sbrs r24,7
- 167 008e 00C0      		rjmp .L17
- 168               	.LM35:
- 169 0090 8091 CE00 		lds r24,206
- 170               	.L18:
- 171               	.LBE85:
- 172               	.LBE84:
- 173               	.LM36:
- 174 0094 8091 C800 		lds r24,200
- 175 0098 86FF      		sbrs r24,6
- 176 009a 00C0      		rjmp .L18
- 177               	/* epilogue start */
- 178               	.LM37:
- 179 009c 0895      		ret
- 180               	.LFE8:
- 182               	.global	SendSdCommand
- 184               	SendSdCommand:
- 185               	.LFB9:
- 186               	.LM38:
- 187               	.LVL2:
- 188 009e 1F93      		push r17
- 189               	/* prologue: function */
- 190               	/* frame size = 0 */
- 191 00a0 282F      		mov r18,r24
- 192               	.LBB86:
- 193               	.LBB87:
- 194               	.LM39:
- 195 00a2 5D9A      		sbi 43-32,5
- 196               	.LM40:
- 197 00a4 5D98      		cbi 43-32,5
- 198               	.LVL3:
- 199               	.L24:
- 200               	.LBE87:
- 201               	.LBE86:
- 202               	.LBB88:
- 203               	.LBB89:
- 204               	.LM41:
- 205 00a6 8091 C800 		lds r24,200
- 206 00aa 85FF      		sbrs r24,5
- 207 00ac 00C0      		rjmp .L24
- 208               	.LM42:
- 209 00ae 8FEF      		ldi r24,lo8(-1)
- 210 00b0 8093 CE00 		sts 206,r24
- 211               	.L25:
- 212               	.LM43:
- 213 00b4 8091 C800 		lds r24,200
- 214 00b8 87FF      		sbrs r24,7
- 215 00ba 00C0      		rjmp .L25
- 216               	.LM44:
- 217 00bc 8091 CE00 		lds r24,206
- 218               	.LBE89:
- 219               	.LBE88:
- 220               	.LM45:
- 221 00c0 27FF      		sbrs r18,7
- 222 00c2 00C0      		rjmp .L70
- 223               	.L71:
- 224               	.LBB90:
- 225               	.LBB91:
- 226               	.LM46:
- 227 00c4 8091 C800 		lds r24,200
- 228 00c8 85FF      		sbrs r24,5
- 229 00ca 00C0      		rjmp .L71
- 230               	.LM47:
- 231 00cc 87E7      		ldi r24,lo8(119)
- 232 00ce 8093 CE00 		sts 206,r24
- 233               	.L28:
- 234               	.LM48:
- 235 00d2 8091 C800 		lds r24,200
- 236 00d6 87FF      		sbrs r24,7
- 237 00d8 00C0      		rjmp .L28
- 238               	.LM49:
- 239 00da 8091 CE00 		lds r24,206
- 240               	.L29:
- 241               	.LBE91:
- 242               	.LBE90:
- 243               	.LBB92:
- 244               	.LBB93:
- 245               	.LM50:
- 246 00de 8091 C800 		lds r24,200
- 247 00e2 85FF      		sbrs r24,5
- 248 00e4 00C0      		rjmp .L29
- 249               	.LM51:
- 250 00e6 1092 CE00 		sts 206,__zero_reg__
- 251               	.L30:
- 252               	.LM52:
- 253 00ea 8091 C800 		lds r24,200
- 254 00ee 87FF      		sbrs r24,7
- 255 00f0 00C0      		rjmp .L30
- 256               	.LM53:
- 257 00f2 8091 CE00 		lds r24,206
- 258               	.L31:
- 259               	.LBE93:
- 260               	.LBE92:
- 261               	.LBB94:
- 262               	.LBB95:
- 263               	.LM54:
- 264 00f6 8091 C800 		lds r24,200
- 265 00fa 85FF      		sbrs r24,5
- 266 00fc 00C0      		rjmp .L31
- 267               	.LM55:
- 268 00fe 1092 CE00 		sts 206,__zero_reg__
- 269               	.L32:
- 270               	.LM56:
- 271 0102 8091 C800 		lds r24,200
- 272 0106 87FF      		sbrs r24,7
- 273 0108 00C0      		rjmp .L32
- 274               	.LM57:
- 275 010a 8091 CE00 		lds r24,206
- 276               	.L33:
- 277               	.LBE95:
- 278               	.LBE94:
- 279               	.LBB96:
- 280               	.LBB97:
- 281               	.LM58:
- 282 010e 8091 C800 		lds r24,200
- 283 0112 85FF      		sbrs r24,5
- 284 0114 00C0      		rjmp .L33
- 285               	.LM59:
- 286 0116 1092 CE00 		sts 206,__zero_reg__
- 287               	.L34:
- 288               	.LM60:
- 289 011a 8091 C800 		lds r24,200
- 290 011e 87FF      		sbrs r24,7
- 291 0120 00C0      		rjmp .L34
- 292               	.LM61:
- 293 0122 8091 CE00 		lds r24,206
- 294               	.L35:
- 295               	.LBE97:
- 296               	.LBE96:
- 297               	.LBB98:
- 298               	.LBB99:
- 299               	.LM62:
- 300 0126 8091 C800 		lds r24,200
- 301 012a 85FF      		sbrs r24,5
- 302 012c 00C0      		rjmp .L35
- 303               	.LM63:
- 304 012e 1092 CE00 		sts 206,__zero_reg__
- 305               	.L36:
- 306               	.LM64:
- 307 0132 8091 C800 		lds r24,200
- 308 0136 87FF      		sbrs r24,7
- 309 0138 00C0      		rjmp .L36
- 310               	.LM65:
- 311 013a 8091 CE00 		lds r24,206
- 312               	.L37:
- 313               	.LBE99:
- 314               	.LBE98:
- 315               	.LBB100:
- 316               	.LBB101:
- 317               	.LM66:
- 318 013e 8091 C800 		lds r24,200
- 319 0142 85FF      		sbrs r24,5
- 320 0144 00C0      		rjmp .L37
- 321               	.LM67:
- 322 0146 81E0      		ldi r24,lo8(1)
- 323 0148 8093 CE00 		sts 206,r24
- 324               	.L38:
- 325               	.LM68:
- 326 014c 8091 C800 		lds r24,200
- 327 0150 87FF      		sbrs r24,7
- 328 0152 00C0      		rjmp .L38
- 329               	.LM69:
- 330 0154 8091 CE00 		lds r24,206
- 331 0158 9AE0      		ldi r25,lo8(10)
- 332               	.LVL4:
- 333               	.LBE101:
- 334               	.LBE100:
- 335               	.LBB102:
- 336               	.LBB103:
- 337               	.LM70:
- 338 015a 3FEF      		ldi r19,lo8(-1)
- 339               	.LVL5:
- 340               	.L107:
- 341               	.LM71:
- 342 015c 8091 C800 		lds r24,200
- 343 0160 85FF      		sbrs r24,5
- 344 0162 00C0      		rjmp .L107
- 345               	.LM72:
- 346 0164 3093 CE00 		sts 206,r19
- 347               	.L40:
- 348               	.LM73:
- 349 0168 8091 C800 		lds r24,200
- 350 016c 87FF      		sbrs r24,7
- 351 016e 00C0      		rjmp .L40
- 352               	.LM74:
- 353 0170 1091 CE00 		lds r17,206
- 354               	.LBE103:
- 355               	.LBE102:
- 356               	.LM75:
- 357 0174 1F3F      		cpi r17,lo8(-1)
- 358 0176 01F4      		brne .L41
- 359 0178 9150      		subi r25,lo8(-(-1))
- 360 017a 01F4      		brne .L107
- 361               	.L41:
- 362               	.LM76:
- 363 017c 8091 C800 		lds r24,200
- 364 0180 8064      		ori r24,lo8(64)
- 365 0182 8093 C800 		sts 200,r24
- 366               	.L42:
- 367               	.LBB104:
- 368               	.LBB105:
- 369               	.LM77:
- 370 0186 8091 C800 		lds r24,200
- 371 018a 85FF      		sbrs r24,5
- 372 018c 00C0      		rjmp .L42
- 373               	.LM78:
- 374 018e 8FEF      		ldi r24,lo8(-1)
- 375 0190 8093 CE00 		sts 206,r24
- 376               	.L43:
- 377               	.LM79:
- 378 0194 8091 C800 		lds r24,200
- 379 0198 87FF      		sbrs r24,7
- 380 019a 00C0      		rjmp .L43
- 381               	.LM80:
- 382 019c 8091 CE00 		lds r24,206
- 383               	.L44:
- 384               	.LBE105:
- 385               	.LBE104:
- 386               	.LM81:
- 387 01a0 8091 C800 		lds r24,200
- 388 01a4 86FF      		sbrs r24,6
- 389 01a6 00C0      		rjmp .L44
- 390               	.LM82:
- 391 01a8 1230      		cpi r17,lo8(2)
- 392 01aa 00F0      		brlo .L45
- 393               	.LBB106:
- 394               	.LBB107:
- 395               	.LM83:
- 396 01ac 5D9A      		sbi 43-32,5
- 397 01ae 00C0      		rjmp .L46
- 398               	.L45:
- 399               	.LBE107:
- 400               	.LBE106:
- 401               	.LBB108:
- 402               	.LBB109:
- 403 01b0 5D9A      		sbi 43-32,5
- 404               	.LBE109:
- 405               	.LBE108:
- 406               	.LM84:
- 407 01b2 2F77      		andi r18,lo8(127)
- 408               	.LBB110:
- 409               	.LBB111:
- 410               	.LM85:
- 411 01b4 5D9A      		sbi 43-32,5
- 412               	.LM86:
- 413 01b6 5D98      		cbi 43-32,5
- 414               	.L70:
- 415               	.LBE111:
- 416               	.LBE110:
- 417               	.LBB112:
- 418               	.LBB113:
- 419               	.LM87:
- 420 01b8 8091 C800 		lds r24,200
- 421 01bc 85FF      		sbrs r24,5
- 422 01be 00C0      		rjmp .L70
- 423               	.LBE113:
- 424               	.LBE112:
- 425               	.LM88:
- 426 01c0 822F      		mov r24,r18
- 427 01c2 8064      		ori r24,lo8(64)
- 428               	.LBB115:
- 429               	.LBB114:
- 430               	.LM89:
- 431 01c4 8093 CE00 		sts 206,r24
- 432               	.L47:
- 433               	.LM90:
- 434 01c8 8091 C800 		lds r24,200
- 435 01cc 87FF      		sbrs r24,7
- 436 01ce 00C0      		rjmp .L47
- 437               	.LM91:
- 438 01d0 8091 CE00 		lds r24,206
- 439               	.L48:
- 440               	.LBE114:
- 441               	.LBE115:
- 442               	.LBB116:
- 443               	.LBB117:
- 444               	.LM92:
- 445 01d4 8091 C800 		lds r24,200
- 446 01d8 85FF      		sbrs r24,5
- 447 01da 00C0      		rjmp .L48
- 448               	.LBE117:
- 449               	.LBE116:
- 450               	.LM93:
- 451 01dc 872F      		mov r24,r23
- 452 01de 9927      		clr r25
- 453 01e0 AA27      		clr r26
- 454 01e2 BB27      		clr r27
- 455               	.LBB119:
- 456               	.LBB118:
- 457               	.LM94:
- 458 01e4 8093 CE00 		sts 206,r24
- 459               	.L49:
- 460               	.LM95:
- 461 01e8 8091 C800 		lds r24,200
- 462 01ec 87FF      		sbrs r24,7
- 463 01ee 00C0      		rjmp .L49
- 464               	.LM96:
- 465 01f0 8091 CE00 		lds r24,206
- 466               	.L50:
- 467               	.LBE118:
- 468               	.LBE119:
- 469               	.LBB120:
- 470               	.LBB121:
- 471               	.LM97:
- 472 01f4 8091 C800 		lds r24,200
- 473 01f8 85FF      		sbrs r24,5
- 474 01fa 00C0      		rjmp .L50
- 475               	.LBE121:
- 476               	.LBE120:
- 477               	.LM98:
- 478 01fc CB01      		movw r24,r22
- 479 01fe AA27      		clr r26
- 480 0200 BB27      		clr r27
- 481               	.LVL6:
- 482               	.LBB123:
- 483               	.LBB122:
- 484               	.LM99:
- 485 0202 8093 CE00 		sts 206,r24
- 486               	.L51:
- 487               	.LM100:
- 488 0206 8091 C800 		lds r24,200
- 489 020a 87FF      		sbrs r24,7
- 490 020c 00C0      		rjmp .L51
- 491               	.LM101:
- 492 020e 8091 CE00 		lds r24,206
- 493               	.L52:
- 494               	.LBE122:
- 495               	.LBE123:
- 496               	.LBB124:
- 497               	.LBB125:
- 498               	.LM102:
- 499 0212 8091 C800 		lds r24,200
- 500 0216 85FF      		sbrs r24,5
- 501 0218 00C0      		rjmp .L52
- 502               	.LBE125:
- 503               	.LBE124:
- 504               	.LM103:
- 505 021a BB27      		clr r27
- 506 021c A72F      		mov r26,r23
- 507 021e 962F      		mov r25,r22
- 508 0220 852F      		mov r24,r21
- 509               	.LBB127:
- 510               	.LBB126:
- 511               	.LM104:
- 512 0222 8093 CE00 		sts 206,r24
- 513               	.L53:
- 514               	.LM105:
- 515 0226 8091 C800 		lds r24,200
- 516 022a 87FF      		sbrs r24,7
- 517 022c 00C0      		rjmp .L53
- 518               	.LM106:
- 519 022e 8091 CE00 		lds r24,206
- 520               	.L54:
- 521               	.LBE126:
- 522               	.LBE127:
- 523               	.LBB128:
- 524               	.LBB129:
- 525               	.LM107:
- 526 0232 8091 C800 		lds r24,200
- 527 0236 85FF      		sbrs r24,5
- 528 0238 00C0      		rjmp .L54
- 529               	.LM108:
- 530 023a 4093 CE00 		sts 206,r20
- 531               	.L55:
- 532               	.LM109:
- 533 023e 8091 C800 		lds r24,200
- 534 0242 87FF      		sbrs r24,7
- 535 0244 00C0      		rjmp .L55
- 536               	.LM110:
- 537 0246 8091 CE00 		lds r24,206
- 538               	.LBE129:
- 539               	.LBE128:
- 540               	.LM111:
- 541 024a 2223      		tst r18
- 542 024c 01F4      		brne .L56
- 543 024e 95E9      		ldi r25,lo8(-107)
- 544               	.LVL7:
- 545 0250 00C0      		rjmp .L69
- 546               	.LVL8:
- 547               	.L56:
- 548               	.LM112:
- 549 0252 2830      		cpi r18,lo8(8)
- 550 0254 01F4      		brne .L58
- 551 0256 97E8      		ldi r25,lo8(-121)
- 552               	.LVL9:
- 553 0258 00C0      		rjmp .L69
- 554               	.LVL10:
- 555               	.L58:
- 556 025a 91E0      		ldi r25,lo8(1)
- 557               	.LVL11:
- 558               	.L69:
- 559               	.LBB130:
- 560               	.LBB131:
- 561               	.LM113:
- 562 025c 8091 C800 		lds r24,200
- 563 0260 85FF      		sbrs r24,5
- 564 0262 00C0      		rjmp .L69
- 565               	.LM114:
- 566 0264 9093 CE00 		sts 206,r25
- 567               	.L59:
- 568               	.LM115:
- 569 0268 8091 C800 		lds r24,200
- 570 026c 87FF      		sbrs r24,7
- 571 026e 00C0      		rjmp .L59
- 572               	.LM116:
- 573 0270 8091 CE00 		lds r24,206
- 574               	.LBE131:
- 575               	.LBE130:
- 576               	.LM117:
- 577 0274 2C30      		cpi r18,lo8(12)
- 578 0276 01F4      		brne .L110
- 579               	.L68:
- 580               	.LBB132:
- 581               	.LBB133:
- 582               	.LM118:
- 583 0278 8091 C800 		lds r24,200
- 584 027c 85FF      		sbrs r24,5
- 585 027e 00C0      		rjmp .L68
- 586               	.LM119:
- 587 0280 8FEF      		ldi r24,lo8(-1)
- 588 0282 8093 CE00 		sts 206,r24
- 589               	.L62:
- 590               	.LM120:
- 591 0286 8091 C800 		lds r24,200
- 592 028a 87FF      		sbrs r24,7
- 593 028c 00C0      		rjmp .L62
- 594               	.LM121:
- 595 028e 8091 CE00 		lds r24,206
- 596               	.L110:
- 597 0292 9AE0      		ldi r25,lo8(10)
- 598               	.LVL12:
- 599               	.LBE133:
- 600               	.LBE132:
- 601               	.LBB134:
- 602               	.LBB135:
- 603               	.LM122:
- 604 0294 3FEF      		ldi r19,lo8(-1)
- 605               	.L108:
- 606               	.LM123:
- 607 0296 8091 C800 		lds r24,200
- 608 029a 85FF      		sbrs r24,5
- 609 029c 00C0      		rjmp .L108
- 610               	.LM124:
- 611 029e 3093 CE00 		sts 206,r19
- 612               	.L63:
- 613               	.LM125:
- 614 02a2 8091 C800 		lds r24,200
- 615 02a6 87FF      		sbrs r24,7
- 616 02a8 00C0      		rjmp .L63
- 617               	.LM126:
- 618 02aa 1091 CE00 		lds r17,206
- 619               	.LBE135:
- 620               	.LBE134:
- 621               	.LM127:
- 622 02ae 1F3F      		cpi r17,lo8(-1)
- 623 02b0 01F4      		brne .L64
- 624 02b2 9150      		subi r25,lo8(-(-1))
- 625 02b4 01F4      		brne .L108
- 626               	.L64:
- 627               	.LM128:
- 628 02b6 2830      		cpi r18,lo8(8)
- 629 02b8 01F0      		breq .L46
- 630 02ba 2A33      		cpi r18,lo8(58)
- 631 02bc 01F0      		breq .L46
- 632               	.LM129:
- 633 02be 0E94 0000 		call SendDummyByte
- 634               	.LVL13:
- 635               	.L46:
- 636               	.LM130:
- 637 02c2 812F      		mov r24,r17
- 638               	/* epilogue start */
- 639 02c4 1F91      		pop r17
- 640               	.LVL14:
- 641 02c6 0895      		ret
- 642               	.LFE9:
- 644               	.global	SdBeginSingleBlockRead
- 646               	SdBeginSingleBlockRead:
- 647               	.LFB11:
- 648               	.LM131:
- 649               	.LVL15:
- 650               	/* prologue: function */
- 651               	/* frame size = 0 */
- 652 02c8 AB01      		movw r20,r22
- 653 02ca BC01      		movw r22,r24
- 654               	.LM132:
- 655 02cc E9E0      		ldi r30,9
- 656 02ce 440F      	1:	lsl r20
- 657 02d0 551F      		rol r21
- 658 02d2 661F      		rol r22
- 659 02d4 771F      		rol r23
- 660 02d6 EA95      		dec r30
- 661 02d8 01F4      		brne 1b
- 662               	.LVL16:
- 663 02da 81E1      		ldi r24,lo8(17)
- 664 02dc 0E94 0000 		call SendSdCommand
- 665               	.LVL17:
- 666 02e0 90E0      		ldi r25,lo8(0)
- 667 02e2 8823      		tst r24
- 668 02e4 01F4      		brne .L112
- 669 02e6 91E0      		ldi r25,lo8(1)
- 670               	.L112:
- 671               	.LM133:
- 672 02e8 892F      		mov r24,r25
- 673               	/* epilogue start */
- 674 02ea 0895      		ret
- 675               	.LFE11:
- 677               	.global	SdBeginSingleBlockWrite
- 679               	SdBeginSingleBlockWrite:
- 680               	.LFB12:
- 681               	.LM134:
- 682               	.LVL18:
- 683               	/* prologue: function */
- 684               	/* frame size = 0 */
- 685 02ec AB01      		movw r20,r22
- 686 02ee BC01      		movw r22,r24
- 687               	.LM135:
- 688 02f0 F9E0      		ldi r31,9
- 689 02f2 440F      	1:	lsl r20
- 690 02f4 551F      		rol r21
- 691 02f6 661F      		rol r22
- 692 02f8 771F      		rol r23
- 693 02fa FA95      		dec r31
- 694 02fc 01F4      		brne 1b
- 695               	.LVL19:
- 696 02fe 88E1      		ldi r24,lo8(24)
- 697 0300 0E94 0000 		call SendSdCommand
- 698               	.LVL20:
- 699 0304 90E0      		ldi r25,lo8(0)
- 700 0306 8823      		tst r24
- 701 0308 01F4      		brne .L115
- 702 030a 91E0      		ldi r25,lo8(1)
- 703               	.L115:
- 704               	.LM136:
- 705 030c 892F      		mov r24,r25
- 706               	/* epilogue start */
- 707 030e 0895      		ret
- 708               	.LFE12:
- 710               	.global	SdHandshake
- 712               	SdHandshake:
- 713               	.LFB10:
- 714               	.LM137:
- 715 0310 DF93      		push r29
- 716 0312 CF93      		push r28
- 717 0314 00D0      		rcall .
- 718 0316 00D0      		rcall .
- 719 0318 CDB7      		in r28,__SP_L__
- 720 031a DEB7      		in r29,__SP_H__
- 721               	/* prologue: function */
- 722               	/* frame size = 4 */
- 723               	.LBB136:
- 724               	.LBB137:
- 725               	.LM138:
- 726 031c 5D9A      		sbi 43-32,5
- 727 031e 90E0      		ldi r25,lo8(0)
- 728               	.LVL21:
- 729               	.LBE137:
- 730               	.LBE136:
- 731               	.LBB138:
- 732               	.LBB139:
- 733               	.LM139:
- 734 0320 2FEF      		ldi r18,lo8(-1)
- 735               	.L120:
- 736               	.LBE139:
- 737               	.LBE138:
- 738               	.LM140:
- 739 0322 8091 C800 		lds r24,200
- 740 0326 8064      		ori r24,lo8(64)
- 741 0328 8093 C800 		sts 200,r24
- 742               	.L118:
- 743               	.LBB141:
- 744               	.LBB140:
- 745               	.LM141:
- 746 032c 8091 C800 		lds r24,200
- 747 0330 85FF      		sbrs r24,5
- 748 0332 00C0      		rjmp .L118
- 749               	.LM142:
- 750 0334 2093 CE00 		sts 206,r18
- 751               	.L119:
- 752               	.LM143:
- 753 0338 8091 C800 		lds r24,200
- 754 033c 87FF      		sbrs r24,7
- 755 033e 00C0      		rjmp .L119
- 756               	.LM144:
- 757 0340 8091 CE00 		lds r24,206
- 758               	.LBE140:
- 759               	.LBE141:
- 760               	.LM145:
- 761 0344 9F5F      		subi r25,lo8(-(1))
- 762 0346 9431      		cpi r25,lo8(20)
- 763 0348 01F4      		brne .L120
- 764               	.L147:
- 765               	.LM146:
- 766 034a 8091 C800 		lds r24,200
- 767 034e 86FF      		sbrs r24,6
- 768 0350 00C0      		rjmp .L147
- 769               	.LBB142:
- 770               	.LBB143:
- 771               	.LM147:
- 772 0352 5D9A      		sbi 43-32,5
- 773               	.LM148:
- 774 0354 5D98      		cbi 43-32,5
- 775 0356 20E0      		ldi r18,lo8(0)
- 776 0358 30E0      		ldi r19,hi8(0)
- 777               	.LVL22:
- 778               	.LBE143:
- 779               	.LBE142:
- 780               	.LBB144:
- 781               	.LBB145:
- 782               	.LM149:
- 783 035a 9FEF      		ldi r25,lo8(-1)
- 784               	.LVL23:
- 785               	.L124:
- 786               	.LBE145:
- 787               	.LBE144:
- 788               	.LM150:
- 789 035c 8091 C800 		lds r24,200
- 790 0360 8064      		ori r24,lo8(64)
- 791 0362 8093 C800 		sts 200,r24
- 792               	.L122:
- 793               	.LBB147:
- 794               	.LBB146:
- 795               	.LM151:
- 796 0366 8091 C800 		lds r24,200
- 797 036a 85FF      		sbrs r24,5
- 798 036c 00C0      		rjmp .L122
- 799               	.LM152:
- 800 036e 9093 CE00 		sts 206,r25
- 801               	.L123:
- 802               	.LM153:
- 803 0372 8091 C800 		lds r24,200
- 804 0376 87FF      		sbrs r24,7
- 805 0378 00C0      		rjmp .L123
- 806               	.LM154:
- 807 037a 8091 CE00 		lds r24,206
- 808               	.LBE146:
- 809               	.LBE147:
- 810               	.LM155:
- 811 037e 2F5F      		subi r18,lo8(-(1))
- 812 0380 3F4F      		sbci r19,hi8(-(1))
- 813 0382 82E0      		ldi r24,hi8(512)
- 814 0384 2030      		cpi r18,lo8(512)
- 815 0386 3807      		cpc r19,r24
- 816 0388 01F4      		brne .L124
- 817               	.L146:
- 818               	.LM156:
- 819 038a 8091 C800 		lds r24,200
- 820 038e 86FF      		sbrs r24,6
- 821 0390 00C0      		rjmp .L146
- 822               	.LBB148:
- 823               	.LBB149:
- 824               	.LM157:
- 825 0392 5D9A      		sbi 43-32,5
- 826               	.LBE149:
- 827               	.LBE148:
- 828               	.LM158:
- 829 0394 80E0      		ldi r24,lo8(0)
- 830 0396 40E0      		ldi r20,lo8(0)
- 831 0398 50E0      		ldi r21,hi8(0)
- 832 039a 60E0      		ldi r22,hlo8(0)
- 833 039c 70E0      		ldi r23,hhi8(0)
- 834 039e 0E94 0000 		call SendSdCommand
- 835               	.LVL24:
- 836               	.L126:
- 837               	.LM159:
- 838 03a2 8091 C800 		lds r24,200
- 839 03a6 86FF      		sbrs r24,6
- 840 03a8 00C0      		rjmp .L126
- 841               	.LBB150:
- 842               	.LBB151:
- 843               	.LM160:
- 844 03aa 5D9A      		sbi 43-32,5
- 845               	.LBE151:
- 846               	.LBE150:
- 847               	.LM161:
- 848 03ac 80E0      		ldi r24,lo8(0)
- 849 03ae 40E0      		ldi r20,lo8(0)
- 850 03b0 50E0      		ldi r21,hi8(0)
- 851 03b2 60E0      		ldi r22,hlo8(0)
- 852 03b4 70E0      		ldi r23,hhi8(0)
- 853 03b6 0E94 0000 		call SendSdCommand
- 854 03ba 8130      		cpi r24,lo8(1)
- 855 03bc 01F0      		breq .+2
- 856 03be 00C0      		rjmp .L127
- 857               	.LBB152:
- 858               	.LBB153:
- 859               	.LM162:
- 860 03c0 5D9A      		sbi 43-32,5
- 861               	.LBE153:
- 862               	.LBE152:
- 863               	.LM163:
- 864 03c2 88E0      		ldi r24,lo8(8)
- 865 03c4 4AEA      		ldi r20,lo8(426)
- 866 03c6 51E0      		ldi r21,hi8(426)
- 867 03c8 60E0      		ldi r22,hlo8(426)
- 868 03ca 70E0      		ldi r23,hhi8(426)
- 869 03cc 0E94 0000 		call SendSdCommand
- 870 03d0 8130      		cpi r24,lo8(1)
- 871 03d2 01F0      		breq .+2
- 872 03d4 00C0      		rjmp .L128
- 873 03d6 FE01      		movw r30,r28
- 874 03d8 3196      		adiw r30,1
- 875               	.LBB154:
- 876               	.LBB155:
- 877               	.LM164:
- 878 03da 9FEF      		ldi r25,lo8(-1)
- 879               	.LBE155:
- 880               	.LBE154:
- 881               	.LM165:
- 882 03dc 9E01      		movw r18,r28
- 883 03de 2B5F      		subi r18,lo8(-(5))
- 884 03e0 3F4F      		sbci r19,hi8(-(5))
- 885               	.L162:
- 886               	.LBB157:
- 887               	.LBB156:
- 888               	.LM166:
- 889 03e2 8091 C800 		lds r24,200
- 890 03e6 85FF      		sbrs r24,5
- 891 03e8 00C0      		rjmp .L162
- 892               	.LM167:
- 893 03ea 9093 CE00 		sts 206,r25
- 894               	.L130:
- 895               	.LM168:
- 896 03ee 8091 C800 		lds r24,200
- 897 03f2 87FF      		sbrs r24,7
- 898 03f4 00C0      		rjmp .L130
- 899               	.LM169:
- 900 03f6 8091 CE00 		lds r24,206
- 901               	.LBE156:
- 902               	.LBE157:
- 903               	.LM170:
- 904 03fa 8193      		st Z+,r24
- 905               	.LM171:
- 906 03fc E217      		cp r30,r18
- 907 03fe F307      		cpc r31,r19
- 908 0400 01F4      		brne .L162
- 909               	.LM172:
- 910 0402 0E94 0000 		call SendDummyByte
- 911               	.LBB158:
- 912               	.LBB159:
- 913               	.LM173:
- 914 0406 5D9A      		sbi 43-32,5
- 915               	.LBE159:
- 916               	.LBE158:
- 917               	.LM174:
- 918 0408 8B81      		ldd r24,Y+3
- 919 040a 8130      		cpi r24,lo8(1)
- 920 040c 01F0      		breq .+2
- 921 040e 00C0      		rjmp .L127
- 922 0410 8C81      		ldd r24,Y+4
- 923 0412 8A3A      		cpi r24,lo8(-86)
- 924 0414 01F0      		breq .+2
- 925 0416 00C0      		rjmp .L127
- 926               	.LM175:
- 927 0418 83E0      		ldi r24,lo8(3)
- 928 041a 64EC      		ldi r22,lo8(1220)
- 929 041c 74E0      		ldi r23,hi8(1220)
- 930 041e 0E94 0000 		call SetTimer
- 931 0422 00C0      		rjmp .L131
- 932               	.L133:
- 933               	.LBB160:
- 934               	.LBB161:
- 935               	.LM176:
- 936 0424 5D9A      		sbi 43-32,5
- 937               	.LBE161:
- 938               	.LBE160:
- 939               	.LM177:
- 940 0426 0E94 0000 		call HandleSoftclock
- 941               	.L131:
- 942               	.LM178:
- 943 042a 83E0      		ldi r24,lo8(3)
- 944 042c 0E94 0000 		call CheckTimer
- 945 0430 8823      		tst r24
- 946 0432 01F4      		brne .L132
- 947 0434 89EA      		ldi r24,lo8(-87)
- 948 0436 40E0      		ldi r20,lo8(0)
- 949 0438 50E0      		ldi r21,hi8(0)
- 950 043a 60E0      		ldi r22,hlo8(0)
- 951 043c 70E0      		ldi r23,hhi8(0)
- 952 043e 0E94 0000 		call SendSdCommand
- 953 0442 8823      		tst r24
- 954 0444 01F4      		brne .L133
- 955               	.L132:
- 956               	.LM179:
- 957 0446 83E0      		ldi r24,lo8(3)
- 958 0448 0E94 0000 		call CheckTimer
- 959 044c 8823      		tst r24
- 960 044e 01F0      		breq .L160
- 961 0450 00C0      		rjmp .L127
- 962               	.L136:
- 963               	.LM180:
- 964 0452 0E94 0000 		call SendDummyByte
- 965               	.LM181:
- 966 0456 0E94 0000 		call HandleSoftclock
- 967               	.LBB162:
- 968               	.LBB163:
- 969               	.LM182:
- 970 045a 5D9A      		sbi 43-32,5
- 971               	.L160:
- 972               	.LBE163:
- 973               	.LBE162:
- 974               	.LM183:
- 975 045c 83E0      		ldi r24,lo8(3)
- 976 045e 0E94 0000 		call CheckTimer
- 977 0462 8823      		tst r24
- 978 0464 01F4      		brne .L135
- 979 0466 8AE3      		ldi r24,lo8(58)
- 980 0468 40E0      		ldi r20,lo8(0)
- 981 046a 50E0      		ldi r21,hi8(0)
- 982 046c 60E0      		ldi r22,hlo8(0)
- 983 046e 70E0      		ldi r23,hhi8(0)
- 984 0470 0E94 0000 		call SendSdCommand
- 985 0474 8823      		tst r24
- 986 0476 01F4      		brne .L136
- 987               	.L135:
- 988               	.LM184:
- 989 0478 83E0      		ldi r24,lo8(3)
- 990 047a 0E94 0000 		call CheckTimer
- 991 047e 8823      		tst r24
- 992 0480 01F0      		breq .+2
- 993 0482 00C0      		rjmp .L127
- 994 0484 90E0      		ldi r25,lo8(0)
- 995               	.LVL25:
- 996               	.LBB164:
- 997               	.LBB165:
- 998               	.LM185:
- 999 0486 2FEF      		ldi r18,lo8(-1)
- 1000               	.L163:
- 1001               	.LM186:
- 1002 0488 8091 C800 		lds r24,200
- 1003 048c 85FF      		sbrs r24,5
- 1004 048e 00C0      		rjmp .L163
- 1005               	.LM187:
- 1006 0490 2093 CE00 		sts 206,r18
- 1007               	.L138:
- 1008               	.LM188:
- 1009 0494 8091 C800 		lds r24,200
- 1010 0498 87FF      		sbrs r24,7
- 1011 049a 00C0      		rjmp .L138
- 1012               	.LM189:
- 1013 049c 8091 CE00 		lds r24,206
- 1014               	.LBE165:
- 1015               	.LBE164:
- 1016               	.LM190:
- 1017 04a0 9F5F      		subi r25,lo8(-(1))
- 1018 04a2 9430      		cpi r25,lo8(4)
- 1019 04a4 01F4      		brne .L163
- 1020               	.LM191:
- 1021 04a6 0E94 0000 		call SendDummyByte
- 1022               	.LVL26:
- 1023               	.LBB166:
- 1024               	.LBB167:
- 1025               	.LM192:
- 1026 04aa 5D9A      		sbi 43-32,5
- 1027               	.LBE167:
- 1028               	.LBE166:
- 1029               	.LM193:
- 1030 04ac 80E1      		ldi r24,lo8(16)
- 1031 04ae 40E0      		ldi r20,lo8(512)
- 1032 04b0 52E0      		ldi r21,hi8(512)
- 1033 04b2 60E0      		ldi r22,hlo8(512)
- 1034 04b4 70E0      		ldi r23,hhi8(512)
- 1035 04b6 0E94 0000 		call SendSdCommand
- 1036               	.LBB168:
- 1037               	.LBB169:
- 1038               	.LM194:
- 1039 04ba 5D9A      		sbi 43-32,5
- 1040               	.LBE169:
- 1041               	.LBE168:
- 1042               	.LM195:
- 1043 04bc 0E94 0000 		call SendDummyByte
- 1044 04c0 00C0      		rjmp .L164
- 1045               	.L128:
- 1046               	.LM196:
- 1047 04c2 0E94 0000 		call SendDummyByte
- 1048               	.LBB170:
- 1049               	.LBB171:
- 1050               	.LM197:
- 1051 04c6 5D9A      		sbi 43-32,5
- 1052               	.LBE171:
- 1053               	.LBE170:
- 1054               	.LM198:
- 1055 04c8 89EA      		ldi r24,lo8(-87)
- 1056 04ca 40E0      		ldi r20,lo8(0)
- 1057 04cc 50E0      		ldi r21,hi8(0)
- 1058 04ce 60E0      		ldi r22,hlo8(0)
- 1059 04d0 70E0      		ldi r23,hhi8(0)
- 1060 04d2 0E94 0000 		call SendSdCommand
- 1061 04d6 8230      		cpi r24,lo8(2)
- 1062 04d8 00F4      		brsh .L127
- 1063               	.LBB172:
- 1064               	.LBB173:
- 1065               	.LM199:
- 1066 04da 5D9A      		sbi 43-32,5
- 1067               	.LBE173:
- 1068               	.LBE172:
- 1069               	.LM200:
- 1070 04dc 83E0      		ldi r24,lo8(3)
- 1071 04de 64EC      		ldi r22,lo8(1220)
- 1072 04e0 74E0      		ldi r23,hi8(1220)
- 1073 04e2 0E94 0000 		call SetTimer
- 1074 04e6 00C0      		rjmp .L140
- 1075               	.L142:
- 1076               	.LM201:
- 1077 04e8 0E94 0000 		call HandleSoftclock
- 1078               	.LBB174:
- 1079               	.LBB175:
- 1080               	.LM202:
- 1081 04ec 5D9A      		sbi 43-32,5
- 1082               	.L140:
- 1083               	.LBE175:
- 1084               	.LBE174:
- 1085               	.LM203:
- 1086 04ee 83E0      		ldi r24,lo8(3)
- 1087 04f0 0E94 0000 		call CheckTimer
- 1088 04f4 8823      		tst r24
- 1089 04f6 01F4      		brne .L141
- 1090 04f8 89EA      		ldi r24,lo8(-87)
- 1091 04fa 40E0      		ldi r20,lo8(0)
- 1092 04fc 50E0      		ldi r21,hi8(0)
- 1093 04fe 60E0      		ldi r22,hlo8(0)
- 1094 0500 70E0      		ldi r23,hhi8(0)
- 1095 0502 0E94 0000 		call SendSdCommand
- 1096 0506 8823      		tst r24
- 1097 0508 01F4      		brne .L142
- 1098               	.L141:
- 1099               	.LM204:
- 1100 050a 83E0      		ldi r24,lo8(3)
- 1101 050c 0E94 0000 		call CheckTimer
- 1102 0510 8823      		tst r24
- 1103 0512 01F4      		brne .L127
- 1104               	.LM205:
- 1105 0514 80E1      		ldi r24,lo8(16)
- 1106 0516 40E0      		ldi r20,lo8(512)
- 1107 0518 52E0      		ldi r21,hi8(512)
- 1108 051a 60E0      		ldi r22,hlo8(512)
- 1109 051c 70E0      		ldi r23,hhi8(512)
- 1110 051e 0E94 0000 		call SendSdCommand
- 1111               	.LBB176:
- 1112               	.LBB177:
- 1113               	.LM206:
- 1114 0522 5D9A      		sbi 43-32,5
- 1115               	.L164:
- 1116 0524 81E0      		ldi r24,lo8(1)
- 1117               	.LVL27:
- 1118 0526 00C0      		rjmp .L139
- 1119               	.LVL28:
- 1120               	.L127:
- 1121 0528 80E0      		ldi r24,lo8(0)
- 1122               	.LVL29:
- 1123               	.L139:
- 1124               	.LBE177:
- 1125               	.LBE176:
- 1126               	.LBB178:
- 1127               	.LBB179:
- 1128 052a 5D9A      		sbi 43-32,5
- 1129               	.LVL30:
- 1130               	/* epilogue start */
- 1131               	.LBE179:
- 1132               	.LBE178:
- 1133               	.LM207:
- 1134 052c 0F90      		pop __tmp_reg__
- 1135 052e 0F90      		pop __tmp_reg__
- 1136 0530 0F90      		pop __tmp_reg__
- 1137 0532 0F90      		pop __tmp_reg__
- 1138 0534 CF91      		pop r28
- 1139 0536 DF91      		pop r29
- 1140 0538 0895      		ret
- 1141               	.LFE10:
- 1239               	.Letext0:
+  96               		.cfi_endproc
+  97               	.LFE3:
+  99               	.global	StartSdTransfer
+ 101               	StartSdTransfer:
+ 102               	.LFB4:
+ 118:microSD.c     **** }
+ 119:microSD.c     **** 
+ 120:microSD.c     **** void StartSdTransfer(void)
+ 121:microSD.c     **** // Just bring the Chip Select (Slave Select) line from high to low.
+ 122:microSD.c     **** // This will abort and restart a transfer if called in  the middle of a transfer process.
+ 123:microSD.c     **** {
+ 103               		.loc 1 123 0
+ 104               		.cfi_startproc
+ 105               	/* prologue: function */
+ 106               	/* frame size = 0 */
+ 107               	/* stack size = 0 */
+ 108               	.L__stack_usage = 0
+ 124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 109               		.loc 1 124 0
+ 110 004e 5D9A      		sbi 0xb,5
+ 125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
+ 111               		.loc 1 125 0
+ 112 0050 5D98      		cbi 0xb,5
+ 113 0052 0895      		ret
+ 114               		.cfi_endproc
+ 115               	.LFE4:
+ 117               	.global	TransferSdByte
+ 119               	TransferSdByte:
+ 120               	.LFB5:
+ 126:microSD.c     **** }
+ 127:microSD.c     **** 
+ 128:microSD.c     **** unsigned char TransferSdByte(unsigned char theByte)
+ 129:microSD.c     **** // CS must already be low to do this-->
+ 130:microSD.c     **** // Slow and careful transfers; checks both send and receive buffers and waits until they're ready t
+ 131:microSD.c     **** // Loads a theByte into the SPI transmit shift register, waits until the transfer is complete, and 
+ 132:microSD.c     **** // The AVR's SPIF bit is cleared by first reading the SPI status register when the SPIF is set, and
+ 133:microSD.c     **** // NOTE: Tue Oct 14 23:07:27 CDT 2008
+ 134:microSD.c     **** // This is a little different now with the UART hardware.  The UART is double buffered and the exam
+ 135:microSD.c     **** {
+ 121               		.loc 1 135 0
+ 122               		.cfi_startproc
+ 123               	/* prologue: function */
+ 124               	/* frame size = 0 */
+ 125               	/* stack size = 0 */
+ 126               	.L__stack_usage = 0
+ 127               	.LVL0:
+ 128               	.L6:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 129               		.loc 1 136 0 discriminator 1
+ 130 0054 9091 C800 		lds r25,200
+ 131 0058 95FF      		sbrs r25,5
+ 132 005a 00C0      		rjmp .L6
+ 137:microSD.c     **** 		;
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 133               		.loc 1 138 0
+ 134 005c 8093 CE00 		sts 206,r24
+ 135               	.LVL1:
+ 136               	.L7:
+ 139:microSD.c     **** 
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 137               		.loc 1 140 0 discriminator 1
+ 138 0060 8091 C800 		lds r24,200
+ 139 0064 87FF      		sbrs r24,7
+ 140 0066 00C0      		rjmp .L7
+ 141:microSD.c     **** 		;
+ 142:microSD.c     **** 
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 141               		.loc 1 143 0
+ 142 0068 8091 CE00 		lds r24,206
+ 144:microSD.c     **** }
+ 143               		.loc 1 144 0
+ 144 006c 0895      		ret
+ 145               		.cfi_endproc
+ 146               	.LFE5:
+ 149               	SendDummyByte:
+ 150               	.LFB6:
+ 145:microSD.c     **** 
+ 146:microSD.c     **** static void SendDummyByte(void)
+ 147:microSD.c     **** // Needed to sync the card in some weird cases
+ 148:microSD.c     **** {
+ 151               		.loc 1 148 0
+ 152               		.cfi_startproc
+ 153               	/* prologue: function */
+ 154               	/* frame size = 0 */
+ 155               	/* stack size = 0 */
+ 156               	.L__stack_usage = 0
+ 149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 157               		.loc 1 149 0
+ 158 006e 8091 C800 		lds r24,200
+ 159 0072 8064      		ori r24,lo8(64)
+ 160 0074 8093 C800 		sts 200,r24
+ 150:microSD.c     **** 	TransferSdByte(0xFF);	
+ 161               		.loc 1 150 0
+ 162 0078 8FEF      		ldi r24,lo8(-1)
+ 163 007a 0E94 0000 		call TransferSdByte
+ 164               	.LVL2:
+ 165               	.L14:
+ 151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 166               		.loc 1 151 0 discriminator 1
+ 167 007e 8091 C800 		lds r24,200
+ 168 0082 86FF      		sbrs r24,6
+ 169 0084 00C0      		rjmp .L14
+ 170               	/* epilogue start */
+ 152:microSD.c     **** 		;
+ 153:microSD.c     **** }
+ 171               		.loc 1 153 0
+ 172 0086 0895      		ret
+ 173               		.cfi_endproc
+ 174               	.LFE6:
+ 176               	.global	SendSdCommand
+ 178               	SendSdCommand:
+ 179               	.LFB7:
+ 154:microSD.c     **** 
+ 155:microSD.c     **** //-----------------------------------------------------------------------
+ 156:microSD.c     **** //-----------------------------------------------------------------------
+ 157:microSD.c     **** // SD Command Functions
+ 158:microSD.c     **** //-----------------------------------------------------------------------
+ 159:microSD.c     **** //-----------------------------------------------------------------------
+ 160:microSD.c     **** 
+ 161:microSD.c     **** unsigned char SendSdCommand(unsigned char cmdIndex,unsigned long argument)
+ 162:microSD.c     **** // Sends out your standard 6-byte SD command.  Uses the passed index and argument.
+ 163:microSD.c     **** // Will append CRC when necessary or leave it blank if not.
+ 164:microSD.c     **** // This function will always assert CS, since it's needed to give a command, however frequently it 
+ 165:microSD.c     **** // That means the caller must remember to bring it high again when they're done.
+ 166:microSD.c     **** {
+ 180               		.loc 1 166 0
+ 181               		.cfi_startproc
+ 182               	.LVL3:
+ 183 0088 DF92      		push r13
+ 184               	.LCFI0:
+ 185               		.cfi_def_cfa_offset 3
+ 186               		.cfi_offset 13, -2
+ 187 008a EF92      		push r14
+ 188               	.LCFI1:
+ 189               		.cfi_def_cfa_offset 4
+ 190               		.cfi_offset 14, -3
+ 191 008c FF92      		push r15
+ 192               	.LCFI2:
+ 193               		.cfi_def_cfa_offset 5
+ 194               		.cfi_offset 15, -4
+ 195 008e 0F93      		push r16
+ 196               	.LCFI3:
+ 197               		.cfi_def_cfa_offset 6
+ 198               		.cfi_offset 16, -5
+ 199 0090 1F93      		push r17
+ 200               	.LCFI4:
+ 201               		.cfi_def_cfa_offset 7
+ 202               		.cfi_offset 17, -6
+ 203 0092 CF93      		push r28
+ 204               	.LCFI5:
+ 205               		.cfi_def_cfa_offset 8
+ 206               		.cfi_offset 28, -7
+ 207 0094 DF93      		push r29
+ 208               	.LCFI6:
+ 209               		.cfi_def_cfa_offset 9
+ 210               		.cfi_offset 29, -8
+ 211               	/* prologue: function */
+ 212               	/* frame size = 0 */
+ 213               	/* stack size = 7 */
+ 214               	.L__stack_usage = 7
+ 215 0096 C82F      		mov r28,r24
+ 216 0098 042F      		mov r16,r20
+ 217 009a F52E      		mov r15,r21
+ 218 009c E62E      		mov r14,r22
+ 219 009e D72E      		mov r13,r23
+ 167:microSD.c     **** 	unsigned char
+ 168:microSD.c     **** 		i,
+ 169:microSD.c     **** 		response,
+ 170:microSD.c     **** 		tmpCrc;
+ 171:microSD.c     **** 
+ 172:microSD.c     **** 	StartSdTransfer();		// Assert CS
+ 220               		.loc 1 172 0
+ 221 00a0 0E94 0000 		call StartSdTransfer
+ 222               	.LVL4:
+ 173:microSD.c     **** 	TransferSdByte(0xFF);	// Initial pad to make sure card is in the correct state for the command.
+ 223               		.loc 1 173 0
+ 224 00a4 8FEF      		ldi r24,lo8(-1)
+ 225 00a6 0E94 0000 		call TransferSdByte
+ 226               	.LVL5:
+ 174:microSD.c     **** 
+ 175:microSD.c     **** 	if(cmdIndex&0x80)	// We mark an ACMD with a 1 in bit 7 (no commands have this; the start bit is al
+ 227               		.loc 1 175 0
+ 228 00aa C7FF      		sbrs r28,7
+ 229 00ac 00C0      		rjmp .L20
+ 176:microSD.c     **** 	{
+ 177:microSD.c     **** 		TransferSdByte(0x40|CMD55);		// Put the start and transmission bits on the front of the command i
+ 230               		.loc 1 177 0
+ 231 00ae 87E7      		ldi r24,lo8(119)
+ 232 00b0 0E94 0000 		call TransferSdByte
+ 233               	.LVL6:
+ 178:microSD.c     **** 		TransferSdByte(0);				// No argument			
+ 234               		.loc 1 178 0
+ 235 00b4 80E0      		ldi r24,0
+ 236 00b6 0E94 0000 		call TransferSdByte
+ 237               	.LVL7:
+ 179:microSD.c     **** 		TransferSdByte(0);				// No argument			
+ 238               		.loc 1 179 0
+ 239 00ba 80E0      		ldi r24,0
+ 240 00bc 0E94 0000 		call TransferSdByte
+ 241               	.LVL8:
+ 180:microSD.c     **** 		TransferSdByte(0);				// No argument			
+ 242               		.loc 1 180 0
+ 243 00c0 80E0      		ldi r24,0
+ 244 00c2 0E94 0000 		call TransferSdByte
+ 245               	.LVL9:
+ 181:microSD.c     **** 		TransferSdByte(0);				// No argument					
+ 246               		.loc 1 181 0
+ 247 00c6 80E0      		ldi r24,0
+ 248 00c8 0E94 0000 		call TransferSdByte
+ 249               	.LVL10:
+ 182:microSD.c     **** 		TransferSdByte(0x01);			// Send the CRC7 byte (and stop bit)
+ 250               		.loc 1 182 0
+ 251 00cc 81E0      		ldi r24,lo8(1)
+ 252 00ce 0E94 0000 		call TransferSdByte
+ 253               	.LVL11:
+ 254 00d2 1AE0      		ldi r17,lo8(10)
+ 255               	.LVL12:
+ 256               	.L22:
+ 183:microSD.c     **** 
+ 184:microSD.c     **** 		i=10;		// Give the SD card a 10 byte timeout in which to respond.
+ 185:microSD.c     **** 		do			
+ 186:microSD.c     **** 		{
+ 187:microSD.c     **** 			response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+ 257               		.loc 1 187 0 discriminator 1
+ 258 00d4 8FEF      		ldi r24,lo8(-1)
+ 259 00d6 0E94 0000 		call TransferSdByte
+ 260               	.LVL13:
+ 261 00da D82F      		mov r29,r24
+ 262               	.LVL14:
+ 188:microSD.c     **** 		}
+ 189:microSD.c     **** 		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 b
+ 263               		.loc 1 189 0 discriminator 1
+ 264 00dc 8F3F      		cpi r24,lo8(-1)
+ 265 00de 01F4      		brne .L21
+ 266 00e0 1150      		subi r17,lo8(-(-1))
+ 267 00e2 01F4      		brne .L22
+ 268               	.L21:
+ 190:microSD.c     **** 
+ 191:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 269               		.loc 1 191 0
+ 270 00e4 9091 C800 		lds r25,200
+ 271 00e8 9064      		ori r25,lo8(64)
+ 272 00ea 9093 C800 		sts 200,r25
+ 192:microSD.c     **** 		TransferSdByte(0xFF);		//	@@@ -- SOME CARDS NEED THIS.  See notes.
+ 273               		.loc 1 192 0
+ 274 00ee 8FEF      		ldi r24,lo8(-1)
+ 275               	.LVL15:
+ 276 00f0 0E94 0000 		call TransferSdByte
+ 277               	.LVL16:
+ 278               	.L23:
+ 193:microSD.c     **** 		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 279               		.loc 1 193 0 discriminator 1
+ 280 00f4 8091 C800 		lds r24,200
+ 281 00f8 86FF      		sbrs r24,6
+ 282 00fa 00C0      		rjmp .L23
+ 194:microSD.c     **** 			;
+ 195:microSD.c     **** 
+ 196:microSD.c     **** 		if(response>1)				// Something wrong?
+ 283               		.loc 1 196 0
+ 284 00fc D230      		cpi r29,lo8(2)
+ 285 00fe 00F0      		brlo .L24
+ 197:microSD.c     **** 		{
+ 198:microSD.c     **** 			EndSdTransfer();	// Bring CS high
+ 286               		.loc 1 198 0
+ 287 0100 0E94 0000 		call EndSdTransfer
+ 288               	.LVL17:
+ 199:microSD.c     **** 			return(response);	// ACMD preambe returned something weird.  Bail.
+ 289               		.loc 1 199 0
+ 290 0104 00C0      		rjmp .L25
+ 291               	.L24:
+ 200:microSD.c     **** 		}
+ 201:microSD.c     **** 
+ 202:microSD.c     **** 		EndSdTransfer();	// Bring CS high
+ 292               		.loc 1 202 0
+ 293 0106 0E94 0000 		call EndSdTransfer
+ 294               	.LVL18:
+ 203:microSD.c     **** 		cmdIndex&=0x7F;		// Handled ACMD, so get rid of leading marker bit
+ 295               		.loc 1 203 0
+ 296 010a CF77      		andi r28,lo8(127)
+ 297               	.LVL19:
+ 204:microSD.c     **** 		StartSdTransfer();	// Assert CS
+ 298               		.loc 1 204 0
+ 299 010c 0E94 0000 		call StartSdTransfer
+ 300               	.LVL20:
+ 301               	.L20:
+ 205:microSD.c     **** 	}
+ 206:microSD.c     **** 
+ 207:microSD.c     **** 	// Handled beginning an "application specific" command above, so do proper part of command now (co
+ 208:microSD.c     **** 		
+ 209:microSD.c     **** 	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the com
+ 302               		.loc 1 209 0
+ 303 0110 8C2F      		mov r24,r28
+ 304 0112 8064      		ori r24,lo8(64)
+ 305 0114 0E94 0000 		call TransferSdByte
+ 306               	.LVL21:
+ 210:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
+ 307               		.loc 1 210 0
+ 308 0118 8D2D      		mov r24,r13
+ 309 011a 0E94 0000 		call TransferSdByte
+ 310               	.LVL22:
+ 211:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
+ 311               		.loc 1 211 0
+ 312 011e 8E2D      		mov r24,r14
+ 313 0120 0E94 0000 		call TransferSdByte
+ 314               	.LVL23:
+ 212:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
+ 315               		.loc 1 212 0
+ 316 0124 8F2D      		mov r24,r15
+ 317 0126 0E94 0000 		call TransferSdByte
+ 318               	.LVL24:
+ 213:microSD.c     **** 	TransferSdByte((unsigned char)argument);			// LSB of argument
+ 319               		.loc 1 213 0
+ 320 012a 802F      		mov r24,r16
+ 321 012c 0E94 0000 		call TransferSdByte
+ 322               	.LVL25:
+ 214:microSD.c     **** 	
+ 215:microSD.c     **** 	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
+ 216:microSD.c     **** 
+ 217:microSD.c     **** 	if(cmdIndex==CMD0)	// except here where we actually need a real CRC
+ 323               		.loc 1 217 0
+ 324 0130 CC23      		tst r28
+ 325 0132 01F0      		breq .L31
+ 218:microSD.c     **** 	{
+ 219:microSD.c     **** 		tmpCrc=0x95;
+ 220:microSD.c     **** 	}
+ 221:microSD.c     **** 	if(cmdIndex==CMD8)	// and here where we actually need a real CRC
+ 326               		.loc 1 221 0
+ 327 0134 C830      		cpi r28,lo8(8)
+ 328 0136 01F0      		breq .L32
+ 215:microSD.c     **** 	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
+ 329               		.loc 1 215 0
+ 330 0138 81E0      		ldi r24,lo8(1)
+ 331 013a 00C0      		rjmp .L27
+ 332               	.L31:
+ 219:microSD.c     **** 		tmpCrc=0x95;
+ 333               		.loc 1 219 0
+ 334 013c 85E9      		ldi r24,lo8(-107)
+ 335 013e 00C0      		rjmp .L27
+ 336               	.L32:
+ 222:microSD.c     **** 	{
+ 223:microSD.c     **** 		tmpCrc=0x87;
+ 337               		.loc 1 223 0
+ 338 0140 87E8      		ldi r24,lo8(-121)
+ 339               	.L27:
+ 340               	.LVL26:
+ 224:microSD.c     **** 	}
+ 225:microSD.c     **** 	
+ 226:microSD.c     **** 	TransferSdByte(tmpCrc);		// Send the CRC7 byte
+ 341               		.loc 1 226 0
+ 342 0142 0E94 0000 		call TransferSdByte
+ 343               	.LVL27:
+ 227:microSD.c     **** 	
+ 228:microSD.c     **** 	// Now handle a response.
+ 229:microSD.c     **** 	
+ 230:microSD.c     **** 	if(cmdIndex==CMD12)	// This is a stop transmission command -- one byte of padding comes in before 
+ 344               		.loc 1 230 0
+ 345 0146 CC30      		cpi r28,lo8(12)
+ 346 0148 01F4      		brne .L28
+ 231:microSD.c     **** 	{
+ 232:microSD.c     **** 		TransferSdByte(DUMMY_BYTE);		// Skip "stuff byte".
+ 347               		.loc 1 232 0
+ 348 014a 8FEF      		ldi r24,lo8(-1)
+ 349 014c 0E94 0000 		call TransferSdByte
+ 350               	.LVL28:
+ 351               	.L28:
+ 223:microSD.c     **** 		tmpCrc=0x87;
+ 352               		.loc 1 223 0 discriminator 1
+ 353 0150 1AE0      		ldi r17,lo8(10)
+ 354               	.L30:
+ 233:microSD.c     **** 	}
+ 234:microSD.c     **** 	
+ 235:microSD.c     **** 	i=10;		// Give the SD card a 10 byte timeout in which to respond.
+ 236:microSD.c     **** 	
+ 237:microSD.c     **** 	do			
+ 238:microSD.c     **** 	{
+ 239:microSD.c     **** 		response=TransferSdByte(DUMMY_BYTE);		// Get response byte
+ 355               		.loc 1 239 0 discriminator 1
+ 356 0152 8FEF      		ldi r24,lo8(-1)
+ 357 0154 0E94 0000 		call TransferSdByte
+ 358               	.LVL29:
+ 359 0158 D82F      		mov r29,r24
+ 360               	.LVL30:
+ 240:microSD.c     **** 	}
+ 241:microSD.c     **** 	while((response==0xFF)&&--i);				// A valid response has a leading zero.  Wait for that or for 10 
+ 361               		.loc 1 241 0 discriminator 1
+ 362 015a 8F3F      		cpi r24,lo8(-1)
+ 363 015c 01F4      		brne .L29
+ 364 015e 1150      		subi r17,lo8(-(-1))
+ 365 0160 01F4      		brne .L30
+ 366               	.L29:
+ 242:microSD.c     **** 
+ 243:microSD.c     **** // If we're not a command which has a multi-byte response, put in an extra 0xFF here.
+ 244:microSD.c     **** 	if(cmdIndex!=CMD8&&cmdIndex!=CMD58)		// Add post-command padding.  We add this pad byte manually t
+ 367               		.loc 1 244 0
+ 368 0162 C830      		cpi r28,lo8(8)
+ 369 0164 01F0      		breq .L25
+ 370               		.loc 1 244 0 is_stmt 0 discriminator 1
+ 371 0166 CA33      		cpi r28,lo8(58)
+ 372 0168 01F0      		breq .L25
+ 245:microSD.c     **** 	{
+ 246:microSD.c     **** 		SendDummyByte();	
+ 373               		.loc 1 246 0 is_stmt 1
+ 374 016a 0E94 0000 		call SendDummyByte
+ 375               	.LVL31:
+ 376               	.L25:
+ 247:microSD.c     **** 	}
+ 248:microSD.c     **** 
+ 249:microSD.c     **** 	return(response);		// Will be 0xFF if we timed out.  This should almost always be 0 or 1.
+ 250:microSD.c     **** }
+ 377               		.loc 1 250 0
+ 378 016e 8D2F      		mov r24,r29
+ 379               	/* epilogue start */
+ 380 0170 DF91      		pop r29
+ 381               	.LVL32:
+ 382 0172 CF91      		pop r28
+ 383               	.LVL33:
+ 384 0174 1F91      		pop r17
+ 385 0176 0F91      		pop r16
+ 386 0178 FF90      		pop r15
+ 387 017a EF90      		pop r14
+ 388 017c DF90      		pop r13
+ 389 017e 0895      		ret
+ 390               		.cfi_endproc
+ 391               	.LFE7:
+ 393               	.global	SdHandshake
+ 395               	SdHandshake:
+ 396               	.LFB8:
+ 251:microSD.c     **** 
+ 252:microSD.c     **** //-----------------------------------------------------------------------
+ 253:microSD.c     **** //-----------------------------------------------------------------------
+ 254:microSD.c     **** // SD SPI Mode and Initialization Functions
+ 255:microSD.c     **** //-----------------------------------------------------------------------
+ 256:microSD.c     **** //-----------------------------------------------------------------------
+ 257:microSD.c     **** 
+ 258:microSD.c     **** bool SdHandshake(void)
+ 259:microSD.c     **** // Tries to talk to the inserted SD card and set up an SPI interface.
+ 260:microSD.c     **** // Since this is a micro SD slot, we don't need to support MMC cards (they wouldn't fit in the slot
+ 261:microSD.c     **** // We also do not support SDHC, since it costs more, we have orders of magnitude more storage than 
+ 262:microSD.c     **** // Returns true if we successfully initialize the all the stuff we need to do to talk to the card.
+ 263:microSD.c     **** // NOTE -- this process takes time, and will hang operation for hundreds of milliseconds on a succe
+ 264:microSD.c     **** {
+ 397               		.loc 1 264 0
+ 398               		.cfi_startproc
+ 399 0180 EF92      		push r14
+ 400               	.LCFI7:
+ 401               		.cfi_def_cfa_offset 3
+ 402               		.cfi_offset 14, -2
+ 403 0182 FF92      		push r15
+ 404               	.LCFI8:
+ 405               		.cfi_def_cfa_offset 4
+ 406               		.cfi_offset 15, -3
+ 407 0184 0F93      		push r16
+ 408               	.LCFI9:
+ 409               		.cfi_def_cfa_offset 5
+ 410               		.cfi_offset 16, -4
+ 411 0186 1F93      		push r17
+ 412               	.LCFI10:
+ 413               		.cfi_def_cfa_offset 6
+ 414               		.cfi_offset 17, -5
+ 415 0188 CF93      		push r28
+ 416               	.LCFI11:
+ 417               		.cfi_def_cfa_offset 7
+ 418               		.cfi_offset 28, -6
+ 419 018a DF93      		push r29
+ 420               	.LCFI12:
+ 421               		.cfi_def_cfa_offset 8
+ 422               		.cfi_offset 29, -7
+ 423 018c 00D0      		rcall .
+ 424 018e 00D0      		rcall .
+ 425 0190 1F92      		push __zero_reg__
+ 426               	.LCFI13:
+ 427               		.cfi_def_cfa_offset 13
+ 428 0192 CDB7      		in r28,__SP_L__
+ 429 0194 DEB7      		in r29,__SP_H__
+ 430               	.LCFI14:
+ 431               		.cfi_def_cfa_register 28
+ 432               	/* prologue: function */
+ 433               	/* frame size = 5 */
+ 434               	/* stack size = 11 */
+ 435               	.L__stack_usage = 11
+ 265:microSD.c     **** 	unsigned char
+ 266:microSD.c     **** 		ocr[4],
+ 267:microSD.c     **** 		i;
+ 268:microSD.c     **** 	unsigned int
+ 269:microSD.c     **** 		n;
+ 270:microSD.c     **** 	bool
+ 271:microSD.c     **** 		cardValid;	// Is this a micro SD card or some random bit of plastic and silicon?
+ 272:microSD.c     **** 
+ 273:microSD.c     **** 	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS mu
+ 274:microSD.c     **** 
+ 275:microSD.c     **** 	EndSdTransfer();	// Bring CS high
+ 436               		.loc 1 275 0
+ 437 0196 0E94 0000 		call EndSdTransfer
+ 438               	.LVL34:
+ 439 019a 14E1      		ldi r17,lo8(20)
+ 440               	.LVL35:
+ 441               	.L46:
+ 276:microSD.c     **** 	for(i=0;i<20;i++)
+ 277:microSD.c     **** 	{
+ 278:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 442               		.loc 1 278 0 discriminator 2
+ 443 019c 8091 C800 		lds r24,200
+ 444 01a0 8064      		ori r24,lo8(64)
+ 445 01a2 8093 C800 		sts 200,r24
+ 279:microSD.c     **** 		TransferSdByte(DUMMY_BYTE);	// Transfer ten dummy bytes (80 clocks).
+ 446               		.loc 1 279 0 discriminator 2
+ 447 01a6 8FEF      		ldi r24,lo8(-1)
+ 448 01a8 0E94 0000 		call TransferSdByte
+ 449               	.LVL36:
+ 450 01ac 1150      		subi r17,lo8(-(-1))
+ 276:microSD.c     **** 	for(i=0;i<20;i++)
+ 451               		.loc 1 276 0 discriminator 2
+ 452 01ae 01F4      		brne .L46
+ 453               	.L79:
+ 280:microSD.c     **** 	}	
+ 281:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 454               		.loc 1 281 0
+ 455 01b0 8091 C800 		lds r24,200
+ 456 01b4 86FF      		sbrs r24,6
+ 457 01b6 00C0      		rjmp .L79
+ 282:microSD.c     **** 		;
+ 283:microSD.c     **** 
+ 284:microSD.c     **** 
+ 285:microSD.c     **** 	// Jacked from SD Fat lib, which suggests doing the following to prevent "re-init hang from cards 
+ 286:microSD.c     **** 	// Thu Jul 28 14:15:53 EDT 2011	-- Totally just experienced this hang, and understand this now.
+ 287:microSD.c     **** 
+ 288:microSD.c     **** 	StartSdTransfer();						
+ 458               		.loc 1 288 0
+ 459 01b8 0E94 0000 		call StartSdTransfer
+ 460               	.LVL37:
+ 461 01bc 00E0      		ldi r16,0
+ 462 01be 12E0      		ldi r17,lo8(2)
+ 463               	.LVL38:
+ 464               	.L48:
+ 289:microSD.c     **** 	for(n=0;n<SD_BLOCK_LENGTH;n++)
+ 290:microSD.c     **** 	{
+ 291:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 465               		.loc 1 291 0 discriminator 2
+ 466 01c0 8091 C800 		lds r24,200
+ 467 01c4 8064      		ori r24,lo8(64)
+ 468 01c6 8093 C800 		sts 200,r24
+ 292:microSD.c     **** 		TransferSdByte(0xFF);	
+ 469               		.loc 1 292 0 discriminator 2
+ 470 01ca 8FEF      		ldi r24,lo8(-1)
+ 471 01cc 0E94 0000 		call TransferSdByte
+ 472               	.LVL39:
+ 473 01d0 0150      		subi r16,1
+ 474 01d2 1109      		sbc r17,__zero_reg__
+ 289:microSD.c     **** 	for(n=0;n<SD_BLOCK_LENGTH;n++)
+ 475               		.loc 1 289 0 discriminator 2
+ 476 01d4 01F4      		brne .L48
+ 477               	.L78:
+ 293:microSD.c     **** 	}
+ 294:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 478               		.loc 1 294 0
+ 479 01d6 8091 C800 		lds r24,200
+ 480 01da 86FF      		sbrs r24,6
+ 481 01dc 00C0      		rjmp .L78
+ 295:microSD.c     **** 		;
+ 296:microSD.c     **** 	EndSdTransfer();
+ 482               		.loc 1 296 0
+ 483 01de 0E94 0000 		call EndSdTransfer
+ 484               	.LVL40:
+ 297:microSD.c     **** 
+ 298:microSD.c     **** 	// Should be in "idle mode" now.  Set SPI mode by asserting the CS and sending CMD 0.
+ 299:microSD.c     **** 	cardValid=false;			// Card not valid until we say it is.	
+ 300:microSD.c     **** 	SendSdCommand(CMD0,0);		// Send first time for good measure, also to make sure onboard pullups get
+ 485               		.loc 1 300 0
+ 486 01e2 40E0      		ldi r20,0
+ 487 01e4 50E0      		ldi r21,0
+ 488 01e6 BA01      		movw r22,r20
+ 489 01e8 80E0      		ldi r24,0
+ 490 01ea 0E94 0000 		call SendSdCommand
+ 491               	.LVL41:
+ 492               	.L50:
+ 301:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 493               		.loc 1 301 0 discriminator 1
+ 494 01ee 8091 C800 		lds r24,200
+ 495 01f2 86FF      		sbrs r24,6
+ 496 01f4 00C0      		rjmp .L50
+ 302:microSD.c     **** 		;
+ 303:microSD.c     **** 	EndSdTransfer();
+ 497               		.loc 1 303 0
+ 498 01f6 0E94 0000 		call EndSdTransfer
+ 499               	.LVL42:
+ 304:microSD.c     **** 
+ 305:microSD.c     **** 	// Send CMD0 again, actually check response now.
+ 306:microSD.c     **** 	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, 
+ 500               		.loc 1 306 0
+ 501 01fa 40E0      		ldi r20,0
+ 502 01fc 50E0      		ldi r21,0
+ 503 01fe BA01      		movw r22,r20
+ 504 0200 80E0      		ldi r24,0
+ 505 0202 0E94 0000 		call SendSdCommand
+ 506               	.LVL43:
+ 507 0206 8130      		cpi r24,lo8(1)
+ 508 0208 01F0      		breq .L51
+ 509               	.L55:
+ 299:microSD.c     **** 	cardValid=false;			// Card not valid until we say it is.	
+ 510               		.loc 1 299 0
+ 511 020a 80E0      		ldi r24,0
+ 512 020c 00C0      		rjmp .L52
+ 513               	.L51:
+ 307:microSD.c     **** 	{
+ 308:microSD.c     **** 		EndSdTransfer();					// Bring CS high
+ 514               		.loc 1 308 0
+ 515 020e 0E94 0000 		call EndSdTransfer
+ 516               	.LVL44:
+ 309:microSD.c     **** 
+ 310:microSD.c     **** 		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we'
+ 517               		.loc 1 310 0
+ 518 0212 4AEA      		ldi r20,lo8(-86)
+ 519 0214 51E0      		ldi r21,lo8(1)
+ 520 0216 60E0      		ldi r22,0
+ 521 0218 70E0      		ldi r23,0
+ 522 021a 88E0      		ldi r24,lo8(8)
+ 523 021c 0E94 0000 		call SendSdCommand
+ 524               	.LVL45:
+ 525 0220 8130      		cpi r24,lo8(1)
+ 526 0222 01F0      		breq .+2
+ 527 0224 00C0      		rjmp .L53
+ 528 0226 8E01      		movw r16,r28
+ 529 0228 0F5F      		subi r16,-1
+ 530 022a 1F4F      		sbci r17,-1
+ 258:microSD.c     **** bool SdHandshake(void)
+ 531               		.loc 1 258 0
+ 532 022c 7E01      		movw r14,r28
+ 533 022e 85E0      		ldi r24,5
+ 534 0230 E80E      		add r14,r24
+ 535 0232 F11C      		adc r15,__zero_reg__
+ 536               	.L54:
+ 311:microSD.c     **** 		{
+ 312:microSD.c     **** 			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+ 313:microSD.c     **** 			{
+ 314:microSD.c     **** 				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+ 537               		.loc 1 314 0 discriminator 2
+ 538 0234 8FEF      		ldi r24,lo8(-1)
+ 539 0236 0E94 0000 		call TransferSdByte
+ 540               	.LVL46:
+ 541 023a F801      		movw r30,r16
+ 542 023c 8193      		st Z+,r24
+ 543 023e 8F01      		movw r16,r30
+ 312:microSD.c     **** 			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+ 544               		.loc 1 312 0 discriminator 2
+ 545 0240 EE15      		cp r30,r14
+ 546 0242 FF05      		cpc r31,r15
+ 547 0244 01F4      		brne .L54
+ 315:microSD.c     **** 			}
+ 316:microSD.c     **** 
+ 317:microSD.c     **** 			SendDummyByte();		// Send extra FF after multibyte response. 
+ 548               		.loc 1 317 0
+ 549 0246 0E94 0000 		call SendDummyByte
+ 550               	.LVL47:
+ 318:microSD.c     **** 			EndSdTransfer();		// Bring CS high
+ 551               		.loc 1 318 0
+ 552 024a 0E94 0000 		call EndSdTransfer
+ 553               	.LVL48:
+ 319:microSD.c     **** 
+ 320:microSD.c     **** 			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it c
+ 554               		.loc 1 320 0
+ 555 024e 8B81      		ldd r24,Y+3
+ 556 0250 8130      		cpi r24,lo8(1)
+ 557 0252 01F4      		brne .L55
+ 558               		.loc 1 320 0 is_stmt 0 discriminator 1
+ 559 0254 8C81      		ldd r24,Y+4
+ 560 0256 8A3A      		cpi r24,lo8(-86)
+ 561 0258 01F4      		brne .L55
+ 321:microSD.c     **** 			{				
+ 322:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
+ 562               		.loc 1 322 0 is_stmt 1
+ 563 025a 64EC      		ldi r22,lo8(-60)
+ 564 025c 74E0      		ldi r23,lo8(4)
+ 565 025e 83E0      		ldi r24,lo8(3)
+ 566 0260 0E94 0000 		call SetTimer
+ 567               	.LVL49:
+ 323:microSD.c     **** 
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 568               		.loc 1 324 0
+ 569 0264 00C0      		rjmp .L56
+ 570               	.L59:
+ 325:microSD.c     **** 				{
+ 326:microSD.c     **** 					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell th
+ 571               		.loc 1 326 0
+ 572 0266 0E94 0000 		call EndSdTransfer
+ 573               	.LVL50:
+ 327:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
+ 574               		.loc 1 327 0
+ 575 026a 0E94 0000 		call HandleSoftclock
+ 576               	.LVL51:
+ 577               	.L56:
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 578               		.loc 1 324 0 discriminator 1
+ 579 026e 83E0      		ldi r24,lo8(3)
+ 580 0270 0E94 0000 		call CheckTimer
+ 581               	.LVL52:
+ 582 0274 8823      		tst r24
+ 583 0276 01F0      		breq .L57
+ 584               	.L60:
+ 328:microSD.c     **** 				}		
+ 329:microSD.c     **** 				
+ 330:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+ 585               		.loc 1 330 0
+ 586 0278 83E0      		ldi r24,lo8(3)
+ 587 027a 0E94 0000 		call CheckTimer
+ 588               	.LVL53:
+ 589 027e 8823      		tst r24
+ 590 0280 01F0      		breq .L86
+ 591 0282 00C0      		rjmp .L55
+ 592               	.L57:
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 593               		.loc 1 324 0 discriminator 2
+ 594 0284 40E0      		ldi r20,0
+ 595 0286 50E0      		ldi r21,0
+ 596 0288 BA01      		movw r22,r20
+ 597 028a 89EA      		ldi r24,lo8(-87)
+ 598 028c 0E94 0000 		call SendSdCommand
+ 599               	.LVL54:
+ 600 0290 8111      		cpse r24,__zero_reg__
+ 601 0292 00C0      		rjmp .L59
+ 602 0294 00C0      		rjmp .L60
+ 603               	.L63:
+ 331:microSD.c     **** 				{
+ 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
+ 333:microSD.c     **** 					{
+ 334:microSD.c     **** 						SendDummyByte();		// Send extra FF (it's busy)
+ 604               		.loc 1 334 0
+ 605 0296 0E94 0000 		call SendDummyByte
+ 606               	.LVL55:
+ 335:microSD.c     **** 						HandleSoftclock();	// Keep the timer timing.
+ 607               		.loc 1 335 0
+ 608 029a 0E94 0000 		call HandleSoftclock
+ 609               	.LVL56:
+ 336:microSD.c     **** 						EndSdTransfer();		// Bring CS high.
+ 610               		.loc 1 336 0
+ 611 029e 0E94 0000 		call EndSdTransfer
+ 612               	.LVL57:
+ 613               	.L86:
+ 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
+ 614               		.loc 1 332 0 discriminator 1
+ 615 02a2 83E0      		ldi r24,lo8(3)
+ 616 02a4 0E94 0000 		call CheckTimer
+ 617               	.LVL58:
+ 618 02a8 8823      		tst r24
+ 619 02aa 01F0      		breq .L61
+ 620               	.L64:
+ 337:microSD.c     **** 					}
+ 338:microSD.c     **** 					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+ 621               		.loc 1 338 0
+ 622 02ac 83E0      		ldi r24,lo8(3)
+ 623 02ae 0E94 0000 		call CheckTimer
+ 624               	.LVL59:
+ 625 02b2 8823      		tst r24
+ 626 02b4 01F0      		breq .L62
+ 627 02b6 00C0      		rjmp .L55
+ 628               	.L61:
+ 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
+ 629               		.loc 1 332 0 discriminator 2
+ 630 02b8 40E0      		ldi r20,0
+ 631 02ba 50E0      		ldi r21,0
+ 632 02bc BA01      		movw r22,r20
+ 633 02be 8AE3      		ldi r24,lo8(58)
+ 634 02c0 0E94 0000 		call SendSdCommand
+ 635               	.LVL60:
+ 636 02c4 8111      		cpse r24,__zero_reg__
+ 637 02c6 00C0      		rjmp .L63
+ 638 02c8 00C0      		rjmp .L64
+ 639               	.L62:
+ 640               	.LVL61:
+ 339:microSD.c     **** 					{
+ 340:microSD.c     **** 						for(i=0;i<4;i++)						// This is an "R3" response, so we need to grab four more bytes.
+ 341:microSD.c     **** 						{
+ 342:microSD.c     **** 							ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+ 641               		.loc 1 342 0 discriminator 1
+ 642 02ca 8FEF      		ldi r24,lo8(-1)
+ 643 02cc 0E94 0000 		call TransferSdByte
+ 644               	.LVL62:
+ 645 02d0 8FEF      		ldi r24,lo8(-1)
+ 646 02d2 0E94 0000 		call TransferSdByte
+ 647               	.LVL63:
+ 648 02d6 8FEF      		ldi r24,lo8(-1)
+ 649 02d8 0E94 0000 		call TransferSdByte
+ 650               	.LVL64:
+ 651 02dc 8FEF      		ldi r24,lo8(-1)
+ 652 02de 0E94 0000 		call TransferSdByte
+ 653               	.LVL65:
+ 343:microSD.c     **** 						}
+ 344:microSD.c     **** 
+ 345:microSD.c     **** 						SendDummyByte();			// Send extra FF after multibyte response. 
+ 654               		.loc 1 345 0 discriminator 1
+ 655 02e2 0E94 0000 		call SendDummyByte
+ 656               	.LVL66:
+ 346:microSD.c     **** 						EndSdTransfer();			// Bring CS high.
+ 657               		.loc 1 346 0 discriminator 1
+ 658 02e6 0E94 0000 		call EndSdTransfer
+ 659               	.LVL67:
+ 347:microSD.c     **** 
+ 348:microSD.c     **** 						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+ 660               		.loc 1 348 0 discriminator 1
+ 661 02ea 40E0      		ldi r20,0
+ 662 02ec 52E0      		ldi r21,lo8(2)
+ 663 02ee 60E0      		ldi r22,0
+ 664 02f0 70E0      		ldi r23,0
+ 665 02f2 80E1      		ldi r24,lo8(16)
+ 666 02f4 0E94 0000 		call SendSdCommand
+ 667               	.LVL68:
+ 349:microSD.c     **** 						EndSdTransfer();						// Bring CS high.
+ 668               		.loc 1 349 0 discriminator 1
+ 669 02f8 0E94 0000 		call EndSdTransfer
+ 670               	.LVL69:
+ 350:microSD.c     **** 						SendDummyByte();						
+ 671               		.loc 1 350 0 discriminator 1
+ 672 02fc 0E94 0000 		call SendDummyByte
+ 673               	.LVL70:
+ 674 0300 00C0      		rjmp .L91
+ 675               	.LVL71:
+ 676               	.L53:
+ 351:microSD.c     **** 						cardValid=true;				// SD card present, and standard capacity.
+ 352:microSD.c     **** 					}
+ 353:microSD.c     **** 				}
+ 354:microSD.c     **** 			}
+ 355:microSD.c     **** 		}
+ 356:microSD.c     **** 		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
+ 357:microSD.c     **** 		{
+ 358:microSD.c     **** 			SendDummyByte();					// Send extra FF after multibyte response. 
+ 677               		.loc 1 358 0
+ 678 0302 0E94 0000 		call SendDummyByte
+ 679               	.LVL72:
+ 359:microSD.c     **** 			EndSdTransfer();					// Bring CS high
+ 680               		.loc 1 359 0
+ 681 0306 0E94 0000 		call EndSdTransfer
+ 682               	.LVL73:
+ 360:microSD.c     **** 			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, ke
+ 683               		.loc 1 360 0
+ 684 030a 40E0      		ldi r20,0
+ 685 030c 50E0      		ldi r21,0
+ 686 030e BA01      		movw r22,r20
+ 687 0310 89EA      		ldi r24,lo8(-87)
+ 688 0312 0E94 0000 		call SendSdCommand
+ 689               	.LVL74:
+ 690 0316 8230      		cpi r24,lo8(2)
+ 691 0318 00F0      		brlo .+2
+ 692 031a 00C0      		rjmp .L55
+ 361:microSD.c     **** 			{
+ 362:microSD.c     **** 				EndSdTransfer();			// Bring CS high.
+ 693               		.loc 1 362 0
+ 694 031c 0E94 0000 		call EndSdTransfer
+ 695               	.LVL75:
+ 363:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
+ 696               		.loc 1 363 0
+ 697 0320 64EC      		ldi r22,lo8(-60)
+ 698 0322 74E0      		ldi r23,lo8(4)
+ 699 0324 83E0      		ldi r24,lo8(3)
+ 700 0326 0E94 0000 		call SetTimer
+ 701               	.LVL76:
+ 364:microSD.c     **** 
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 702               		.loc 1 365 0
+ 703 032a 00C0      		rjmp .L65
+ 704               	.L68:
+ 366:microSD.c     **** 				{
+ 367:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
+ 705               		.loc 1 367 0
+ 706 032c 0E94 0000 		call HandleSoftclock
+ 707               	.LVL77:
+ 368:microSD.c     **** 					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell th
+ 708               		.loc 1 368 0
+ 709 0330 0E94 0000 		call EndSdTransfer
+ 710               	.LVL78:
+ 711               	.L65:
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 712               		.loc 1 365 0 discriminator 1
+ 713 0334 83E0      		ldi r24,lo8(3)
+ 714 0336 0E94 0000 		call CheckTimer
+ 715               	.LVL79:
+ 716 033a 8823      		tst r24
+ 717 033c 01F0      		breq .L66
+ 718               	.L69:
+ 369:microSD.c     **** 				}		
+ 370:microSD.c     **** 
+ 371:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized!
+ 719               		.loc 1 371 0
+ 720 033e 83E0      		ldi r24,lo8(3)
+ 721 0340 0E94 0000 		call CheckTimer
+ 722               	.LVL80:
+ 723 0344 8111      		cpse r24,__zero_reg__
+ 724 0346 00C0      		rjmp .L55
+ 725 0348 00C0      		rjmp .L67
+ 726               	.L66:
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 727               		.loc 1 365 0 discriminator 2
+ 728 034a 40E0      		ldi r20,0
+ 729 034c 50E0      		ldi r21,0
+ 730 034e BA01      		movw r22,r20
+ 731 0350 89EA      		ldi r24,lo8(-87)
+ 732 0352 0E94 0000 		call SendSdCommand
+ 733               	.LVL81:
+ 734 0356 8111      		cpse r24,__zero_reg__
+ 735 0358 00C0      		rjmp .L68
+ 736 035a 00C0      		rjmp .L69
+ 737               	.L67:
+ 372:microSD.c     **** 				{
+ 373:microSD.c     **** 					SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+ 738               		.loc 1 373 0
+ 739 035c 40E0      		ldi r20,0
+ 740 035e 52E0      		ldi r21,lo8(2)
+ 741 0360 60E0      		ldi r22,0
+ 742 0362 70E0      		ldi r23,0
+ 743 0364 80E1      		ldi r24,lo8(16)
+ 744 0366 0E94 0000 		call SendSdCommand
+ 745               	.LVL82:
+ 374:microSD.c     **** 					EndSdTransfer();						// Bring CS high.
+ 746               		.loc 1 374 0
+ 747 036a 0E94 0000 		call EndSdTransfer
+ 748               	.LVL83:
+ 749               	.L91:
+ 375:microSD.c     **** 					cardValid=true;							// SDC v1 card, good to go
+ 750               		.loc 1 375 0
+ 751 036e 81E0      		ldi r24,lo8(1)
+ 752               	.LVL84:
+ 753               	.L52:
+ 376:microSD.c     **** 				}
+ 377:microSD.c     **** 			}
+ 378:microSD.c     **** 		}
+ 379:microSD.c     **** 	}
+ 380:microSD.c     **** 
+ 381:microSD.c     **** 	EndSdTransfer();	// Bring CS high
+ 754               		.loc 1 381 0
+ 755 0370 8D83      		std Y+5,r24
+ 756 0372 0E94 0000 		call EndSdTransfer
+ 757               	.LVL85:
+ 382:microSD.c     **** 	return(cardValid);	// Report success or failure of initialization -- fails on timeout or bad respo
+ 383:microSD.c     **** }
+ 758               		.loc 1 383 0
+ 759 0376 8D81      		ldd r24,Y+5
+ 760               	/* epilogue start */
+ 761 0378 0F90      		pop __tmp_reg__
+ 762 037a 0F90      		pop __tmp_reg__
+ 763 037c 0F90      		pop __tmp_reg__
+ 764 037e 0F90      		pop __tmp_reg__
+ 765 0380 0F90      		pop __tmp_reg__
+ 766 0382 DF91      		pop r29
+ 767 0384 CF91      		pop r28
+ 768 0386 1F91      		pop r17
+ 769 0388 0F91      		pop r16
+ 770 038a FF90      		pop r15
+ 771 038c EF90      		pop r14
+ 772 038e 0895      		ret
+ 773               		.cfi_endproc
+ 774               	.LFE8:
+ 776               	.global	SdBeginSingleBlockRead
+ 778               	SdBeginSingleBlockRead:
+ 779               	.LFB9:
+ 384:microSD.c     **** 
+ 385:microSD.c     **** //-----------------------------------------------------------------------
+ 386:microSD.c     **** //-----------------------------------------------------------------------
+ 387:microSD.c     **** // SD Read/Write/Erase Functions
+ 388:microSD.c     **** //-----------------------------------------------------------------------
+ 389:microSD.c     **** //-----------------------------------------------------------------------
+ 390:microSD.c     **** // NOTE -- as per the SD card spec, SDSC cards specify addresses in BYTE UNITS, whereas SDHC or SDX
+ 391:microSD.c     **** // This should not be confused with setting the BLOCK LENGTH to 512 bytes above -- this is the leng
+ 392:microSD.c     **** 
+ 393:microSD.c     **** bool SdBeginSingleBlockRead(unsigned long theBlock)
+ 394:microSD.c     **** // Opens up the SD card for a single block read, starting at the beginning of the passed block.
+ 395:microSD.c     **** // Returns false if something goes wrong.  Otherwise, we exit ready to read in bytes from the block
+ 396:microSD.c     **** // Reading a block works like this:
+ 397:microSD.c     **** // Send the command.  Get the response from the SD card (no errors)
+ 398:microSD.c     **** // SD card waits some number of bytes with DATA OUT high, then the SD card sends the data token (0x
+ 399:microSD.c     **** // NOTE -- per the SD spec, this delay before timeout can be as long as 100mSec worst case.  If (TA
+ 400:microSD.c     **** // These are all based on TAAC and not NSAC (which always seems to be 0).
+ 401:microSD.c     **** // Either way, best to open with this command, then do your polling for the data token somewhere el
+ 402:microSD.c     **** {
+ 780               		.loc 1 402 0
+ 781               		.cfi_startproc
+ 782               	.LVL86:
+ 783               	/* prologue: function */
+ 784               	/* frame size = 0 */
+ 785               	/* stack size = 0 */
+ 786               	.L__stack_usage = 0
+ 787 0390 AB01      		movw r20,r22
+ 788 0392 BC01      		movw r22,r24
+ 789               	.LVL87:
+ 403:microSD.c     **** 	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate t
+ 790               		.loc 1 403 0
+ 791 0394 89E0      		ldi r24,9
+ 792               		1:
+ 793 0396 440F      		lsl r20
+ 794 0398 551F      		rol r21
+ 795 039a 661F      		rol r22
+ 796 039c 771F      		rol r23
+ 797 039e 8A95      		dec r24
+ 798 03a0 01F4      		brne 1b
+ 799               	.LVL88:
+ 404:microSD.c     **** 
+ 405:microSD.c     **** 	if(SendSdCommand(CMD17,theBlock)==0)	// If we send the command and get the correct response...
+ 800               		.loc 1 405 0
+ 801 03a2 81E1      		ldi r24,lo8(17)
+ 802 03a4 0E94 0000 		call SendSdCommand
+ 803               	.LVL89:
+ 804 03a8 91E0      		ldi r25,lo8(1)
+ 805 03aa 8111      		cpse r24,__zero_reg__
+ 806 03ac 90E0      		ldi r25,0
+ 807               	.L93:
+ 406:microSD.c     **** 	{
+ 407:microSD.c     **** 		return(true);
+ 408:microSD.c     **** 	}
+ 409:microSD.c     **** 	else
+ 410:microSD.c     **** 	{
+ 411:microSD.c     **** 		return(false);
+ 412:microSD.c     **** 	}
+ 413:microSD.c     **** }
+ 808               		.loc 1 413 0
+ 809 03ae 892F      		mov r24,r25
+ 810 03b0 0895      		ret
+ 811               		.cfi_endproc
+ 812               	.LFE9:
+ 814               	.global	SdBeginSingleBlockWrite
+ 816               	SdBeginSingleBlockWrite:
+ 817               	.LFB10:
+ 414:microSD.c     **** 
+ 415:microSD.c     **** bool SdBeginSingleBlockWrite(unsigned long theBlock)
+ 416:microSD.c     **** // Opens up the SD card for a single block write, starting at the beginning of the passed block.
+ 417:microSD.c     **** // Returns false if something goes wrong.  Otherwise, we exit ready to write bytes to the block.
+ 418:microSD.c     **** {
+ 818               		.loc 1 418 0
+ 819               		.cfi_startproc
+ 820               	.LVL90:
+ 821               	/* prologue: function */
+ 822               	/* frame size = 0 */
+ 823               	/* stack size = 0 */
+ 824               	.L__stack_usage = 0
+ 825 03b2 AB01      		movw r20,r22
+ 826 03b4 BC01      		movw r22,r24
+ 827               	.LVL91:
+ 419:microSD.c     **** 	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate t
+ 828               		.loc 1 419 0
+ 829 03b6 99E0      		ldi r25,9
+ 830               		1:
+ 831 03b8 440F      		lsl r20
+ 832 03ba 551F      		rol r21
+ 833 03bc 661F      		rol r22
+ 834 03be 771F      		rol r23
+ 835 03c0 9A95      		dec r25
+ 836 03c2 01F4      		brne 1b
+ 837               	.LVL92:
+ 420:microSD.c     **** 
+ 421:microSD.c     **** 	if(SendSdCommand(CMD24,theBlock)==0)	// If we send the command and get the correct response...
+ 838               		.loc 1 421 0
+ 839 03c4 88E1      		ldi r24,lo8(24)
+ 840 03c6 0E94 0000 		call SendSdCommand
+ 841               	.LVL93:
+ 842 03ca 91E0      		ldi r25,lo8(1)
+ 843 03cc 8111      		cpse r24,__zero_reg__
+ 844 03ce 90E0      		ldi r25,0
+ 845               	.L98:
+ 422:microSD.c     **** 	{
+ 423:microSD.c     **** 		return(true);
+ 424:microSD.c     **** 	}
+ 425:microSD.c     **** 	else
+ 426:microSD.c     **** 	{
+ 427:microSD.c     **** 		return(false);
+ 428:microSD.c     **** 	}
+ 429:microSD.c     **** }
+ 846               		.loc 1 429 0
+ 847 03d0 892F      		mov r24,r25
+ 848 03d2 0895      		ret
+ 849               		.cfi_endproc
+ 850               	.LFE10:
+ 852               	.Letext0:
+ 853               		.file 2 "/usr/local/avr/bin/../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h"
+ 854               		.file 3 "defines.h"
+ 855               		.file 4 "softclock.h"
+ 856               		.file 5 "WTPA.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 microSD.c
-     /tmp/ccfeoaBJ.s:2      *ABS*:0000003f __SREG__
-     /tmp/ccfeoaBJ.s:3      *ABS*:0000003e __SP_H__
-     /tmp/ccfeoaBJ.s:4      *ABS*:0000003d __SP_L__
-     /tmp/ccfeoaBJ.s:5      *ABS*:00000034 __CCP__
-     /tmp/ccfeoaBJ.s:6      *ABS*:00000000 __tmp_reg__
-     /tmp/ccfeoaBJ.s:7      *ABS*:00000001 __zero_reg__
-     /tmp/ccfeoaBJ.s:18     .text:00000000 UnInitSdInterface
-     /tmp/ccfeoaBJ.s:46     .text:0000001c InitSdInterface
-     /tmp/ccfeoaBJ.s:86     .text:0000004a EndSdTransfer
-     /tmp/ccfeoaBJ.s:100    .text:0000004e StartSdTransfer
-     /tmp/ccfeoaBJ.s:116    .text:00000054 TransferSdByte
-     /tmp/ccfeoaBJ.s:144    .text:00000070 SendDummyByte
-     /tmp/ccfeoaBJ.s:184    .text:0000009e SendSdCommand
-     /tmp/ccfeoaBJ.s:646    .text:000002c8 SdBeginSingleBlockRead
-     /tmp/ccfeoaBJ.s:679    .text:000002ec SdBeginSingleBlockWrite
-     /tmp/ccfeoaBJ.s:712    .text:00000310 SdHandshake
+     /tmp/ccBJdy3G.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccBJdy3G.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccBJdy3G.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccBJdy3G.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccBJdy3G.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccBJdy3G.s:12     .text:00000000 UnInitSdInterface
+     /tmp/ccBJdy3G.s:43     .text:0000001c InitSdInterface
+     /tmp/ccBJdy3G.s:85     .text:0000004a EndSdTransfer
+     /tmp/ccBJdy3G.s:101    .text:0000004e StartSdTransfer
+     /tmp/ccBJdy3G.s:119    .text:00000054 TransferSdByte
+     /tmp/ccBJdy3G.s:149    .text:0000006e SendDummyByte
+     /tmp/ccBJdy3G.s:178    .text:00000088 SendSdCommand
+     /tmp/ccBJdy3G.s:395    .text:00000180 SdHandshake
+     /tmp/ccBJdy3G.s:778    .text:00000390 SdBeginSingleBlockRead
+     /tmp/ccBJdy3G.s:816    .text:000003b2 SdBeginSingleBlockWrite
 
 UNDEFINED SYMBOLS
 SetTimer

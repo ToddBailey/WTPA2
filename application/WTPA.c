@@ -6,7 +6,7 @@
 // Tue Jul  6 19:36:23 EDT 2010
 
 #include	"includes.h"
-#define		CURRENT_FIRMWARE_VERSION	0x11		// Starts at 0x10 for WTPA2.  0x11, first proper release.
+#define		CURRENT_FIRMWARE_VERSION	0x12		// Starts at 0x10 for WTPA2.  0x11, messing around from 2011-2013, 0x12 github pre-release version
 
 //=============================
 // HOLLER-WARE LICENSE:
@@ -82,7 +82,8 @@ avrdude -p m164p -c stk500v2 -u -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0
 static void DoFruitcakeIntro(void);
 static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigned int theRate);
 static void StartRecording(unsigned char theBank, unsigned char theClock, unsigned int theRate);
-static void PlaySampleFromSd(unsigned char theBank, unsigned int theSlot);
+//static void PlaySampleFromSd(unsigned char theBank, unsigned int theSlot);
+static void PlaySampleFromSd(unsigned int theSlot);
 static void InitSdIsr(void);
 
 //-----------------------------------------------------------------------
@@ -150,11 +151,12 @@ static volatile unsigned char
 //-----------------------------------------------------------------------
 static unsigned char
 	keyState,
-	newKeys;
+	newKeys,
+	keysHeld;
 
 static bool
-	cardDetect;		// Is SD card physically in the slot?	
-	
+	cardDetect;		// Is SD card physically in the slot?
+
 // Application flags and housekeeping.
 //-----------------------------------------------------------------------
 STATE_FUNC				//  Creates a pointer called State to an instance of STATE_FUNC().
@@ -165,7 +167,7 @@ static unsigned char
 static volatile bool
 	outOfRam;				// Goes true in the ISR if we run out of RAM.
 
-static unsigned char		
+static unsigned char
 	encoderState,			// What the encoder switches look like.
 	encoderValue,			// Incremental ticks on the encoder.
 	scaledEncoderValue;		// The number that we display on the LEDs and use to select different effects and stuff.  Generated from the encoder reading.
@@ -185,7 +187,7 @@ static volatile unsigned char
 
 static volatile unsigned long
 	sliceSize[NUM_BANKS],						// How big are our slices of memory?
-	sliceRemaining[NUM_BANKS];					// How far are we into our slice of memory?		
+	sliceRemaining[NUM_BANKS];					// How far are we into our slice of memory?
 
 static unsigned char
 	granularPositionArray[NUM_BANKS][MAX_SLICES];
@@ -223,8 +225,8 @@ static volatile unsigned int		// FIFO pointers for the SD card read/write buffer
 	sdBytesInFifo;
 
 // The below are variables used by the SD state machine and functions:
-static unsigned char
-	sdQueuedBank;		// Bank to play pending stream from SD card on
+//static unsigned char
+//	sdQueuedBank;		// Bank to play pending stream from SD card on
 static unsigned int
 	sdQueuedSlot;		// Pending sample to play once the current stream is closed
 static bool
@@ -329,10 +331,10 @@ static unsigned char UpdateAudioChannel0(void)
 
 		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
-		}		
+		}
 		break;
 
 		case AUDIO_RECORD:
@@ -389,7 +391,7 @@ static unsigned char UpdateAudioChannel0(void)
 		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
 		{
 			// Slice first, only worry about forward ###
-			
+
 			if(sliceRemaining[BANK_0])	// Moving through our current slice?
 			{
 				bankStates[BANK_0].currentAddress++;
@@ -405,8 +407,8 @@ static unsigned char UpdateAudioChannel0(void)
 					granularPositionArrayPointer[BANK_0]=0;	// Point back at the first slice.
 				}
 
-				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);									
-			}		
+				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);
+			}
 		}
 		else
 		{
@@ -467,7 +469,7 @@ static unsigned char UpdateAudioChannel0(void)
 		{
 			bankStates[BANK_0].currentAddress++;
 		}
-		
+
 		if(bankStates[BANK_0].sampleDirection==false)
 		{
 			bankStates[BANK_0].currentAddress-=2;
@@ -482,7 +484,7 @@ static unsigned char UpdateAudioChannel0(void)
 
 		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
 		}
@@ -509,7 +511,7 @@ static unsigned char UpdateAudioChannel0(void)
 		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
 		{
 			// Slice first, only worry about forward ###
-			
+
 			if(sliceRemaining[BANK_0])	// Moving through our current slice?
 			{
 				bankStates[BANK_0].currentAddress++;
@@ -525,8 +527,8 @@ static unsigned char UpdateAudioChannel0(void)
 					granularPositionArrayPointer[BANK_0]=0;	// Point back at the first slice.
 				}
 
-				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);									
-			}		
+				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);
+			}
 		}
 		else
 		{
@@ -578,7 +580,7 @@ static unsigned char UpdateAudioChannel0(void)
 			}
 		}
 
-		// Finished calculating address, bus should be settled, so finish the exchange with RAM		
+		// Finished calculating address, bus should be settled, so finish the exchange with RAM
 
 		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM -- this will get sent to the DAC.
 
@@ -587,7 +589,7 @@ static unsigned char UpdateAudioChannel0(void)
 
 		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
 		}
@@ -637,10 +639,10 @@ static unsigned char UpdateAudioChannel1(void)
 
 		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
-		}		
+		}
 		break;
 
 		case AUDIO_RECORD:
@@ -700,7 +702,7 @@ static unsigned char UpdateAudioChannel1(void)
 		if(bankStates[BANK_1].granularSlices)		// Big ugly conditional branch
 		{
 			// Slice first, only worry about forward ###
-			
+
 			if(sliceRemaining[BANK_1])	// Moving through our current slice?
 			{
 				bankStates[BANK_1].currentAddress--;
@@ -716,8 +718,8 @@ static unsigned char UpdateAudioChannel1(void)
 					granularPositionArrayPointer[BANK_1]=0;	// Point back at the first slice.
 				}
 
-				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));								
-			}		
+				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));
+			}
 		}
 		else
 		{
@@ -768,16 +770,16 @@ static unsigned char UpdateAudioChannel1(void)
 				}
 			}
 		}
-		
+
 		// Done with addy, read RAM.
-		
+
 		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM.
 		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
 		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
 
 		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
 		}
@@ -804,7 +806,7 @@ static unsigned char UpdateAudioChannel1(void)
 		if(bankStates[BANK_1].granularSlices)		// Big ugly conditional branch
 		{
 			// Slice first, only worry about forward ###
-			
+
 			if(sliceRemaining[BANK_1])	// Moving through our current slice?
 			{
 				bankStates[BANK_1].currentAddress--;
@@ -820,8 +822,8 @@ static unsigned char UpdateAudioChannel1(void)
 					granularPositionArrayPointer[BANK_1]=0;	// Point back at the first slice.
 				}
 
-				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));								
-			}		
+				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));
+			}
 		}
 		else
 		{
@@ -872,9 +874,9 @@ static unsigned char UpdateAudioChannel1(void)
 				}
 			}
 		}
-		
+
 		// Finished with addy stuff, now finish data transfer
-		
+
 		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM -- this will get sent to the DAC.
 
 		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
@@ -882,7 +884,7 @@ static unsigned char UpdateAudioChannel1(void)
 
 		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
 		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.				
+			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
 			outputByte^=0x80;											// Bring it back to signed.
 		}
@@ -920,7 +922,7 @@ typedef void OUTPUT_FUNCTION(void);	// Creates a datatype -- a void function cal
 
 OUTPUT_FUNCTION					// Assigns a pointer called UpdateOutput to an instance of OUTPUT_FUNCTION()
 	*UpdateOutput;
-	
+
 static signed char
 	extIsrOutputBank0,
 	extIsrOutputBank1,
@@ -940,7 +942,7 @@ static void OutputMultiplyBanks(void)
 
 	unsigned char
 		output;			// What to put on the DAC
-	
+
 	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
 	if(sum0>127)		// Pin high.
 	{
@@ -989,7 +991,7 @@ static void OutputAddBanks(void)
 
 	unsigned char
 		output;			// What to put on the DAC
-	
+
 //	sum0=(extIsrOutputBank0+extIsrOutputBank1+midiOutputBank0+midiOutputBank1);						// Sum everything that might be involved in our output waveform:
 	sum0=extIsrOutputBank0+extIsrOutputBank1+midiOutputBank0+midiOutputBank1+sdStreamOutput;		// Sum everything that might be involved in our output waveform:
 	if(sum0>127)		// Pin high.
@@ -1025,7 +1027,7 @@ static void OutputXorBanks(void)
 
 	unsigned char
 		output;			// What to put on the DAC
-	
+
 	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
 	if(sum0>127)		// Pin high.
 	{
@@ -1043,8 +1045,8 @@ static void OutputXorBanks(void)
 	else if(sum1<-128)		// Pin low.
 	{
 		sum1=-128;
-	}		
-	output=(((signed char)sum0)^0x80)^(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then xor them.		
+	}
+	output=(((signed char)sum0)^0x80)^(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then xor them.
 
 	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
 	{
@@ -1068,7 +1070,7 @@ static void OutputAndBanks(void)
 
 	unsigned char
 		output;			// What to put on the DAC
-	
+
 	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
 	if(sum0>127)		// Pin high.
 	{
@@ -1087,7 +1089,7 @@ static void OutputAndBanks(void)
 	{
 		sum1=-128;
 	}
-	output=(((signed char)sum0)^0x80)&(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then and them.		
+	output=(((signed char)sum0)^0x80)&(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then and them.
 
 	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
 	{
@@ -1139,7 +1141,7 @@ ISR(PCINT2_vect)
 	if((bankStates[BANK_1].halfSpeed==false)||(bankStates[BANK_1].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
 	{
 		extIsrOutputBank1=UpdateAudioChannel1();		// If so, then call the audioIsr for bank 1 and do whatever it's currently supposed to do.
-	}	
+	}
 	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
 	UpdateOutput();			// Points to our current OP function.  Combines outputs from different sources and puts them on the DAC.
 	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
@@ -1235,7 +1237,7 @@ ISR(TIMER2_COMPB_vect)
 // This includes direct playback from the SD card, writing SD data to the ram banks, and reading ram data.  All of these are at a fixed period.
 // When writing/reading RAM, the bank in question should be locked against other RAM accesses.
 {
-	unsigned char 
+	unsigned char
 		theByte;
 
 	if(sdIsrState==SD_ISR_LOADING_RAM)	// Putting data from the SD buffer into a RAM bank?
@@ -1246,17 +1248,17 @@ ISR(TIMER2_COMPB_vect)
 			{
 				theByte=sdFifo[sdFifoReadPointer];		// Grab data from the FIFO.
 
-				sdFifoReadPointer++;					// Move to next spot in fifo									
+				sdFifoReadPointer++;					// Move to next spot in fifo
 				if(sdFifoReadPointer>=SD_FIFO_SIZE)		// Handle wrapping around end of fifo
 				{
 					sdFifoReadPointer=0;
 				}
 
 				sdBytesInFifo--;				// One less byte in the FIFO
-				sdRamSampleRemaining--;			// One less byte in the sample					
+				sdRamSampleRemaining--;			// One less byte in the sample
 
 				// Now put this byte into the RAM bank in the correct address.
-			
+
 				LATCH_DDR=0xFF;								// Data bus to output -- we never need to read the RAM in this version of the ISR.
 				LATCH_PORT=sdRamAddress;					// Put the LSB of the address on the latch.
 				PORTA|=(Om_RAM_L_ADR_LA);					// Strobe it to the latch output...
@@ -1282,7 +1284,7 @@ ISR(TIMER2_COMPB_vect)
 				// Finish writing to RAM.
 				PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
 				PORTA|=(Om_RAM_WE);					// Disbale writes.
-										
+
 			}
 		}
 		else	// All sample bytes processed, end ISR and unlock the bank we were using.  Mark the current write address as the last address of the sample.
@@ -1290,7 +1292,7 @@ ISR(TIMER2_COMPB_vect)
 			sdIsrState=SD_ISR_IDLE;		// ISR state to idle
 			TCCR2B=0;					// Stop this timer
 			TIMSK2&=~(1<<OCIE2B);		// Disable interrupt
-			
+
 			if(sdBank0==true)	// Unlock the bank for other RAM accesses, update final address
 			{
 				bankStates[BANK_0].isLocked=false;					// Unlock bank
@@ -1301,9 +1303,9 @@ ISR(TIMER2_COMPB_vect)
 			{
 				bankStates[BANK_1].isLocked=false;					// Unlock bank
 				bankStates[BANK_1].endAddress=sdRamAddress;			// Match ending address of the sample to the current memory address.
-				bankStates[BANK_1].adjustedEndAddress=sdRamAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).			
+				bankStates[BANK_1].adjustedEndAddress=sdRamAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).
 			}
-		}	
+		}
 	}
 	else if(sdIsrState==SD_ISR_READING_RAM)  // Putting data from RAM into the SD buffer?
 	{
@@ -1346,7 +1348,7 @@ ISR(TIMER2_COMPB_vect)
 
 
 				sdFifo[sdFifoWritePointer]=theByte;	// Put our byte in the fifo.
-				sdFifoWritePointer++;				// Move to next spot in fifo									
+				sdFifoWritePointer++;				// Move to next spot in fifo
 
 				if(sdFifoWritePointer>=SD_FIFO_SIZE)				// Handle wrapping around end of fifo
 				{
@@ -1354,7 +1356,7 @@ ISR(TIMER2_COMPB_vect)
 				}
 
 				sdBytesInFifo++;				// One more byte in the FIFO
-				sdRamSampleRemaining--;		// One less byte in the sample					
+				sdRamSampleRemaining--;		// One less byte in the sample
 
 			}
 			else	// No more bytes in the sample to be transferred.  Stop the ISR and unlock this RAM bank for the rest of the program
@@ -1362,7 +1364,7 @@ ISR(TIMER2_COMPB_vect)
 				sdIsrState=SD_ISR_IDLE;		// ISR state to idle
 				TCCR2B=0;					// Stop this timer
 				TIMSK2&=~(1<<OCIE2B);		// Disable interrupt
-				
+
 				if(sdBank0==true)	// Unlock the bank for other RAM accesses
 				{
 					bankStates[BANK_0].isLocked=false;					// Unlock bank
@@ -1371,8 +1373,8 @@ ISR(TIMER2_COMPB_vect)
 				{
 					bankStates[BANK_1].isLocked=false;					// Unlock bank
 				}
-			}			
-		}				
+			}
+		}
 	}
 	else if(sdIsrState==SD_ISR_STREAMING_PLAYBACK)	// Streaming data directly from the SD buffer to the audio DAC?
 	{
@@ -1382,18 +1384,18 @@ ISR(TIMER2_COMPB_vect)
 			{
 				theByte=sdFifo[sdFifoReadPointer];		// Grab data from the FIFO.
 
-				sdFifoReadPointer++;					// Move to next spot in fifo									
+				sdFifoReadPointer++;					// Move to next spot in fifo
 				if(sdFifoReadPointer>=SD_FIFO_SIZE)		// Handle wrapping around end of fifo
 				{
 					sdFifoReadPointer=0;
 				}
 
 				sdBytesInFifo--;				// One less byte in the FIFO
-				sdRamSampleRemaining--;			// One less byte in the sample					
+				sdRamSampleRemaining--;			// One less byte in the sample
 
 				// Now spit the byte out the DAC.
-				
-				sdStreamOutput=theByte;		// Mark this byte as the one we want to go out in our DAC-updating routine			
+
+				sdStreamOutput=theByte;		// Mark this byte as the one we want to go out in our DAC-updating routine
 				UpdateOutput();				// Update the DAC
 			}
 		}
@@ -1402,10 +1404,10 @@ ISR(TIMER2_COMPB_vect)
 			sdIsrState=SD_ISR_IDLE;		// ISR state to idle
 			TCCR2B=0;					// Stop this timer
 			TIMSK2&=~(1<<OCIE2B);		// Disable interrupt
-			
+
 			// Set this contribution to the DAC to midscale (this output source is now quiet)
 			sdStreamOutput=0;
-		}	
+		}
 	}
 }
 
@@ -1415,7 +1417,7 @@ ISR(TIMER2_COMPA_vect)
 {
 	static unsigned char
 		pwmCount;
-	
+
 	if(ledPwm>pwmCount)
 	{
 		LATCH_PORT=0xFF;	// LEDs go on.
@@ -1600,7 +1602,7 @@ static void InitSwitches(void)
 
 	DDRC&=~Im_CARD_DETECT;	// Card detect pin to input.
 	PORTC|=Im_CARD_DETECT;	// Pull it up.
-	
+
 }
 
 static void HandleSwitches(void)
@@ -1625,7 +1627,7 @@ static void HandleSwitches(void)
 		keyState=~LATCH_INPUT;		// Grab new keystate and invert so that pressed keys are 1s
 		PORTC|=Om_SWITCH_LA;		// Tristate switch latch outputs (OE high)
 		LATCH_DDR=0xFF;				// Turn the data bus rightside up (AVR gots the bus)
-		SREG=sreg;					// Stop tying up interrupts		
+		SREG=sreg;					// Stop tying up interrupts
 
 		if(!(PINC&Im_CARD_DETECT))	// Handle SD card switch (has a real hardware pin)
 		{
@@ -1636,10 +1638,11 @@ static void HandleSwitches(void)
 			cardDetect=false;
 		}
 
-		SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Reset timer (allow time for bus to turn around)		
+		SetTimer(TIMER_DEBOUNCE,(SECOND/32));	// Reset timer (allow time for bus to turn around)
 	}
 
 	newKeys=((keyState^lastKeyState)&(keyState));		// Flag the keys which have been pressed since the last test.
+	keysHeld=keyState&(~newKeys);						// Separate out keys which are NOT newly pressed, but have been held for more than one debounce loop.
 	lastKeyState=keyState;								// And store this keystate as old news.
 }
 
@@ -1680,7 +1683,7 @@ static void HandleEncoder(void)
 		lastEncoderState=0;
 	static unsigned int
 		lastEncTime=0;
-		
+
 	if(systemTicks!=lastEncTime)		// Read encoder once every system tick (around 0.8 mSecs)
 	{
 		lastEncTime=systemTicks;					// update last read time.
@@ -1700,7 +1703,7 @@ static void HandleEncoder(void)
 //					encoderValue--;
 					encoderValue++;
 				}
-			}		
+			}
 			else if(encoderState==ENC_POS_B)
 			{
 				if(lastEncoderState==ENC_POS_A)
@@ -1713,7 +1716,7 @@ static void HandleEncoder(void)
 //					encoderValue--;
 					encoderValue++;
 				}
-			}		
+			}
 			else if(encoderState==ENC_POS_C)
 			{
 				if(lastEncoderState==ENC_POS_B)
@@ -1726,7 +1729,7 @@ static void HandleEncoder(void)
 //					encoderValue--;
 					encoderValue++;
 				}
-			}		
+			}
 			else if(encoderState==ENC_POS_D)
 			{
 				if(lastEncoderState==ENC_POS_C)
@@ -1739,10 +1742,10 @@ static void HandleEncoder(void)
 //					encoderValue--;
 					encoderValue++;
 				}
-			}		
+			}
 
 			lastEncoderState=encoderState;		// Keep this state around to evaluate the next one.
-		}		
+		}
 	}
 }
 
@@ -1844,17 +1847,17 @@ static void SetSampleClock(unsigned char theBank, unsigned char theClock, unsign
 
 		if(theBank==BANK_0)		// Bank 0 is associated with OCR1A
 		{
-			OCR1A=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.		
+			OCR1A=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.
 			TIFR1|=(1<<OCF1A);		// Clear the interrupt flag.
 			TIMSK1|=(1<<OCIE1A);	// Enable the compare match interrupt.
 			TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.
 		}
 		else					// Bank 1 is associated with OCR1B
 		{
-			OCR1B=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.		
+			OCR1B=(theRate+TCNT1);	// Find spot for next interrupt to give the right pitch.
 			TIFR1|=(1<<OCF1B);		// Clear the interrupt flag.
 			TIMSK1|=(1<<OCIE1B);	// Enable the compare match interrupt.
-			TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.			
+			TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.
 		}
 	}
 	else if(theClock==CLK_EXTERNAL)	// External clock.
@@ -1901,7 +1904,7 @@ static void StartRecording(unsigned char theBank, unsigned char theClock, unsign
 		outOfRam=false;						// Plenty of ram left...
 
 		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.		
+		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
 
 		SREG=sreg;		// Restore interrupts.
 
@@ -1937,12 +1940,12 @@ static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigne
 		}
 		else
 		{
-			bankStates[theBank].currentAddress=bankStates[theBank].adjustedStartAddress;	// Point to the beginning of our sample.	
+			bankStates[theBank].currentAddress=bankStates[theBank].adjustedStartAddress;	// Point to the beginning of our sample.
 			bankStates[theBank].sampleDirection=true;	// make us run forwards.
 		}
-		
+
 		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.		
+		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
 		SREG=sreg;		// Restore interrupts.
 	}
 }
@@ -1962,7 +1965,7 @@ static void ContinuePlayback(unsigned char theBank, unsigned char theClock, unsi
 		bankStates[theBank].audioFunction=AUDIO_PLAYBACK;	// What should we be doing when we get into the ISR?
 		SetSampleClock(theBank,theClock,theRate);			// Set the appropriate clock source for this audio function.
 
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.		
+		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
 		SREG=sreg;		// Restore interrupts.
 	}
 }
@@ -1982,7 +1985,7 @@ static void StartOverdub(unsigned char theBank, unsigned char theClock, unsigned
 		bankStates[theBank].audioFunction=AUDIO_OVERDUB;	// What should we be doing when we get into the ISR?
 		SetSampleClock(theBank,theClock,theRate);			// Set the appropriate clock source for this audio function.
 
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.		
+		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
 		SREG=sreg;		// Restore interrupts.
 
 		// Throw out the results of an old conversion since it could be very old (unless it's already going)
@@ -2073,10 +2076,10 @@ static void	ClearSampleToc(void)
 {
 	unsigned char
 		i;
-	
+
 	for(i=0;i<64;i++)			// For all TOC entries (64 bytes / 512 bits)
 	{
-		sampleToc[i]=0x00;		// 8 bits of "no sample present"	
+		sampleToc[i]=0x00;		// 8 bits of "no sample present"
 	}
 }
 
@@ -2142,20 +2145,20 @@ static bool GetCardFilesystem(void)
 	// Start reading the card at the very beginning.
 	// Are the first 4 chars WTPA?
 	// Stop reading, return true or false based on answer.
-	
+
 	filesystemGood=true;					// Start assuming a good filesystem
 
 	if(SdBeginSingleBlockRead(0)==true)		// Start reading at block 0.
 	{
 		// Wait for a data packet from the card.
 		// EITHER read in the first four bytes then pull CS high  -- SD SPEC specifies that the SD card ALWAYS replies to SPI commands, so we could probably get away with this.  Could also do this, then read status to clear any error flags.
- 		// Tue Jun 21 17:11:28 EDT 2011 
+ 		// Tue Jun 21 17:11:28 EDT 2011
  		// @@@ this appears to be bad news.  Tends to leave DO low.
-		// So --  
+		// So --
 		// Read the first four bytes and test them, then read the remainder of the block and checksum and toss it.
 
 		SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
-		
+
 		while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
 		{
 			HandleSoftclock();	// Kludgy
@@ -2167,19 +2170,19 @@ static bool GetCardFilesystem(void)
 		{
 			filesystemGood=false;
 		}
-		
+
 		theByte=TransferSdByte(DUMMY_BYTE);
 		if(theByte!='T')
 		{
 			filesystemGood=false;
 		}
-		
+
 		theByte=TransferSdByte(DUMMY_BYTE);
 		if(theByte!='P')
 		{
 			filesystemGood=false;
 		}
-		
+
 		theByte=TransferSdByte(DUMMY_BYTE);
 		if(theByte!='A')
 		{
@@ -2193,27 +2196,27 @@ static bool GetCardFilesystem(void)
 		{
 			TransferSdByte(0xFF);
 		}
-		
+
 		if(filesystemGood==true)			// Load TOC if this is a legit card
 		{
 			for(i=0;i<64;i++)							// For all TOC entries (64 bytes / 512 bits)
 			{
 				sampleToc[i]=TransferSdByte(0xFF);		// Load toc into RAM
-			}		
+			}
 		}
 		else
 		{
 			for(i=0;i<64;i++)				// Get bytes but don't put them in the toc
 			{
 				TransferSdByte(0xFF);
-			}		
-		
+			}
+
 		}
 		for(i=0;i<(432+2);i++)					// Read don't cares and CRC
 		{
 			TransferSdByte(0xFF);
 		}
-	}	
+	}
 	else
 	{
 		filesystemGood=false;	// Error issuing read command
@@ -2222,7 +2225,7 @@ static bool GetCardFilesystem(void)
 		;
 
 	EndSdTransfer();				// Bring CS high
-	TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+	TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.
 
 	return(filesystemGood);
 }
@@ -2233,15 +2236,15 @@ static void DoFormatCard(void)
 {
 	if(subState==SS_0)
 	{
-		KillLeds();		// Turn off LEDs 
-												
+		KillLeds();		// Turn off LEDs
+
 		bankStates[BANK_0].audioFunction=AUDIO_IDLE;	// Stop audio ISRs
 		bankStates[BANK_0].clockMode=CLK_NONE;
 		bankStates[BANK_1].audioFunction=AUDIO_IDLE;
 		bankStates[BANK_1].clockMode=CLK_NONE;
 
 		BlinkLeds((1<<LED_0)|(1<<LED_7));	// Blink Leds 0, 7 to show the user something serious is going down
-		subState=SS_1;		
+		subState=SS_1;
 	}
 	else if(subState==SS_1)
 	{
@@ -2249,8 +2252,8 @@ static void DoFormatCard(void)
 		{
 			cardState=SD_TOC_WRITE_START;	// Start TOC write
 			KillLeds();
-			ledOnOffMask|=(1<<LED_0)|(1<<LED_7);	// Turn both LEDs on while write occurs		
-			subState=SS_2;		
+			ledOnOffMask|=(1<<LED_0)|(1<<LED_7);	// Turn both LEDs on while write occurs
+			subState=SS_2;
 		}
 		else if(cardState==SD_NOT_PRESENT)	// We pulled the SD card.  Reset sampler
 		{
@@ -2286,17 +2289,17 @@ static bool SdStartSampleRead(unsigned int sampleSlot)
 	{
 		sdSampleStartBlock=(1+(sampleSlot*1024));	// Mark this block as where we started reading (1 block plus 512k sample size times the number of samples in we are)
 		sdCurrentBlockOffset=0;						// Read first block first
-	
+
 		sdFifoReadPointer=0;		// Reset FIFO variables
 		sdFifoWritePointer=0;
 		sdBytesInFifo=0;
-		
+
 		SetTimer(TIMER_SD,(SECOND/10));			// 100 mS timeout (God Forbid)
 		cardState=SD_READ_START;				// Read in the first sample block with the state machine
 
 		SREG=sreg;	// Resume ISR
 
-		return(true);			
+		return(true);
 	}
 	SREG=sreg;	// Resume ISR
 	return(false);
@@ -2331,7 +2334,7 @@ static void SdStartSampleWrite(unsigned int sampleSlot, unsigned long sampleLeng
 	}
 
 	sdCardSampleRemaining=sdRamSampleRemaining;		// At the start of the transfer, bytes to read from SRAM = bytes to write to card = sample length.
-	cardState=SD_WRITE_START;						// Enable state machine to handle this.  NOTE -- we'll have to have a block in the FIFO before we start 
+	cardState=SD_WRITE_START;						// Enable state machine to handle this.  NOTE -- we'll have to have a block in the FIFO before we start
 	SREG=sreg;	// Resume ISR
 }
 
@@ -2377,15 +2380,15 @@ static void UpdateCard(void)
 			case SD_WARMUP:				// Card inserted, timer has been started.
 			if(CheckTimer(TIMER_SD))	// Card had long enough to power up?
 			{
-				sdPlaybackQueued=false;	
-				sdAbortRead=false;			
+				sdPlaybackQueued=false;
+				sdAbortRead=false;
 
 				if(SdHandshake()==true)	// Give it a shot...
 				{
 					if(GetCardFilesystem()==true)	// Yep, it's an SD card.  See if it already has the correct filesystem, and if so, get the TOC as well.
 					{
 						cardState=SD_IDLE;		// Card is legit and ready to go.
-						InitSdIsr();			// Enable the timers necessary to give the SD card its own IRQ	
+						InitSdIsr();			// Enable the timers necessary to give the SD card its own IRQ
 					}
 					else	// Valid card, but invalid filesystem.  Vector to "are you sure" state and give user the option to Format the card.
 					{
@@ -2449,13 +2452,13 @@ static void UpdateCard(void)
 			}
 
 			for(i=0;i<numTransferBytes;i++)				// Loop through bytes to send to card (note, this executes zero times if there are no bytes left)
-			{														
+			{
 				if(sdCardSampleRemaining)							// Bytes left in our sample?  If so, write them.
 				{
-					TransferSdByte(sdFifo[sdFifoReadPointer]);		// Put byte from fifo into SD 
+					TransferSdByte(sdFifo[sdFifoReadPointer]);		// Put byte from fifo into SD
 					sdCardSampleRemaining--;						// One less sample byte to go into the card
 
-					sdFifoReadPointer++;			// Move to next spot in fifo									
+					sdFifoReadPointer++;			// Move to next spot in fifo
 
 					if(sdFifoReadPointer>=SD_FIFO_SIZE)	// Handle wrapping around end of fifo
 					{
@@ -2480,7 +2483,7 @@ static void UpdateCard(void)
 			{
 				TransferSdByte(DUMMY_BYTE);				// Send poo poo checksum
 				TransferSdByte(DUMMY_BYTE);				// Send poo poo checksum
-				theByte=(TransferSdByte(DUMMY_BYTE)&0x1F);	//	Get Error code	
+				theByte=(TransferSdByte(DUMMY_BYTE)&0x1F);	//	Get Error code
 
 				if(theByte==0x05)							// 	A good write!  Expect to be busy for a long time.
 				{
@@ -2490,17 +2493,17 @@ static void UpdateCard(void)
 				else	// Something wrong with the write.
 				{
 					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
-				}	
+				}
 			}
 			break;
-			
+
 			case SD_WRITE_CARD_WAIT:				// The SD card is spinning and we're waiting on it to continue writing (or ending the sample transfer)
 			if(!(CheckTimer(TIMER_SD)))				// Didn't timeout yet
 			{
 				i=0;
 				while(i<4)		// Try a few times to see if the card is done writing
 				{
-					theByte=TransferSdByte(DUMMY_BYTE);	// Check card	
+					theByte=TransferSdByte(DUMMY_BYTE);	// Check card
 					if(theByte!=0xFF)					// Line should send zeros while programming, and send return high when programming is done.
 					{
 						i++;	// Try again.
@@ -2510,14 +2513,14 @@ static void UpdateCard(void)
 						i=4;	// Got a result, stop polling
 					}
 				}
-				
+
 				if(theByte==0xFF)	// Got a proper reply (line idle), end transfer and figure what to do next.
 				{
 					EndSdTransfer();				// Bring CS high
-					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.
 					while(!(UCSR1A&(1<<TXC1)))		// Spin until the last clocks go out
-						;				
-					
+						;
+
 					if(sdCardSampleRemaining)	// This block is done.  Any bytes still need to be written to the card?
 					{
 						cardState=SD_WRITE_FIFO_WAIT;	// Poll the FIFO until we have enough bytes in it to start another block write
@@ -2527,12 +2530,12 @@ static void UpdateCard(void)
 						if(!(CheckSdSlotFull(sdCurrentSlot)))		// Don't bother updating TOC on SD if this slot is already full.
 						{
 							MarkSdSlotFull(sdCurrentSlot);			// Update toc on card to show that this slot has been filled.
-							cardState=SD_TOC_WRITE_START;					// Now write the table of contents							
+							cardState=SD_TOC_WRITE_START;					// Now write the table of contents
 						}
 						else
 						{
 							cardState=SD_IDLE;				// DONE!
-						}								
+						}
 					}
 				}
 			}
@@ -2586,14 +2589,14 @@ static void UpdateCard(void)
 				TransferSdByte('T');
 				TransferSdByte('P');
 				TransferSdByte('A');
-				
+
 				bytesLeftInBlock-=4;
 
 				for(i=0;i<12;i++)					// 12 don't care bytes
 				{
 					TransferSdByte('x');
 				}
-				
+
 				bytesLeftInBlock-=12;
 
 				for(i=0;i<64;i++)					// Write table of contents.
@@ -2621,7 +2624,7 @@ static void UpdateCard(void)
 			}
 
 			for(i=0;i<numTransferBytes;i++)
-			{														
+			{
 				TransferSdByte(DUMMY_BYTE);			// Send a pad
 				bytesLeftInBlock--;					// One less byte to send.
 			}
@@ -2630,7 +2633,7 @@ static void UpdateCard(void)
 			{
 				TransferSdByte(DUMMY_BYTE);				// Send poo poo checksum
 				TransferSdByte(DUMMY_BYTE);				// Send poo poo checksum
-				theByte=(TransferSdByte(DUMMY_BYTE)&0x1F);	//	Get Error code	
+				theByte=(TransferSdByte(DUMMY_BYTE)&0x1F);	//	Get Error code
 
 				if(theByte==0x05)							// 	A good write!  Expect to be busy for a long time.
 				{
@@ -2640,17 +2643,17 @@ static void UpdateCard(void)
 				else	// Something wrong with the write.
 				{
 					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
-				}	
+				}
 			}
 			break;
-			
+
 			case SD_TOC_WRITE_FINISH:			// Spin until the TOC has finished writing.
 			if(!(CheckTimer(TIMER_SD)))			// Didn't timeout yet
 			{
 				i=0;
 				while(i<4)		// Try a few times to see if the card is done writing
 				{
-					theByte=TransferSdByte(DUMMY_BYTE);	// Check card	
+					theByte=TransferSdByte(DUMMY_BYTE);	// Check card
 					if(theByte!=0xFF)					// Line should send zeros while programming, and send return high when programming is done.
 					{
 						i++;	// Try again.
@@ -2660,13 +2663,13 @@ static void UpdateCard(void)
 						i=4;	// Got a result, stop polling
 					}
 				}
-				
+
 				if(theByte==0xFF)	// Got a proper reply (line idle) end transfer mark IDLE
 				{
 					EndSdTransfer();				// Bring CS high
-					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.
 					while(!(UCSR1A&(1<<TXC1)))		// Spin until the last clocks go out
-						;				
+						;
 					cardState=SD_IDLE;				// DONE!
 				}
 			}
@@ -2679,14 +2682,14 @@ static void UpdateCard(void)
 // --------------------------------------------------------------------------------------------------------------------------------------
 // Reading Samples from the Card -------------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------
-						
+
 			case SD_READ_START:					// We already sent the first read command.  Wait for the correct token to come up, then get length of sample and start the state machine moving
 			if(!(CheckTimer(TIMER_SD)))			// Didn't timeout yet
 			{
 				i=0;
 				while(i<4)		// Try a few times to see if the card is ready to give us data
 				{
-					theByte=TransferSdByte(DUMMY_BYTE);	// Check card	
+					theByte=TransferSdByte(DUMMY_BYTE);	// Check card
 					if(theByte==0xFF)					// Line still high?  Unlike writing, the wait state here sends 0xFF
 					{
 						i++;	// Try again.
@@ -2698,8 +2701,8 @@ static void UpdateCard(void)
 				}
 
 				if(theByte==0xFE)	// Got a start token!
-				{				
-					bytesLeftInBlock=SD_BLOCK_LENGTH;		// Entire read block left				
+				{
+					bytesLeftInBlock=SD_BLOCK_LENGTH;		// Entire read block left
 
 					sdCardSampleRemaining=(((unsigned long)(TransferSdByte(DUMMY_BYTE))&0xFF)<<24);		// First four bytes are the 32-bit sample length.  Get it, and mark this as the amount of sample left to pull from the SD.
 					sdCardSampleRemaining|=(((unsigned long)(TransferSdByte(DUMMY_BYTE))&0xFF)<<16);
@@ -2709,7 +2712,7 @@ static void UpdateCard(void)
 					sdRamSampleRemaining=sdCardSampleRemaining;	// Entire sample == amount to pull from the SD == amount to write to RAM
 
 					bytesLeftInBlock-=4;				// Keep track of where we are in the block
-					cardState=SD_READING_BLOCK;			// Got data that is specific to the first block.  Now just handle reading sample data.				
+					cardState=SD_READING_BLOCK;			// Got data that is specific to the first block.  Now just handle reading sample data.
 
 					if(sdAbortRead==true)				// It's OK to throw away incoming bytes now if we're supposed to abort this read, since we safely got a token (if we abort pre-token, our block byte count will get messed up)
 					{
@@ -2732,7 +2735,7 @@ static void UpdateCard(void)
 			if(sdAbortRead==true)			// If we need to abort the read, we can do it right away since we are inhaling data bytes
 			{
 				cardState=SD_READ_ABORT;
-				sdAbortRead=false;			
+				sdAbortRead=false;
 			}
 			else
 			{
@@ -2746,7 +2749,7 @@ static void UpdateCard(void)
 				}
 
 				for(i=0;i<numTransferBytes;i++)				// Loop through bytes to get from card (note, this executes zero times if we are waiting for our fifo to have space)
-				{									
+				{
 					tempSample=TransferSdByte(DUMMY_BYTE);	// Get the byte (keep it signed, since it's a likely to be a sample)
 					bytesLeftInBlock--;						// One less byte in the block read.
 
@@ -2755,7 +2758,7 @@ static void UpdateCard(void)
 						sdCardSampleRemaining--;				// One less sample byte.
 
 						sdFifo[sdFifoWritePointer]=tempSample;	// Put it in the fifo
-						sdFifoWritePointer++;				// Move to next spot in fifo									
+						sdFifoWritePointer++;				// Move to next spot in fifo
 
 						if(sdFifoWritePointer>=SD_FIFO_SIZE)	// Handle wrapping around end of fifo
 						{
@@ -2778,7 +2781,7 @@ static void UpdateCard(void)
 						;
 
 					EndSdTransfer();				// Bring CS high
-					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+					TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.
 					cardState=SD_READ_FIFO_WAIT;	// Wait for fifo have enough room for another block OR the remainder of the sample
 
 					if(sdCardSampleRemaining==0)	// Block is done AND sample is done too.  Make SD state machine idle (ready) again.
@@ -2808,7 +2811,7 @@ static void UpdateCard(void)
 				else	// Read failed!
 				{
 					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
-				}							
+				}
 			}
 			else	// ISR has not cleared enough of the sample out of the FIFO yet.
 			{
@@ -2823,7 +2826,7 @@ static void UpdateCard(void)
 				i=0;
 				while(i<4)		// Try a few times to see if the card is ready to give us data
 				{
-					theByte=TransferSdByte(DUMMY_BYTE);	// Check card	
+					theByte=TransferSdByte(DUMMY_BYTE);	// Check card
 					if(theByte==0xFF)					// Line still high?  Unlike writing, the wait state here sends 0xFF
 					{
 						i++;	// Try again.
@@ -2835,7 +2838,7 @@ static void UpdateCard(void)
 				}
 				if(theByte==0xFE)	// Got a start token!
 				{
-					bytesLeftInBlock=SD_BLOCK_LENGTH;	// Entire read block left				
+					bytesLeftInBlock=SD_BLOCK_LENGTH;	// Entire read block left
 
 					cardState=SD_READING_BLOCK;		// Handle reading in the sample, or...
 					if(sdAbortRead==true)			// It's OK to throw away incoming bytes now if we're supposed to abort this read, since we safely got a token (if we abort pre-token, our block byte count will get messed up)
@@ -2854,7 +2857,7 @@ static void UpdateCard(void)
 				cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
 			}
 			break;
-			
+
 			case SD_READ_ABORT:				// We've been asked to start a new playback stream from the SD while a block is open for reading.  Finish reading the block and then start the new stream.
 			if(bytesLeftInBlock>SD_BYTES_PER_PARTIAL_BLOCK_TRANSFER)	// More than a chunk left in the block, read a chunk.
 			{
@@ -2866,7 +2869,7 @@ static void UpdateCard(void)
 			}
 
 			for(i=0;i<numTransferBytes;i++)		// Loop through bytes to get from card (note, this executes zero times if for whatever reason the block is empty)
-			{									
+			{
 				TransferSdByte(DUMMY_BYTE);		// Get byte and chuck it
 				bytesLeftInBlock--;				// One less byte in the block read.
 			}
@@ -2880,21 +2883,22 @@ static void UpdateCard(void)
 					;
 
 				EndSdTransfer();				// Bring CS high
-				TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
+				TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.
 
 				while(!(UCSR1A&(1<<TXC1)))		// Spin until the last clocks go out
 					;
-				cardState=SD_IDLE;								// DONE!  Reset SD state machine....				
-		
+				cardState=SD_IDLE;								// DONE!  Reset SD state machine....
+
 				if(sdPlaybackQueued==true)	// Another SD sample queued right away?
 				{
 					sdPlaybackQueued=false;
-					PlaySampleFromSd(sdQueuedBank,sdQueuedSlot);	// Trigger the next stream immediately
+//					PlaySampleFromSd(sdQueuedBank,sdQueuedSlot);	// Trigger the next stream immediately
+					PlaySampleFromSd(sdQueuedSlot);	// Trigger the next stream immediately
 				}
 			}
 			break;
 
-			case SD_IDLE:		// Do nothing if IDLE.			
+			case SD_IDLE:		// Do nothing if IDLE.
 			case SD_INVALID:	// If we're invalid, fall through and do nothing.
 			default:
 			break;
@@ -2927,9 +2931,9 @@ static void InitSdIsr(void)
 {
 	// Set up timer 2 OC2B to make SD buffer interrupts
 
-	PRR&=~(1<<PRTIM2);	// Turn the TMR2 power on.	
+	PRR&=~(1<<PRTIM2);	// Turn the TMR2 power on.
 
-	TCCR2A=0x02;		// Normal ports, begin setting CTC mode.	
+	TCCR2A=0x02;		// Normal ports, begin setting CTC mode.
 	TCCR2B=0x00;		// Finish setting CTC, turn clock off.
 	TCNT2=0;			// Init counter reg
 	OCR2A=113;			// Compare match interrupt when the counter gets to this number (see above for pitch analysis)
@@ -2946,7 +2950,7 @@ static void SdIsrStartReadingRam(unsigned char theBank)
 {
 	unsigned char
 		sreg;
-	
+
 	sreg=SREG;
 	cli();		// Pause ISRs
 
@@ -2956,13 +2960,13 @@ static void SdIsrStartReadingRam(unsigned char theBank)
 	if(theBank==BANK_0)		// Pointing at this bank?
 	{
 		sdBank0=true;
-		sdRamAddress=BANK_0_START_ADDRESS;		
+		sdRamAddress=BANK_0_START_ADDRESS;
 	}
 	else
 	{
 		sdBank0=false;
-		sdRamAddress=BANK_1_START_ADDRESS;		
-	}	
+		sdRamAddress=BANK_1_START_ADDRESS;
+	}
 
 	TCNT2=0;			// Init counter reg
 	OCR2A=97;			// Compare match interrupt when the counter gets to this number (around 25kHz)
@@ -2970,7 +2974,7 @@ static void SdIsrStartReadingRam(unsigned char theBank)
 	TIMSK2|=(1<<OCIE2B);		// Enable interrupt
 	TCCR2B=0x02;				// Clock on, prescaler /8
 
-	SREG=sreg;	// Resume ISRs		
+	SREG=sreg;	// Resume ISRs
 }
 
 static void SdIsrStartWritingRam(unsigned char theBank)
@@ -2979,7 +2983,7 @@ static void SdIsrStartWritingRam(unsigned char theBank)
 {
 	unsigned char
 		sreg;
-	
+
 	sreg=SREG;
 	cli();		// Pause ISRs
 
@@ -2989,13 +2993,13 @@ static void SdIsrStartWritingRam(unsigned char theBank)
 	if(theBank==BANK_0)		// Pointing at this bank?
 	{
 		sdBank0=true;
-		sdRamAddress=BANK_0_START_ADDRESS;		
+		sdRamAddress=BANK_0_START_ADDRESS;
 	}
 	else
 	{
 		sdBank0=false;
-		sdRamAddress=BANK_1_START_ADDRESS;		
-	}	
+		sdRamAddress=BANK_1_START_ADDRESS;
+	}
 
 	TCNT2=0;			// Init counter reg
 	OCR2A=97;			// Compare match interrupt when the counter gets to this number (around 25kHz)
@@ -3003,7 +3007,7 @@ static void SdIsrStartWritingRam(unsigned char theBank)
 	TIMSK2|=(1<<OCIE2B);		// Enable interrupt
 	TCCR2B=0x02;				// Clock on, prescaler /8
 
-	SREG=sreg;	// Resume ISRs		
+	SREG=sreg;	// Resume ISRs
 }
 
 static void SdIsrStartStreamingAudio(void)
@@ -3012,7 +3016,7 @@ static void SdIsrStartStreamingAudio(void)
 {
 	unsigned char
 		sreg;
-	
+
 	sreg=SREG;
 	cli();		// Pause ISRs
 
@@ -3024,7 +3028,7 @@ static void SdIsrStartStreamingAudio(void)
 	TIMSK2|=(1<<OCIE2B);		// Enable interrupt
 	TCCR2B=0x02;				// Clock on, prescaler /8
 
-	SREG=sreg;	// Resume ISRs		
+	SREG=sreg;	// Resume ISRs
 }
 
 static unsigned long GetLengthOfSample(unsigned char theBank)
@@ -3097,7 +3101,7 @@ static void ReadSampleFromSd(unsigned char theBank, unsigned int theSlot)
 		sreg;
 
 	if(cardState==SD_IDLE)	// SD card must be ready to do any of this
-	{		
+	{
 		if(bankStates[theBank].isLocked==false)		// Bank must be unlocked to mess with SD transfers
 		{
 			sreg=SREG;
@@ -3112,15 +3116,16 @@ static void ReadSampleFromSd(unsigned char theBank, unsigned int theSlot)
 	}
 }
 
-static void PlaySampleFromSd(unsigned char theBank, unsigned int theSlot)
+//static void PlaySampleFromSd(unsigned char theBank, unsigned int theSlot)
+static void PlaySampleFromSd(unsigned int theSlot)
 // Reads a sample from the SD directly, and plays it without putting it in RAM first.  The sample is passed out through its own ISR.
 {
 	unsigned char
 		sreg;
 
 	if(cardState==SD_IDLE)	// SD card must be ready to do any of this
-	{		
-		sreg=SREG;	 // Pause ISRs 		
+	{
+		sreg=SREG;	 // Pause ISRs
 		cli();
 
 		SdStartSampleRead(theSlot);	// Open the SD for writing and init the fifo
@@ -3134,32 +3139,32 @@ static void PlaySampleFromSd(unsigned char theBank, unsigned int theSlot)
 	{
 		if(cardState==SD_READ_FIFO_WAIT)	// Are we mid block read?  If not, and we're waiting for the FIFO, we can just abort and restart -- NOTE: we spend a lot of time waiting for the FIFO (the majority in some cases) so this happens often
 		{
-			sreg=SREG;	 // Pause ISRs 		
+			sreg=SREG;	 // Pause ISRs
 			cli();
 
 			SdStartSampleRead(theSlot);	// Open the SD for writing and init the fifo
 			sdRamSampleRemaining=0x01;  // Must be not-zero when the ISR is triggered, since having zero bytes left to transfer to RAM is how we test to see if we're done in the ISR.  We will put a real number here before we fill the FIFO
 			SdIsrStartStreamingAudio();	// Begin kicking out audio, do not lock RAM
 
-			SREG=sreg;	// resume isr		
+			SREG=sreg;	// resume isr
 		}
 		else if(cardState==SD_READ_ABORT||sdAbortRead==true)	// We got a new play command while cleaning up a read in progress.  Keep cleaning the old read, but update the next sound in the queue with the most recent one.
 		{
-			sdQueuedBank=theBank;		// Store next bank to operate on once we finish the current block
-			sdQueuedSlot=theSlot;		// Store the slot to read from once we finish the current block 
+//			sdQueuedBank=theBank;		// Store next bank to operate on once we finish the current block
+			sdQueuedSlot=theSlot;		// Store the slot to read from once we finish the current block
 		}
 		else	// Block is open for reading, so set up the SD state machine to end the read gracefully (and quickly) and then start the next one.
 		{
-			sdQueuedBank=theBank;		// Store next bank to operate on once we finish the current block
-			sdQueuedSlot=theSlot;		// Store the slot to read from once we finish the current block 	
+//			sdQueuedBank=theBank;		// Store next bank to operate on once we finish the current block
+			sdQueuedSlot=theSlot;		// Store the slot to read from once we finish the current block
 			sdPlaybackQueued=true;		// Let abort routine know to re-trigger playback once abort is done.
 			sdAbortRead=true;			// Let the state machine know to abort the read when it is safe to do so (ie, not waiting for a token) -- Mark the state machine to finish this block as fast as possible and throw out the data
-					
-			sreg=SREG;	 		// Pause ISRs 		
+
+			sreg=SREG;	 		// Pause ISRs
 			cli();
 			sdBytesInFifo=0;		// Clear the FIFO so we don't mess with samples anymore
 			TIMSK2&=~(1<<OCIE2B);	// Stop isr until we need it again
-			SREG=sreg;						
+			SREG=sreg;
 		}
 	}
 }
@@ -3237,13 +3242,13 @@ static unsigned int
 
 // Editing functions:
 
-#define 	MIDI_ADJUST_SAMPLE_START_RESOLUTE	24		
-#define 	MIDI_ADJUST_SAMPLE_END_RESOLUTE		25		
-#define 	MIDI_ADJUST_SAMPLE_WINDOW_RESOLUTE	26		
-#define 	MIDI_REVERT_SAMPLE_TO_FULL			27		
-#define 	MIDI_ADJUST_SAMPLE_START_WIDE		28		
-#define 	MIDI_ADJUST_SAMPLE_END_WIDE			29		
-#define 	MIDI_ADJUST_SAMPLE_WINDOW_WIDE		30		
+#define 	MIDI_ADJUST_SAMPLE_START_RESOLUTE	24
+#define 	MIDI_ADJUST_SAMPLE_END_RESOLUTE		25
+#define 	MIDI_ADJUST_SAMPLE_WINDOW_RESOLUTE	26
+#define 	MIDI_REVERT_SAMPLE_TO_FULL			27
+#define 	MIDI_ADJUST_SAMPLE_START_WIDE		28
+#define 	MIDI_ADJUST_SAMPLE_END_WIDE			29
+#define 	MIDI_ADJUST_SAMPLE_WINDOW_WIDE		30
 
 static const unsigned int OctaveZeroCompareMatches[]=
 // This table corresponds to a musical octave (the lowest octave we can generate with a 16-bit compare match timer) in 12 tone equal temperament.
@@ -3339,7 +3344,7 @@ static unsigned char GetMidiRecordNote(unsigned char theBank)
 	{
 		x=MIDI_GENERIC_NOTE;			// If we've got poo poo in EEPROM or a bad address then default to C3 (or whatever).
 		return(x);
-	}	
+	}
 }
 
 
@@ -3389,7 +3394,7 @@ static unsigned char GetMidiChannel(unsigned char theBank)
 			x=1;			// Return midi channel 2 if we're screwing up the second bank.
 		}
 		return(x);
-	}	
+	}
 }
 
 static void BankStatesToLeds(unsigned char theBank)
@@ -3484,7 +3489,7 @@ static void CleanupAudioSources(void)
 	{
 		extIsrOutputBank0=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<ICIE1);		// Disable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
-		TIFR1|=(1<<ICF1);			// Clear the interrupt flag by writing a 1.	
+		TIFR1|=(1<<ICF1);			// Clear the interrupt flag by writing a 1.
 	}
 	if(bankStates[BANK_1].clockMode!=CLK_EXTERNAL)
 	{
@@ -3496,13 +3501,13 @@ static void CleanupAudioSources(void)
 	{
 		midiOutputBank0=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<OCIE1A);	// Disable the compare match interrupt.
-		TIFR1|=(1<<OCF1A);		// Clear the interrupt flag by writing a 1.	
+		TIFR1|=(1<<OCF1A);		// Clear the interrupt flag by writing a 1.
 	}
 	if(bankStates[BANK_1].clockMode!=CLK_INTERNAL)		// OC1B in use?
 	{
 		midiOutputBank1=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<OCIE1B);	// Disable the compare match interrupt.
-		TIFR1|=(1<<OCF1B);		// Clear the interrupt flag by writing a 1.	
+		TIFR1|=(1<<OCF1B);		// Clear the interrupt flag by writing a 1.
 	}
 
 	// Unlock banks that aren't being used by RAM  -- we need to do this since we can arbitrarily stop audio functions
@@ -3510,16 +3515,16 @@ static void CleanupAudioSources(void)
 	{
 		if(sdIsrState==SD_ISR_IDLE||sdIsrState==SD_ISR_STREAMING_PLAYBACK||sdBank0==false)	// SD ISR set such that this bank cannot be using the RAM?
 		{
-			bankStates[BANK_0].isLocked=false;		
-		}	
+			bankStates[BANK_0].isLocked=false;
+		}
 	}
 	if(bankStates[BANK_1].clockMode==CLK_NONE)		// Audio functions on this bank off?
 	{
 		if(sdIsrState==SD_ISR_IDLE||sdIsrState==SD_ISR_STREAMING_PLAYBACK||sdBank0==true)	// SD ISR set such that this bank cannot be using the RAM?
 		{
-			bankStates[BANK_1].isLocked=false;		
-		}	
-	}	
+			bankStates[BANK_1].isLocked=false;
+		}
+	}
 }
 
 //--------------------------------------
@@ -3555,7 +3560,7 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 // Make a new random order of slices as big as the user wants, up to MAX_SLICES.
 // We will first fill an array with incrementing numbers up to the number of slices we care about, then we'll shuffle that much of the array into a random order.
 // Leave this function having updated the number of slices our sample will be divided into and the size of those slices.
-// Further, point to the first random slice in the randomized array, and point the sample address to the beginning of the first slice in RAM. 
+// Further, point to the first random slice in the randomized array, and point the sample address to the beginning of the first slice in RAM.
 {
 	unsigned char
 		sreg,
@@ -3591,10 +3596,10 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		if(theBank==BANK_0)		// Get slice size assuming banks grow upwards
 		{
 			sliceSize[BANK_0]=(bankStates[BANK_0].endAddress-BANK_0_START_ADDRESS)/numSlices;
-		}	
+		}
 		else					// Otherwise assume banks grow down.
 		{
-			sliceSize[BANK_1]=(BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)/numSlices;		
+			sliceSize[BANK_1]=(BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)/numSlices;
 		}
 
 		bankStates[theBank].granularSlices=numSlices;	// How many slices is our entire sample divided into?
@@ -3607,14 +3612,14 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		}
 		else
 		{
-			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][0]*sliceSize[BANK_1]));								
+			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][0]*sliceSize[BANK_1]));
 		}
 
 		SREG=sreg;		// Restore interrupts.
 	}
 	else
 	{
-		bankStates[theBank].granularSlices=0;	//	Flag the ISR to stop granular business.	
+		bankStates[theBank].granularSlices=0;	//	Flag the ISR to stop granular business.
 	}
 }
 
@@ -3627,8 +3632,8 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 // The resolution of these functions is dependent on the absolute number of individual samples currently stored in the bank in question.  Since the best parameter info we can hope to get right now is 8bit (from the shuttle -- less from MIDI)
 // 	we divide the entire sample by 256 to find our "chunk size" and then shuttle the sample start / end / window around by that many chunks.  Finally, we turn that info into "adjustedAddress" info to be used by the ISR.
 // NOTE:  It is possible with these commands to position the sample's working boundaries such that the current address pointer is out of bounds.  Therefore, we test to make sure this is not the case and pull the pointer in accordingly.
-// NOTE:  It is possible to move a sample's adjusted end come BEFORE its adjusted beginning.  We must account for this.  Perhaps with backwards playback. 
-// NOTE:  It is possible to have the sample roll around the end address.  Account for this. 
+// NOTE:  It is possible to move a sample's adjusted end come BEFORE its adjusted beginning.  We must account for this.  Perhaps with backwards playback.
+// NOTE:  It is possible to have the sample roll around the end address.  Account for this.
 
 // We will need to update the ISR so that playback rolls through the end address.
 // Mon Nov  9 22:32:16 EST 2009 -- Think I got it.
@@ -3649,11 +3654,11 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 // Wed Jun 22 13:50:04 EDT 2011
 // Now that we use an encoder we could adjust this more finely if we wanted to.
 {
-	unsigned char 
+	unsigned char
 		sreg;
 	unsigned long
 		chunkSize;
-		
+
 	sreg=SREG;
 	cli();			// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
 
@@ -3677,7 +3682,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			else
 			{
 				bankStates[BANK_0].sampleDirection=false;
-			}			
+			}
 
 			chunkSize=bankStates[BANK_0].adjustedStartAddress;								// move start to temp
 			bankStates[BANK_0].adjustedStartAddress=bankStates[BANK_0].adjustedEndAddress;	// move end to start
@@ -3692,11 +3697,11 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			else
 			{
 				bankStates[BANK_0].sampleDirection=true;
-			}						
-		}		
+			}
+		}
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
-		
+
 		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].endAddress)	// Start addy off the end of the scale?
 		{
 			bankStates[BANK_0].adjustedStartAddress=(bankStates[BANK_0].adjustedStartAddress-bankStates[BANK_0].endAddress)+BANK_0_START_ADDRESS;	// Wrap it around.
@@ -3717,7 +3722,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		{
 			if((bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress))	// If so, is our current pointer out of bounds?
 			{
-				if((bankStates[BANK_0].adjustedStartAddress-bankStates[BANK_0].currentAddress)>=(bankStates[BANK_0].currentAddress-bankStates[BANK_0].adjustedEndAddress))	// Closer to the start?	
+				if((bankStates[BANK_0].adjustedStartAddress-bankStates[BANK_0].currentAddress)>=(bankStates[BANK_0].currentAddress-bankStates[BANK_0].adjustedEndAddress))	// Closer to the start?
 				{
 					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;	// Round to the start.
 				}
@@ -3732,13 +3737,13 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			if(bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)
 			{
 				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;		// If we moved the beginning of the sample up past our current pointer, bring our current memory location up to the start.
-			}				
+			}
 			else if(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress)
 			{
 				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
 			}
 		}
-	}	
+	}
 	else	// Otherwise assume banks grow down and do the same procedure for bank 1.
 	{
 		// @@@ BANK 1 grows down, so the signs and comments here may not always agree.
@@ -3760,7 +3765,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			else
 			{
 				bankStates[BANK_1].sampleDirection=false;
-			}			
+			}
 
 			chunkSize=bankStates[BANK_1].adjustedStartAddress;								// move start to temp
 			bankStates[BANK_1].adjustedStartAddress=bankStates[BANK_1].adjustedEndAddress;	// move end to start
@@ -3775,11 +3780,11 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			else
 			{
 				bankStates[BANK_1].sampleDirection=true;
-			}						
-		}		
+			}
+		}
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
-		
+
 		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].endAddress)	// Start addy off the end of the scale?
 		{
 			bankStates[BANK_1].adjustedStartAddress=BANK_1_START_ADDRESS-(bankStates[BANK_1].endAddress-bankStates[BANK_1].adjustedStartAddress);	// Wrap it around.
@@ -3800,7 +3805,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		{
 			if((bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress))	// If so, is our current pointer out of bounds?
 			{
-				if((bankStates[BANK_1].currentAddress-bankStates[BANK_1].adjustedStartAddress)<=(bankStates[BANK_1].adjustedEndAddress-bankStates[BANK_1].currentAddress))	// Closer to the start?	
+				if((bankStates[BANK_1].currentAddress-bankStates[BANK_1].adjustedStartAddress)<=(bankStates[BANK_1].adjustedEndAddress-bankStates[BANK_1].currentAddress))	// Closer to the start?
 				{
 					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;	// Round to the start.
 				}
@@ -3815,7 +3820,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			if(bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)
 			{
 				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;		// If we moved the beginning of the sample up past our current pointer, bring our current memory location up to the start.
-			}				
+			}
 			else if(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress)
 			{
 				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
@@ -3831,9 +3836,9 @@ static void RevertSampleToUnadjusted(unsigned char theBank)
 // @@@ Since the current sample address must be within these bounds, there is no need to adjust it.
 // @@@ Mon Nov  9 22:52:08 EST 2009 -- Is this true?  Yes, I think so.
 {
-	unsigned char 
+	unsigned char
 		sreg;
-		
+
 	sreg=SREG;
 	cli();			// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
 
@@ -3849,7 +3854,7 @@ static void AdjustSampleStart(unsigned char theBank, unsigned char theAmount)
 // Moves the memory location where the sample begins (or loops) playback farther into the sample.
 // This divides the current sample size by the value of an unsigned char and places the new boundary according to the value passed.
 // Note:  If the current sample address is out of the new range, this will pull it in.
-{		
+{
 	bankStates[theBank].sampleStartOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
 }
@@ -3858,7 +3863,7 @@ static void AdjustSampleEnd(unsigned char theBank, unsigned char theAmount)
 // Moves the memory location where the sample ENDS (or loops) playback farther into the sample.
 // This divides the current sample size by the value of an unsigned char and places the new boundary according to the value passed.
 // Note:  If the current sample address is out of the new range, this will pull it in.
-{		
+{
 	bankStates[theBank].sampleEndOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
 }
@@ -3867,16 +3872,273 @@ static void AdjustSampleWindow(unsigned char theBank, unsigned char theAmount)
 // Shuttles the entire adjusted sample window farther into the sample.
 // This divides the current sample size by the value of an unsigned char and places the new boundary according to the value passed.
 // Note:  If the current sample address is out of the new range, this will pull it in.
-{		
+{
 	bankStates[theBank].sampleWindowOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
 }
-	
+
 //--------------------------------------
 //--------------------------------------
 // SAMPLER Main Loop!
 //--------------------------------------
 //--------------------------------------
+
+static unsigned char
+	currentBank;					// Keeps track of the bank we're thinking about.
+
+static void UpdateUserSwitches(void)
+// Take the button-mashings of the player and translate them into something useful.
+// There are two "shift" keys on WTPA2 (switch 6 and 7).
+// Button functions are relative to how many shift keys are being held down: 0, one, or two.
+
+// Button		0			1			2			3			4			5			6			7
+// -------------------------------------------------------------------------------------------------------------------
+// No Shift:	Rec			Odub		Restart		Single		Pause		Bank		Shift1		Shift2
+// Shift 1:		BitDepth	Halftime	Realtime	Granular	SumMode		Backwards	(pressed)	(not pressed)
+// Shift 2:		Edit Start	Edit End	Edit Wind	Play SD		Jitter		?			(not press)	(pressed)
+// Both Shift:	SD Menu		?			?			?			?			Bail		(pressed)	(pressed)
+{
+	static unsigned char
+			lastEncoderValue;
+
+	// -----------------------------------------------------------------------------------
+	// Two shift keys:
+	// -----------------------------------------------------------------------------------
+	if((keysHeld&Im_SHIFT_1)&&(keysHeld&Im_SHIFT_2))	// User holding both shift keys?
+	{
+		if(newKeys&Im_SWITCH_5)		// Bail!
+		{
+			UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+			RevertSampleToUnadjusted(currentBank);			// Get rid of any trimming on the sample.
+			bankStates[currentBank].bitReduction=0;			// No crusties yet.
+			bankStates[currentBank].jitterValue=0;			// No hissies yet.
+			bankStates[currentBank].granularSlices=0;		// No remix yet.
+			bankStates[currentBank].halfSpeed=false;
+			bankStates[currentBank].backwardsPlayback=false;
+			bankStates[currentBank].sampleDirection=true;
+			bankStates[currentBank].loopOnce=false;
+			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_CANCEL_EFFECTS,0);			// Send it out to the techno nerds.
+			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REVERT_SAMPLE_TO_FULL,0);		// Send it out to the techno nerds.
+		}
+		else if(newKeys&Im_SWITCH_0)
+		{
+			// Enter SD card menu
+			WriteSampleToSd(currentBank,0);		// @@@ test
+		}
+		else if(newKeys&Im_SWITCH_1)
+		{
+			// Enter SD card menu
+			ReadSampleFromSd(currentBank,0);	// @@@ test
+		}
+	}
+	// -----------------------------------------------------------------------------------
+	// Shift 1:
+	// -----------------------------------------------------------------------------------
+	else if(keysHeld&Im_SHIFT_1)	// Just the first shift key held?
+	{
+		if(keyState&Im_SWITCH_0)		// Switch 0 (the left most) handles bit reduction.
+		{
+			if(encoderValue!=lastEncoderValue)	// Only update when the encoder changes AND the switch is pressed
+			{
+				bankStates[currentBank].bitReduction=scaledEncoderValue;	// Reduce bit depth by 0-7.
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_BIT_REDUCTION,scaledEncoderValue);		// Send it out to the techno nerds.
+			}
+		}
+		if(newKeys&Im_SWITCH_1)		// Screw and chop (toggle)
+		{
+			if(bankStates[currentBank].halfSpeed==false)
+			{
+				bankStates[currentBank].halfSpeed=true;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
+			}
+			else
+			{
+				bankStates[currentBank].halfSpeed=false;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,0);		// Send it out to the techno nerds.
+			}
+		}
+		if(newKeys&Im_SWITCH_2)		// Do realtime
+		{
+			StartRealtime(currentBank,CLK_EXTERNAL,0);
+			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REALTIME,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
+		}
+		if(((keyState&Im_SWITCH_3)&&(encoderValue!=lastEncoderValue))||(newKeys&Im_SWITCH_3))		// Granularize the sample -- reshuffle if the encoder moves OR we get a new button press, but not just while the button is held
+		{
+			MakeNewGranularArray(currentBank,(encoderValue/2));			// Start or stop granularization.
+			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_GRANULARITY,(encoderValue/2));		// Send it out to the techno nerds.
+		}
+		if(keyState&Im_SWITCH_4)		// Assign method for combining audio channels on the output.
+		{
+			if(encoderValue!=lastEncoderValue)	// Only change to new values
+			{
+				switch(scaledEncoderValue)
+				{
+					case 0:
+					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
+					break;
+
+					case 1:
+					UpdateOutput=OutputMultiplyBanks;	// Set our output function pointer to call this type of combination.
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
+					break;
+
+					case 2:
+					UpdateOutput=OutputAndBanks;	// Set our output function pointer to call this type of combination.
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
+					break;
+
+					case 3:
+					UpdateOutput=OutputXorBanks;	// Set our output function pointer to call this type of combination.
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
+					break;
+
+					default:
+					break;
+				}
+			}
+		}
+		if(newKeys&Im_SWITCH_5)		// "Paul is Dead" mask (play backwards)
+		{
+			if(bankStates[currentBank].backwardsPlayback==false)
+			{
+				bankStates[currentBank].backwardsPlayback=true;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_PLAY_BACKWARDS,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
+			}
+			else
+			{
+				bankStates[currentBank].backwardsPlayback=false;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_PLAY_BACKWARDS,0);		// Send it out to the techno nerds.
+			}
+
+			UpdateAdjustedSampleAddresses(currentBank);	// @@@ make sure we handle going backwards when considering edited samples.
+		}
+	}
+	// -----------------------------------------------------------------------------------
+	// Shift 2:
+	// -----------------------------------------------------------------------------------
+	else if(keysHeld&Im_SHIFT_2)	// Just the other shift key held?
+	{
+		if(keyState&Im_SWITCH_0)		// Adjust sample start
+		{
+			if(bankStates[currentBank].sampleStartOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
+			{
+				AdjustSampleStart(currentBank,encoderValue);
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_START_WIDE,(encoderValue/2));		// Make into MIDI-worthy value (this will line up with the coarse adjust messages) and send it out to the techno nerds.
+			}
+		}
+		else if(keyState&Im_SWITCH_1)		// Adjust sample end
+		{
+			if(bankStates[currentBank].sampleEndOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
+			{
+				AdjustSampleEnd(currentBank,encoderValue);
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_END_WIDE,(encoderValue/2));		// Make into MIDI-worthy value (this will line up with the coarse adjust messages) and send it out to the techno nerds.
+			}
+		}
+		else if(keyState&Im_SWITCH_2)		// Adjust sample window
+		{
+			if(bankStates[currentBank].sampleWindowOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
+			{
+				AdjustSampleWindow(currentBank,encoderValue);
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_WINDOW_WIDE,(encoderValue/2));		// Make into MIDI-worthy value (this will line up with the coarse adjust messages) and send it out to the techno nerds.
+			}
+		}
+
+		if(newKeys&Im_SWITCH_3)		// Stream sample from SD card
+		{
+//			PlaySampleFromSd(BANK_0,0);		// @@@
+			PlaySampleFromSd(0);			// @@@ stream from slot 0
+
+		}
+		if(newKeys&Im_SWITCH_4)		// Update Jitter
+		{
+			//	bankStates[currentMidiMessage.channelNumber].jitterValue=currentMidiMessage.dataByteTwo;		// @@@
+		}
+	}
+	// -----------------------------------------------------------------------------------
+	// No shift keys pressed:
+	// -----------------------------------------------------------------------------------
+	else	// User isn't holding shift keys, look for single key presses
+	{
+		if(newKeys&Im_REC)										// Record switch pressed.
+		{
+			if(bankStates[currentBank].audioFunction==AUDIO_RECORD)			// Were we recording already?
+			{
+				StartPlayback(currentBank,CLK_EXTERNAL,0);					// Begin playing back the loop we just recorded (ext clock)
+				bankStates[currentBank].loopOnce=false;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
+			}
+			else											// We're not recording right now, so start doing it.
+			{
+				StartRecording(currentBank,CLK_EXTERNAL,0);	// Start recording (ext clock)
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_RECORDING,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
+			}
+		}
+		else if(newKeys&Im_ODUB)			// Overdub switch pressed.  Odub is similar to record except it takes its recording from a different analog input, and it cannot be invoked unless there is already a sample in the bank.
+		{
+			if(bankStates[currentBank].audioFunction==AUDIO_OVERDUB)		// Were we overdubbing already?
+			{
+				ContinuePlayback(currentBank,CLK_EXTERNAL,0);				// Begin playing back the loop we just recorded (ext clock, not from the beginning)
+				bankStates[currentBank].loopOnce=false;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OVERDUB,0);		// Send it out to the techno nerds.
+			}
+			else							// We're not recording right now, so start doing it.
+			{
+				if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)		// Because of how OVERDUB thinks about memory we can't do it unless you there's already a sample in the bank.
+				{
+					StartOverdub(currentBank,CLK_EXTERNAL,0);					// Get bizzy (ext clock).
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OVERDUB,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
+				}
+			}
+		}
+		else if(newKeys&Im_RESTART_LOOP)		// Begin playing the current sample from the beginning, while looping
+		{
+			if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something to play?
+			{
+				StartPlayback(currentBank,CLK_EXTERNAL,0);					// Begin playing back the loop we just recorded (ext clock)
+				bankStates[currentBank].loopOnce=false;
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
+			}
+		}
+		else if(newKeys&Im_SINGLE_PLAY)		// Stop whatever we're doing and play the sample from the beginning, one time.
+		{
+			if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something to play?
+			{
+				StartPlayback(currentBank,CLK_EXTERNAL,0);			// Play back this sample.
+				bankStates[currentBank].loopOnce=true;				// And do it one time, for your mind.
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
+			}
+		}
+		else if(newKeys&Im_PAUSE_RESUME)		// Play / Pause switch pressed.  If anything is playing this will stop it at the current sample location.  If playback is idle it will restart it.  This will not restart a playing sample from the beginning.
+		{
+			if(bankStates[currentBank].audioFunction==AUDIO_IDLE)		// Doing nothing?
+			{
+				if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something to play?
+				{
+					ContinuePlayback(currentBank,CLK_EXTERNAL,0);			// Continue playing back from wherever we are in the sample memory (ext clock, not from the beginning) @@@ So as of now, this will begin playback at the END of a sample if we've just finished recording.  Ugly.
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
+				}
+			}
+			else		// Pause whatever we were doing.
+			{
+				bankStates[currentBank].audioFunction=AUDIO_IDLE;		// Nothing to do in the ISR
+				bankStates[currentBank].clockMode=CLK_NONE;				// Don't trigger this bank.
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_OFF,MIDI_GENERIC_NOTE,0);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
+			}
+
+		}
+		else if(newKeys&Im_BANK_CHANGE)		// Increment through banks when this button is pressed.
+		{
+			currentBank++;
+			if(currentBank>=NUM_BANKS)
+			{
+				currentBank=BANK_0;		// Loop around.
+			}
+		}
+	}
+
+	lastEncoderValue=encoderValue;		// Only update some of these if the encoder value changes
+}
 
 static void DoSampler(void)
 // This state is the font from which all sampler bullshit flows.
@@ -3890,8 +4152,6 @@ static void DoSampler(void)
 {
 	unsigned char
 		i;
-	static unsigned char
-		currentBank;					// Keeps track of the bank we're thinking about.
 
 	static MIDI_MESSAGE
 		currentMidiMessage;				// Used to point to incoming midi messages.
@@ -3901,7 +4161,7 @@ static void DoSampler(void)
 		{
 			60,							// In case we record, then overdub immediately without playing anything, we'll need a note number.
 			60,
-		};		
+		};
 
 	static bool
 		realtimeOn[NUM_BANKS];			// Used in MIDI to carry the realtime processing across a NOTE_OFF.
@@ -3909,8 +4169,8 @@ static void DoSampler(void)
 	unsigned int
 		pitchWheelValue;				// Figures out what to do with the pitchbend data.
 
-	static bool
-		editModeEntered;				// I DONT LIKE MODALITY, but the forum dudes do, so there's an edit mode we enter sometimes.  This bool keeps track of whether we're there.
+//	static bool
+//		editModeEntered;				// I DONT LIKE MODALITY, but the forum dudes do, so there's an edit mode we enter sometimes.  This bool keeps track of whether we're there.
 
 	if(subState==SS_0)
 	// Initialize everything.
@@ -3933,10 +4193,10 @@ static void DoSampler(void)
 			bankStates[i].backwardsPlayback=false;		// User hasn't said reverse normal direction
 			bankStates[i].currentAddress=bankStates[i].startAddress;	// Point initial ram address to the beginning of the bank.
 			bankStates[i].endAddress=bankStates[i].startAddress;		// ...And indicate that the sample is 0 samples big.
-			realtimeOn[i]=false;								// We'll default to playback.	
+			realtimeOn[i]=false;								// We'll default to playback.
 			bankStates[i].isLocked=false;						// No functions have laid claim to the RAM currently
-			editModeEntered=false;			
-			
+//			editModeEntered=false;
+
 			RevertSampleToUnadjusted(i);						// Zero out all trimming variables.
 
 			theMidiRecordRate[i]=GetMidiRecordNote(i);							// First get the proper note.
@@ -3953,236 +4213,9 @@ static void DoSampler(void)
 
 	else if(subState==SS_1)		// Hang out here getting keypresses and MIDI and handling the different sampler functions.
 	{
-		if(editModeEntered==false)	// Normal functions for buttons?
-		{
-			if(keyState&Im_EFFECT)			// If we're holding the effect switch, our other switches call up patches instead of their normal functions.  It's like a shift key.
-			{
-				// Multiple Held-key combinations:
-				if(((keyState&Im_SWITCH_3)&&(newKeys&Im_SWITCH_4))||((newKeys&Im_SWITCH_3)&&(keyState&Im_SWITCH_4)))	// Bail!
-				{
-					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
-					RevertSampleToUnadjusted(currentBank);			// Get rid of any trimming on the sample.
-					bankStates[currentBank].bitReduction=0;			// No crusties yet.
-					bankStates[currentBank].jitterValue=0;			// No hissies yet.
-					bankStates[currentBank].granularSlices=0;		// No remix yet.
-					bankStates[currentBank].halfSpeed=false;
-					bankStates[currentBank].backwardsPlayback=false;					
-					bankStates[currentBank].sampleDirection=true;					
-					bankStates[currentBank].loopOnce=false;				
-					editModeEntered=false;
-					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_CANCEL_EFFECTS,0);		// Send it out to the techno nerds.			
-					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REVERT_SAMPLE_TO_FULL,0);		// Send it out to the techno nerds.			
-				}
-				else if(keyState&Im_SWITCH_3)	// Sample trimming
-				{
-					if(keyState&Im_SWITCH_0||keyState&Im_SWITCH_1||keyState&Im_SWITCH_2)	// These are all edit commands, if we hit them then enter edit mode.
-					{
-						editModeEntered=true;
-					}
-					else if(newKeys&Im_SWITCH_3)		// Screw and chop (toggle) (default two key combo)
-					{
-						if(bankStates[currentBank].halfSpeed==false)
-						{
-							bankStates[currentBank].halfSpeed=true;
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
-						}
-						else
-						{
-							bankStates[currentBank].halfSpeed=false;				
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,0);		// Send it out to the techno nerds.
-						}
-					}
-				}
-				else if(keyState&Im_SWITCH_4)		// Realtime.
-				{
-					if(newKeys&Im_SWITCH_2)		// Do realtime (three button combo)
-					{
-						StartRealtime(currentBank,CLK_EXTERNAL,0);
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REALTIME,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
-					}
-					else if(newKeys&Im_SWITCH_4)		// "Paul is Dead" mask (only pressing two keys)
-					{
-						if(bankStates[currentBank].backwardsPlayback==false)
-						{
-							bankStates[currentBank].backwardsPlayback=true;
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_PLAY_BACKWARDS,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
-						}
-						else
-						{
-							bankStates[currentBank].backwardsPlayback=false;				
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_PLAY_BACKWARDS,0);		// Send it out to the techno nerds.
-						}										
-						
-						UpdateAdjustedSampleAddresses(currentBank);	// @@@ make sure we handle going backwards when considering edited samples.
-					}
-				}			
-				else
-				{
-					if(newKeys&Im_SWITCH_0)		// Switch 0 (the left most) handles bit reduction.
-					{
-						bankStates[currentBank].bitReduction=scaledEncoderValue;	// Reduce bit depth by 0-7.
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_BIT_REDUCTION,scaledEncoderValue);		// Send it out to the techno nerds.
-					}
-					if(newKeys&Im_SWITCH_1)		// Switch 1 sends granular data.
-					{
-						MakeNewGranularArray(currentBank,(encoderValue/2));			// Start or stop granularization.	
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_GRANULARITY,(encoderValue/2));		// Send it out to the techno nerds.
-					}
-					if(newKeys&Im_SWITCH_2)		// Switch 2 assigns our different ways of combining audio channels on the output.
-					{
-						switch(scaledEncoderValue)
-						{
-							case 0:
-							UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
-							break;
+		UpdateUserSwitches();			// Handle keypresses coming in through front panel UI
 
-							case 1:
-							UpdateOutput=OutputMultiplyBanks;	// Set our output function pointer to call this type of combination.
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
-							break;
-							
-							case 2:
-							UpdateOutput=OutputAndBanks;	// Set our output function pointer to call this type of combination.
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
-							break;
-							
-							case 3:
-							UpdateOutput=OutputXorBanks;	// Set our output function pointer to call this type of combination.
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
-							break;
-							
-							default:
-							break;
-						}
-					}
-				}
-			}
-			else
-			{
-				if(newKeys&Im_REC)										// Record switch pressed.
-				{
-					if(bankStates[currentBank].audioFunction==AUDIO_RECORD)			// Were we recording already?
-					{
-						StartPlayback(currentBank,CLK_EXTERNAL,0);					// Begin playing back the loop we just recorded (ext clock)
-						bankStates[currentBank].loopOnce=false;
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
-					}
-					else											// We're not recording right now, so start doing it.
-					{
-						StartRecording(currentBank,CLK_EXTERNAL,0);	// Start recording (ext clock)
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_RECORDING,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
-					}
-				}
-
-				else if(newKeys&Im_ODUB)			// Overdub switch pressed.  Odub is similar to record except it takes its recording from a different analog input, and it cannot be invoked unless there is already a sample in the bank.
-				{
-					if(bankStates[currentBank].audioFunction==AUDIO_OVERDUB)		// Were we overdubbing already?
-					{
-						ContinuePlayback(currentBank,CLK_EXTERNAL,0);				// Begin playing back the loop we just recorded (ext clock, not from the beginning)
-						bankStates[currentBank].loopOnce=false;
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OVERDUB,0);		// Send it out to the techno nerds.
-					}
-					else							// We're not recording right now, so start doing it.
-					{
-						if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)		// Because of how OVERDUB thinks about memory we can't do it unless you there's already a sample in the bank.
-						{
-							StartOverdub(currentBank,CLK_EXTERNAL,0);					// Get bizzy (ext clock).
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OVERDUB,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
-						}
-					}
-				}
-				else if(newKeys&Im_PLAY_PAUSE)		// Play / Pause switch pressed.  If anything is happening this will stop it.  Otherwise, this will start playing back AS A LOOP.  This will not restart a playing sample from the beginning.
-				{
-					if(bankStates[currentBank].audioFunction==AUDIO_IDLE)		// Doing nothing?
-					{
-						if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something to play?
-						{
-							ContinuePlayback(currentBank,CLK_EXTERNAL,0);			// Continue playing back from wherever we are in the sample memory (ext clock, not from the beginning) @@@ So as of now, this will begin playback at the END of a sample if we've just finished recording.  Ugly.
-							bankStates[currentBank].loopOnce=false;
-							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
-						}
-					}
-					else		// Pause whatever we were doing.
-					{
-						bankStates[currentBank].audioFunction=AUDIO_IDLE;		// Nothing to do in the ISR
-						bankStates[currentBank].clockMode=CLK_NONE;				// Don't trigger this bank.
-						PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_OFF,MIDI_GENERIC_NOTE,0);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
-					}
-
-				}
-//					else if(newKeys&Im_SINGLE_PLAY)		// Stop whatever we're doing and play the sample from the beginning, one time.
-//					{
-//						if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something to play?
-//						{
-//							StartPlayback(currentBank,CLK_EXTERNAL,0);			// Play back this sample.
-//							bankStates[currentBank].loopOnce=true;				// And do it one time, for your mind.
-//							PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_NOTE_ON,MIDI_GENERIC_NOTE,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.  @@@ This is wrong, but there's no concept of "continue" in the MIDI section.
-//						}				
-//					}
-				else if(newKeys&Im_BANK)		// Increment through banks when this button is pressed.
-				{
-					currentBank++;
-					if(currentBank>=NUM_BANKS)
-					{
-						currentBank=BANK_0;		// Loop around.
-					}
-				}
-// ------------------------------------
-// FLASH TEST
-				else if(newKeys&Im_SWITCH_6)	// Write sample to slot 0 from bank 0
-				{
-					WriteSampleToSd(currentBank,0);				
-				}
-				else if(newKeys&Im_SWITCH_7)	// Read sample from slot 0 to bank 0
-				{
-					ReadSampleFromSd(currentBank,0);								
-				}
-				else if(newKeys&Im_SINGLE_PLAY)		// @@@TEST Play direct from the SD
-				{
-					PlaySampleFromSd(BANK_0,0);								
-				}
-// ------------------------------------
-			}
-		}
-		else	// In edit mode.
-		{
-			if(keyState&Im_SWITCH_0)		// Adjust start (three button combo)
-			{
-				if(bankStates[currentBank].sampleStartOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
-				{
-					AdjustSampleStart(currentBank,encoderValue);
-					i=encoderValue/2;		// Make into MIDI-worthy value (this will line up with the coarse adjust messages)
-					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_START_WIDE,i);		// Send it out to the techno nerds.			
-				}
-			}
-			else if(keyState&Im_SWITCH_1)		// Adjust end (three button combo)
-			{
-				if(bankStates[currentBank].sampleEndOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
-				{
-					AdjustSampleEnd(currentBank,encoderValue);
-					i=encoderValue/2;		// Make into MIDI-worthy value (this will line up with the coarse adjust messages)
-					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_END_WIDE,i);		// Send it out to the techno nerds.			
-				}
-			}
-			else if(keyState&Im_SWITCH_2)		// Adjust window (three button combo)
-			{
-				if(bankStates[currentBank].sampleWindowOffset!=encoderValue)	// Adjust in real time ONLY if we have an updated value.
-				{
-					AdjustSampleWindow(currentBank,encoderValue);
-					i=encoderValue/2;		// Make into MIDI-worthy value (this will line up with the coarse adjust messages)
-					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_ADJUST_SAMPLE_WINDOW_WIDE,i);		// Send it out to the techno nerds.			
-				}
-			}
-			else if(newKeys&Im_SWITCH_3||newKeys&Im_SWITCH_4||newKeys&Im_SWITCH_5)	// Non edit-mode key hit, bail from edit mode.
-			{
-				editModeEntered=false;				
-			}		
-		}
-		
-// Dealt with Caveman inputs, now deal with MIDI.
-
-		if(midiMessagesInIncomingFifo)
+		if(midiMessagesInIncomingFifo)	// Dealt with caveman inputs, now deal with MIDI.
 		{
 			GetMidiMessageFromIncomingFifo(&currentMidiMessage);
 /*
@@ -4208,7 +4241,7 @@ static void DoSampler(void)
 
 				if(realtimeOn[currentMidiMessage.channelNumber])			// Real time sound editing?
 				{
-					StartRealtime(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// Yes, do realtime.		
+					StartRealtime(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// Yes, do realtime.
 				}
 				else
 				{
@@ -4227,7 +4260,7 @@ static void DoSampler(void)
 					if(currentMidiMessage.dataByteTwo)
 					{
 						StartRecording(currentMidiMessage.channelNumber,CLK_INTERNAL,theMidiRecordRate[currentMidiMessage.channelNumber]);					// We set the record rate with this call.  Historically it's been note 60 (midi c4)
-						realtimeOn[currentMidiMessage.channelNumber]=false;													// We'll default to playback after a recording.	
+						realtimeOn[currentMidiMessage.channelNumber]=false;													// We'll default to playback after a recording.
 					}
 					else if(bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_RECORD)	// Must already be recording to stop.
 					{
@@ -4242,7 +4275,7 @@ static void DoSampler(void)
 						if(bankStates[currentMidiMessage.channelNumber].startAddress!=bankStates[currentMidiMessage.channelNumber].endAddress)		// Because of how OVERDUB thinks about memory we can't do it unless you there's already a sample in the bank.
 						{
 							StartOverdub(currentMidiMessage.channelNumber,CLK_INTERNAL,currentNoteOn[currentMidiMessage.channelNumber]);			// We set the record rate with this call.  For ovverdub, we'll just set it equal to the last note played.
-							realtimeOn[currentMidiMessage.channelNumber]=false;																		// We'll default to playback after a recording.	
+							realtimeOn[currentMidiMessage.channelNumber]=false;																		// We'll default to playback after a recording.
 						}
 					}
 					else if(bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_OVERDUB)	// Must already be overdubbing to stop.
@@ -4261,7 +4294,7 @@ static void DoSampler(void)
 					{
 						bankStates[currentMidiMessage.channelNumber].audioFunction=AUDIO_IDLE;			// Nothing to do in the ISR
 						bankStates[currentMidiMessage.channelNumber].clockMode=CLK_NONE;				// Don't trigger this bank.
-						realtimeOn[currentMidiMessage.channelNumber]=false;								// We'll default to playback.	
+						realtimeOn[currentMidiMessage.channelNumber]=false;								// We'll default to playback.
 					}
 
 					break;
@@ -4306,17 +4339,17 @@ static void DoSampler(void)
 					bankStates[currentMidiMessage.channelNumber].jitterValue=0;			// No hissies yet.
 					bankStates[currentMidiMessage.channelNumber].granularSlices=0;		// No remix yet.
 					bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
-					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;					
-					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;					
-					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;					
-					realtimeOn[currentMidiMessage.channelNumber]=false;								// We'll default to playback.	
+					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;
+					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
+					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;
+					realtimeOn[currentMidiMessage.channelNumber]=false;								// We'll default to playback.
 					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
 					break;
 
 					case MIDI_BIT_REDUCTION:					// Crustiness quotient.
 					if(currentMidiMessage.dataByteTwo<8)
 					{
-						bankStates[currentMidiMessage.channelNumber].bitReduction=currentMidiMessage.dataByteTwo;				
+						bankStates[currentMidiMessage.channelNumber].bitReduction=currentMidiMessage.dataByteTwo;
 					}
 					break;
 
@@ -4325,7 +4358,7 @@ static void DoSampler(void)
 					break;
 
 					case MIDI_JITTER:							// Hisssss
-					bankStates[currentMidiMessage.channelNumber].jitterValue=currentMidiMessage.dataByteTwo;				
+					bankStates[currentMidiMessage.channelNumber].jitterValue=currentMidiMessage.dataByteTwo;
 					break;
 
 					case MIDI_OUTPUT_COMBINATION:				// Set the output (SUM, XOR, AND, MULT) with this message.
@@ -4338,15 +4371,15 @@ static void DoSampler(void)
 						case 1:
 						UpdateOutput=OutputMultiplyBanks;	// Set our output function pointer to call this type of combination.
 						break;
-						
+
 						case 2:
 						UpdateOutput=OutputAndBanks;	// Set our output function pointer to call this type of combination.
 						break;
-						
+
 						case 3:
 						UpdateOutput=OutputXorBanks;	// Set our output function pointer to call this type of combination.
 						break;
-						
+
 						default:
 						break;
 					}
@@ -4362,31 +4395,31 @@ static void DoSampler(void)
 
 //	Editing functions (resolute and wide are whether we want a MIDI step to correspond to 1 edit-sized chunk per increase in value or 2):
 
-					case MIDI_ADJUST_SAMPLE_START_RESOLUTE:						
+					case MIDI_ADJUST_SAMPLE_START_RESOLUTE:
 					AdjustSampleStart(currentMidiMessage.channelNumber,currentMidiMessage.dataByteTwo);
 					break;
 
-					case MIDI_ADJUST_SAMPLE_END_RESOLUTE:						
+					case MIDI_ADJUST_SAMPLE_END_RESOLUTE:
 					AdjustSampleEnd(currentMidiMessage.channelNumber,currentMidiMessage.dataByteTwo);
 					break;
 
-					case MIDI_ADJUST_SAMPLE_WINDOW_RESOLUTE:						
+					case MIDI_ADJUST_SAMPLE_WINDOW_RESOLUTE:
 					AdjustSampleWindow(currentMidiMessage.channelNumber,currentMidiMessage.dataByteTwo);
 					break;
 
-					case MIDI_REVERT_SAMPLE_TO_FULL:						
+					case MIDI_REVERT_SAMPLE_TO_FULL:
 					RevertSampleToUnadjusted(currentMidiMessage.channelNumber);
 					break;
 
-					case MIDI_ADJUST_SAMPLE_START_WIDE:						
+					case MIDI_ADJUST_SAMPLE_START_WIDE:
 					AdjustSampleStart(currentMidiMessage.channelNumber,(currentMidiMessage.dataByteTwo*2));
 					break;
 
-					case MIDI_ADJUST_SAMPLE_END_WIDE:						
+					case MIDI_ADJUST_SAMPLE_END_WIDE:
 					AdjustSampleEnd(currentMidiMessage.channelNumber,(currentMidiMessage.dataByteTwo*2));
 					break;
 
-					case MIDI_ADJUST_SAMPLE_WINDOW_WIDE:						
+					case MIDI_ADJUST_SAMPLE_WINDOW_WIDE:
 					AdjustSampleWindow(currentMidiMessage.channelNumber,(currentMidiMessage.dataByteTwo*2));
 					break;
 
@@ -4414,7 +4447,7 @@ static void DoSampler(void)
 				{
 					bankStates[currentMidiMessage.channelNumber].timerCyclesForNextNote=(GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));		// Got told to center the note, just do it.
 				}
-			}			
+			}
 		}
 	}
 
@@ -4450,7 +4483,7 @@ static void DoSawtooth(void)
 		bankStates[BANK_0].clockMode=CLK_EXTERNAL;
 		SetSampleClock(BANK_0,CLK_EXTERNAL,0);
 		UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
-		sei();		// DONT EVER DO Interrupts this way if you care about not messing something up.		
+		sei();		// DONT EVER DO Interrupts this way if you care about not messing something up.
 
 		lastShuttleRead=encoderValue;	// Keep track of the original encoder reading so we can change the leds when it changes.
 
@@ -4540,7 +4573,7 @@ static void MidiOutputTestBinnis(void)
 
 static void SetMidiChannels(void)
 // This is a state the user can enter at startup where they set and store desired midi channels using the switches.
-{	
+{
 	if(subState==SS_0)
 	{
 		midiChannelNumberA=GetMidiChannel(BANK_0);					// Get the midi channels we have stored in memory.
@@ -4570,7 +4603,7 @@ static void SetMidiChannels(void)
 			}
 
 			ledOnOffMask&=~0xF0;					// Clear top nybble (leds near bottom of PCB).
-			ledOnOffMask|=(midiChannelNumberB<<4);	// Channel B displays on low nybble.		
+			ledOnOffMask|=(midiChannelNumberB<<4);	// Channel B displays on low nybble.
 		}
 		if(newKeys&Im_SWITCH_2)		// Write them to eeprom and get on with life.
 		{
@@ -4615,7 +4648,7 @@ static void DoFruitcakeIntro(void)
 {
 	static unsigned char
 		i;
-		
+
 	if(subState==SS_0)
 	{
 		KillLeds();
@@ -4639,7 +4672,7 @@ static void DoFruitcakeIntro(void)
 			if(CheckTimer(TIMER_1))
 			{
 				ledOnOffMask|=(1<<i);
-				SetTimer(TIMER_1,(SECOND/20));		
+				SetTimer(TIMER_1,(SECOND/20));
 				i++;
 			}
 		}
@@ -4651,9 +4684,9 @@ static void DoFruitcakeIntro(void)
 				ledPwm=255;
 				// Grudgingly enable pwm hackery.
 
-				PRR&=~(1<<PRTIM2);	// Turn the TMR2 power on.	
+				PRR&=~(1<<PRTIM2);	// Turn the TMR2 power on.
 
-				TCCR2A=0x02;		// Normal ports, begin setting CTC mode.	
+				TCCR2A=0x02;		// Normal ports, begin setting CTC mode.
 				TCCR2B=0x01;		// Finish setting CTC, prescaler to /1, turn clock on.
 				TCNT2=0;			// Init counter reg
 				OCR2A=128;			// Compare match interrupt when the counter gets to this number.
@@ -4664,12 +4697,12 @@ static void DoFruitcakeIntro(void)
 				LATCH_DDR=0xFF;					// Make sure the bus is an output.
 				PORTD|=(Om_LED_LA);				// Make our led latch transparent....
 
-				subState=SS_3;		
+				subState=SS_3;
 			}
 		}
 	}
 	else if(subState==SS_3)
-	{		
+	{
 		if(CheckTimer(TIMER_1))
 		{
 			if(ledPwm>1)
@@ -4683,7 +4716,7 @@ static void DoFruitcakeIntro(void)
 				TIMSK2=0x00;		// Disable all timer 0 interrupts.
 				TCCR2A=0x00;		// Normal ports
 				TCCR2B=0x00;		// Turn clock off.
-				PRR|=(1<<PRTIM2);	// Turn the TMR2 power off.	
+				PRR|=(1<<PRTIM2);	// Turn the TMR2 power off.
 
 				LATCH_PORT=0x00;		// LEDs off.
 				PORTD&=~(Om_LED_LA);	// ...Keep them off.
@@ -4782,7 +4815,7 @@ int main(void)
 			if(UCSR0A&(1<<UDRE0))			// UART0 ready to receive new data?
 			{
 				UDR0=PopOutgoingMidiByte();	// Get the next byte to send and push it over the UART
-			}				
+			}
 		}
 
 		State();				// Execute the current program state.

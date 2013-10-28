@@ -1,92 +1,145 @@
    1               		.file	"softclock.c"
-   2               	__SREG__ = 0x3f
-   3               	__SP_H__ = 0x3e
-   4               	__SP_L__ = 0x3d
-   5               	__CCP__  = 0x34
-   6               	__tmp_reg__ = 0
-   7               	__zero_reg__ = 1
-  15               	.Ltext0:
-  16               	.global	SetTimer
-  18               	SetTimer:
-  19               	.LFB3:
-  20               	.LM1:
-  21               	.LVL0:
-  22               	/* prologue: function */
-  23               	/* frame size = 0 */
-  24               	.LM2:
-  25 0000 E82F      		mov r30,r24
-  26 0002 F0E0      		ldi r31,lo8(0)
-  27 0004 8091 0000 		lds r24,systemTicks
-  28 0008 9091 0000 		lds r25,(systemTicks)+1
-  29               	.LVL1:
-  30 000c EE0F      		lsl r30
-  31 000e FF1F      		rol r31
-  32 0010 DF01      		movw r26,r30
-  33 0012 A050      		subi r26,lo8(-(entryTime))
-  34 0014 B040      		sbci r27,hi8(-(entryTime))
-  35 0016 8D93      		st X+,r24
-  36 0018 9C93      		st X,r25
-  37               	.LM3:
-  38 001a E050      		subi r30,lo8(-(delayTime))
-  39 001c F040      		sbci r31,hi8(-(delayTime))
-  40 001e 7183      		std Z+1,r23
-  41 0020 6083      		st Z,r22
-  42               	/* epilogue start */
-  43               	.LM4:
-  44 0022 0895      		ret
-  45               	.LFE3:
-  47               	.global	CheckTimer
-  49               	CheckTimer:
-  50               	.LFB4:
-  51               	.LM5:
-  52               	.LVL2:
-  53               	/* prologue: function */
-  54               	/* frame size = 0 */
-  55               	.LM6:
+   2               	__SP_H__ = 0x3e
+   3               	__SP_L__ = 0x3d
+   4               	__SREG__ = 0x3f
+   5               	__tmp_reg__ = 0
+   6               	__zero_reg__ = 1
+   7               		.text
+   8               	.Ltext0:
+   9               		.cfi_sections	.debug_frame
+  10               	.global	SetTimer
+  12               	SetTimer:
+  13               	.LFB1:
+  14               		.file 1 "softclock.c"
+   1:softclock.c   **** //-----------------------------------------------------------------------
+   2:softclock.c   **** //-----------------------------------------------------------------------
+   3:softclock.c   **** // Software Clock Functions:
+   4:softclock.c   **** //-----------------------------------------------------------------------
+   5:softclock.c   **** //-----------------------------------------------------------------------
+   6:softclock.c   **** // Using these routines requires that we've set up some way of incrementing "systemTicks".  This is
+   7:softclock.c   **** // In some apps we don't want an interrupt and we get ticks some other way.
+   8:softclock.c   **** // Remember: variables, bits changed inside ISRs and monitored inside the program should be declare
+   9:softclock.c   **** // NOTE:  in WTPA there is not an ISR-based human-clock, so we can get rid of the cli() and SREG st
+  10:softclock.c   **** // NOTE:  We're also using 16-bit timer variables so the longest we can time is something like 3.5 
+  11:softclock.c   **** 
+  12:softclock.c   **** #include "includes.h"
+  13:softclock.c   **** 
+  14:softclock.c   **** 
+  15:softclock.c   **** static unsigned int			// Local variables which keep track of timer stuff. 
+  16:softclock.c   **** 	entryTime[NUM_TIMERS],
+  17:softclock.c   **** 	delayTime[NUM_TIMERS];
+  18:softclock.c   **** /*
+  19:softclock.c   **** void ResetTimer(unsigned char timerNum)
+  20:softclock.c   **** // Starts a given timer counting again from the time this function is called (resets the entryTime)
+  21:softclock.c   **** {
+  22:softclock.c   **** 	entryTime[timerNum]=systemTicks;
+  23:softclock.c   **** }
+  24:softclock.c   **** */
+  25:softclock.c   **** void SetTimer(unsigned char timerNum, unsigned int ticks_to_wait)
+  26:softclock.c   **** // Sets a software timer with an entry time and an amount of time before it expires.
+  27:softclock.c   **** {
+  15               		.loc 1 27 0
+  16               		.cfi_startproc
+  17               	.LVL0:
+  18               	/* prologue: function */
+  19               	/* frame size = 0 */
+  20               	/* stack size = 0 */
+  21               	.L__stack_usage = 0
+  28:softclock.c   **** 	entryTime[timerNum]=systemTicks;
+  22               		.loc 1 28 0
+  23 0000 90E0      		ldi r25,0
+  24 0002 2091 0000 		lds r18,systemTicks
+  25 0006 3091 0000 		lds r19,systemTicks+1
+  26 000a 880F      		lsl r24
+  27 000c 991F      		rol r25
+  28               	.LVL1:
+  29 000e FC01      		movw r30,r24
+  30 0010 E050      		subi r30,lo8(-(entryTime))
+  31 0012 F040      		sbci r31,hi8(-(entryTime))
+  32 0014 3183      		std Z+1,r19
+  33 0016 2083      		st Z,r18
+  29:softclock.c   **** 	delayTime[timerNum]=ticks_to_wait;
+  34               		.loc 1 29 0
+  35 0018 FC01      		movw r30,r24
+  36 001a E050      		subi r30,lo8(-(delayTime))
+  37 001c F040      		sbci r31,hi8(-(delayTime))
+  38 001e 7183      		std Z+1,r23
+  39 0020 6083      		st Z,r22
+  40 0022 0895      		ret
+  41               		.cfi_endproc
+  42               	.LFE1:
+  44               	.global	CheckTimer
+  46               	CheckTimer:
+  47               	.LFB2:
+  30:softclock.c   **** }
+  31:softclock.c   **** 
+  32:softclock.c   **** unsigned char CheckTimer(unsigned char timerNum)
+  33:softclock.c   **** // If the current system time MINUS the entry time is greater than (or equal to) the amount of tick
+  34:softclock.c   **** // Ie, return true if the time is up, and false if it isn't.
+  35:softclock.c   **** {	
+  48               		.loc 1 35 0
+  49               		.cfi_startproc
+  50               	.LVL2:
+  51               	/* prologue: function */
+  52               	/* frame size = 0 */
+  53               	/* stack size = 0 */
+  54               	.L__stack_usage = 0
+  36:softclock.c   **** 	if((systemTicks-entryTime[timerNum])>=delayTime[timerNum])
+  55               		.loc 1 36 0
   56 0024 2091 0000 		lds r18,systemTicks
-  57 0028 3091 0000 		lds r19,(systemTicks)+1
-  58 002c E82F      		mov r30,r24
-  59 002e F0E0      		ldi r31,lo8(0)
-  60 0030 40E0      		ldi r20,lo8(0)
-  61 0032 EE0F      		lsl r30
-  62 0034 FF1F      		rol r31
-  63 0036 DF01      		movw r26,r30
-  64 0038 A050      		subi r26,lo8(-(entryTime))
-  65 003a B040      		sbci r27,hi8(-(entryTime))
-  66 003c 8D91      		ld r24,X+
-  67 003e 9C91      		ld r25,X
-  68               	.LVL3:
-  69 0040 281B      		sub r18,r24
-  70 0042 390B      		sbc r19,r25
-  71 0044 E050      		subi r30,lo8(-(delayTime))
-  72 0046 F040      		sbci r31,hi8(-(delayTime))
-  73 0048 8081      		ld r24,Z
-  74 004a 9181      		ldd r25,Z+1
-  75 004c 2817      		cp r18,r24
-  76 004e 3907      		cpc r19,r25
-  77 0050 00F0      		brlo .L4
-  78 0052 41E0      		ldi r20,lo8(1)
-  79               	.L4:
-  80               	.LM7:
-  81 0054 842F      		mov r24,r20
-  82               	/* epilogue start */
-  83 0056 0895      		ret
-  84               	.LFE4:
-  86               		.lcomm entryTime,8
-  87               		.lcomm delayTime,8
- 120               	.Letext0:
+  57 0028 3091 0000 		lds r19,systemTicks+1
+  58 002c 90E0      		ldi r25,0
+  59 002e 880F      		lsl r24
+  60 0030 991F      		rol r25
+  61               	.LVL3:
+  62 0032 FC01      		movw r30,r24
+  63 0034 E050      		subi r30,lo8(-(entryTime))
+  64 0036 F040      		sbci r31,hi8(-(entryTime))
+  65 0038 4081      		ld r20,Z
+  66 003a 5181      		ldd r21,Z+1
+  67 003c 241B      		sub r18,r20
+  68 003e 350B      		sbc r19,r21
+  69 0040 FC01      		movw r30,r24
+  70 0042 E050      		subi r30,lo8(-(delayTime))
+  71 0044 F040      		sbci r31,hi8(-(delayTime))
+  72 0046 81E0      		ldi r24,lo8(1)
+  73 0048 4081      		ld r20,Z
+  74 004a 5181      		ldd r21,Z+1
+  75 004c 2417      		cp r18,r20
+  76 004e 3507      		cpc r19,r21
+  77 0050 00F4      		brsh .L3
+  78 0052 80E0      		ldi r24,0
+  79               	.L3:
+  37:softclock.c   **** 	{
+  38:softclock.c   **** 		return(true);
+  39:softclock.c   **** 	}
+  40:softclock.c   **** 	else
+  41:softclock.c   **** 	{
+  42:softclock.c   **** 		return(false);
+  43:softclock.c   **** 	}
+  44:softclock.c   **** }
+  80               		.loc 1 44 0
+  81 0054 0895      		ret
+  82               		.cfi_endproc
+  83               	.LFE2:
+  85               		.local	entryTime
+  86               		.comm	entryTime,8,1
+  87               		.local	delayTime
+  88               		.comm	delayTime,8,1
+  89               	.Letext0:
+  90               		.file 2 "defines.h"
+  91               		.file 3 "globals.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 softclock.c
-     /tmp/ccprG0aA.s:2      *ABS*:0000003f __SREG__
-     /tmp/ccprG0aA.s:3      *ABS*:0000003e __SP_H__
-     /tmp/ccprG0aA.s:4      *ABS*:0000003d __SP_L__
-     /tmp/ccprG0aA.s:5      *ABS*:00000034 __CCP__
-     /tmp/ccprG0aA.s:6      *ABS*:00000000 __tmp_reg__
-     /tmp/ccprG0aA.s:7      *ABS*:00000001 __zero_reg__
-     /tmp/ccprG0aA.s:18     .text:00000000 SetTimer
+     /tmp/ccMm7uLr.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccMm7uLr.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccMm7uLr.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccMm7uLr.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccMm7uLr.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccMm7uLr.s:12     .text:00000000 SetTimer
                              .bss:00000000 entryTime
-     /tmp/ccprG0aA.s:86     .bss:00000008 delayTime
-     /tmp/ccprG0aA.s:49     .text:00000024 CheckTimer
+     /tmp/ccMm7uLr.s:86     .bss:00000008 delayTime
+     /tmp/ccMm7uLr.s:46     .text:00000024 CheckTimer
 
 UNDEFINED SYMBOLS
 systemTicks
