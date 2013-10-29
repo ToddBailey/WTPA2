@@ -229,7 +229,7 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # to submit bug reports.
 AVRDUDE_VERBOSE = -v -v
 
-AVRDUDE_FLAGS = -p $(AVRDUDE_MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -B 4
+AVRDUDE_FLAGS = -p $(AVRDUDE_MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -B 2
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
@@ -316,8 +316,9 @@ GENDEPFLAGS = -MD -MP -MF .dep/$(@F).d
 ALL_CFLAGS = -mmcu=$(MCU) -I. $(CFLAGS) $(GENDEPFLAGS)
 ALL_ASFLAGS = -mmcu=$(MCU) -I. -x assembler-with-cpp $(ASFLAGS)
 
-
-
+# ------------------------
+# Compile Application:
+# ------------------------
 
 # Default target.
 all: gccversion build
@@ -344,26 +345,52 @@ sizeafter:
 	@if test -f $(TARGET).elf; then echo; echo $(MSG_SIZE_AFTER); $(ELFSIZE); \
 	2>/dev/null; echo; fi
 
-
-
 # Display compiler version information.
 gccversion : 
 	@$(CC) --version
 
-# Wed Apr 29 12:42:19 CDT 2009
-# Extra target that allows me to make kits faster for WTPA
 
-wtpa: wtpafuses program
+# ---------------------------------
+# Various ways to burn the chip:
+# ---------------------------------
 
-wtpafuses:
-#	avrdude -p m644p -c stk500v2 -u -F -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
+# Tue Oct 29 09:55:15 EDT 2013
+# The "wtpa" target puts fuses, bootloader and application onto the chip
+# You can also burn JUST the application, just the bootloader, or just the fuses.
+# NOTE -- none of these write anything to the eeprom, the application handles that.  Eeprom can be written with: $(AVRDUDE_WRITE_EEPROM)
+
+wtpa: boot_fuses burn_bootloader_and_application
+
+fuse: fuses
+
+fuses:
+	@echo "Please soecify whether you want app_fuses or boot_fuses."
+
+
+app_fuses:
 	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
+#	hfuse doesn't point at bootloader.
 
-# Program the device.  
-#program: $(TARGET).hex $(TARGET).eep
-program: $(TARGET).hex
-#	$(AVRDUDE) $(AVRDUDE_FLAGS) -F $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
+boot_fuses:
+	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -U efuse:w:0xFC:m -U hfuse:w:0xD2:m -U lfuse:w:0xF7:m
+#	efuse = 0xFC:	sets BOD level to max, about 4.3v typ (4.5v max)
+#	hfuse = 0xD2:	no ocd, no jtag, spi prog enabled, wdt NOT always on, eeprom preserved through erase, boot size 2048 words, go to bootloader at reset
+#	lfuse = 0xF7:	Select startup time and crystal osc source
+
+burn_application: $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
+
+burn_bootloader:
+	cd ../bootloader && $(MAKE) burn
+
+burn_bootloader_and_application: $(TARGET).hex
+	cd ../bootloader && $(MAKE) burn
+	$(AVRDUDE) $(AVRDUDE_FLAGS) -D -V $(AVRDUDE_WRITE_FLASH)
+# 	Don't erase before programming the application or verify the application.
+
+# ---------------------------------
+# ---------------------------------
+
 
 
 # Generate avr-gdb config/init file which does the following:

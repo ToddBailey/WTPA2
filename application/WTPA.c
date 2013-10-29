@@ -54,27 +54,6 @@ Changelog:
 Made a CHANGELOG file in this directory.  Only valid for WTPA2 changes once releases start.  You'll have to dig for old changes.
 
 
-Nuts / Volts:
-==============================================================================
-Fuse bits:
-
-EByte:  Don't change.
-HByte:  0xD9	-- turn off JTAG.
-LByte:  CKSEL=0111  SUT=11  CKDIV=1  CKOUT=1  so  1111 0111 or 0xF7
-
-The device will then start at 20MHz.
-I use:
-avrdude -p m164p -c stk500v2 -u -t
-r lfuse (should be 62)
-w lfuse 0 0xF7
-r hfuse (99 is default)
-w hfuse 0 0xD9
-
-Thu Apr 16 03:13:24 CDT 2009
-Ebyte contains the brownout fuse bits.  We want that in this app, so change Ebyte to 0xFC.
-
-Command line:
-avrdude -p m164p -c stk500v2 -u -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
 */
 
 
@@ -2338,6 +2317,37 @@ static void SdStartSampleWrite(unsigned int sampleSlot, unsigned long sampleLeng
 	SREG=sreg;	// Resume ISR
 }
 
+static void ResetSdCard(void)
+// If we unceremoniously pull a card, do this.
+{
+	unsigned char
+		sreg;
+
+	sreg=SREG;
+	cli();
+	
+	EndSdTransfer();		// Bring CS high.  This will fuck things up if the card is mid transfer.
+	ClearSampleToc();
+	
+	// Stop SD card ISR
+
+	sdIsrState=SD_ISR_IDLE;		// ISR state to idle
+	TCCR2B=0;					// Stop this timer
+	TIMSK2&=~(1<<OCIE2B);		// Disable interrupt
+
+	// Set this contribution to the DAC to midscale (this output source is now quiet)
+	sdStreamOutput=0;
+
+	sdFifoReadPointer=0;		// Reset FIFO variables
+	sdFifoWritePointer=0;
+	sdBytesInFifo=0;
+
+	InitSdInterface();
+	cardState=SD_NOT_PRESENT;	// Mark the card as st elsewhere
+
+	SREG=sreg;
+}
+
 static void UpdateCard(void)
 // Updates the state machine which keeps the card reads/writes/inits going like they should.
 {
@@ -2359,8 +2369,7 @@ static void UpdateCard(void)
 	{
 		if(cardState!=SD_NOT_PRESENT)	// Was there a card in the slot before?
 		{
-			// Uninit any filesystem shizz, stop any transfers in progress gracefully
-			cardState=SD_NOT_PRESENT;		// Mark the card as st elsewhere
+			ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 		}
 	}
 	else	// Yup, got a card
@@ -2432,7 +2441,7 @@ static void UpdateCard(void)
 				}
 				else // Couldn't open card for write
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			else	// Fifo not ready yet
@@ -2492,7 +2501,7 @@ static void UpdateCard(void)
 				}
 				else	// Something wrong with the write.
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			break;
@@ -2541,7 +2550,7 @@ static void UpdateCard(void)
 			}
 			else	// Timed out waiting for block to write.
 			{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+				ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 			}
 			break;
 
@@ -2564,7 +2573,7 @@ static void UpdateCard(void)
 				}
 				else	// Couldn't successfully open block to write
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			else	// Bytes remaining in sample, but not enough in the fifo yet
@@ -2609,7 +2618,7 @@ static void UpdateCard(void)
 			}
 			else	// Block write failed
 			{
-				cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+				ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 			}
 			break;
 
@@ -2642,7 +2651,7 @@ static void UpdateCard(void)
 				}
 				else	// Something wrong with the write.
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			break;
@@ -2675,7 +2684,7 @@ static void UpdateCard(void)
 			}
 			else	// Timed out waiting for block to write.
 			{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+				ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 			}
 			break;
 
@@ -2722,12 +2731,12 @@ static void UpdateCard(void)
 				}
 				else if(theByte!=0xFF)		// Got something other than a start token OR idle byte (like an error)
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			else	// Timed out starting read.
 			{
-				cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+				ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 			}
 			break;
 
@@ -2810,7 +2819,7 @@ static void UpdateCard(void)
 				}
 				else	// Read failed!
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			else	// ISR has not cleared enough of the sample out of the FIFO yet.
@@ -2849,12 +2858,12 @@ static void UpdateCard(void)
 				}
 				else if(theByte!=0xFF)		// Got something other than a start token OR idle byte (like an error)
 				{
-					cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+					ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 				}
 			}
 			else	// Timed out starting read.
 			{
-				cardState=SD_NOT_PRESENT;   // @@@ kludgy way to reset card
+				ResetSdCard();	// Uninit any filesystem shizz, stop any transfers in progress gracefully
 			}
 			break;
 
@@ -4651,6 +4660,8 @@ static void DoFruitcakeIntro(void)
 
 	if(subState==SS_0)
 	{
+		cardState=SD_NOT_PRESENT;	// Don't allow card to come up while we're monkeying with the bus
+
 		KillLeds();
 		i=0;
 		ledOnOffMask=0;
@@ -4663,6 +4674,7 @@ static void DoFruitcakeIntro(void)
 		{
 			subState=SS_2;
 		}
+		cardState=SD_NOT_PRESENT;	// Don't allow card to come up while we're monkeying with the bus
 	}
 
 	else if(subState==SS_2)
@@ -4700,6 +4712,7 @@ static void DoFruitcakeIntro(void)
 				subState=SS_3;
 			}
 		}
+		cardState=SD_NOT_PRESENT;	// Don't allow card to come up while we're monkeying with the bus
 	}
 	else if(subState==SS_3)
 	{
@@ -4727,6 +4740,7 @@ static void DoFruitcakeIntro(void)
 				subState=SS_4;
 			}
 		}
+		cardState=SD_NOT_PRESENT;	// Don't allow card to come up while we're monkeying with the bus
 	}
 	else if(subState==SS_4)
 	{
@@ -4735,6 +4749,7 @@ static void DoFruitcakeIntro(void)
 			KillLeds();
 			SetState(DoStartupSelect);		// Get crackin.
 		}
+		cardState=SD_NOT_PRESENT;	// Don't allow card to come up while we're monkeying with the bus
 	}
 }
 
@@ -4792,6 +4807,7 @@ int main(void)
 	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
 
 	SetState(DoFruitcakeIntro);	// Get gay.
+//	SetState(DoStartupSelect);
 
 	while(1)
 	{

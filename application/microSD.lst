@@ -175,7 +175,7 @@
  104:microSD.c     **** 	DDRD|=Om_SD_CS;			// CS pin to output.
   75               		.loc 1 104 0
   76 0044 559A      		sbi 0xa,5
- 105:microSD.c     **** 	PORTD|=Om_SD_CS;		// And start with CS low.
+ 105:microSD.c     **** 	PORTD|=Om_SD_CS;		// And start with CS high.
   77               		.loc 1 105 0
   78 0046 5D9A      		sbi 0xb,5
   79 0048 0895      		ret
@@ -1279,21 +1279,21 @@
  856               		.file 5 "WTPA.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 microSD.c
-     /tmp/ccBJdy3G.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccBJdy3G.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccBJdy3G.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccBJdy3G.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccBJdy3G.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccBJdy3G.s:12     .text:00000000 UnInitSdInterface
-     /tmp/ccBJdy3G.s:43     .text:0000001c InitSdInterface
-     /tmp/ccBJdy3G.s:85     .text:0000004a EndSdTransfer
-     /tmp/ccBJdy3G.s:101    .text:0000004e StartSdTransfer
-     /tmp/ccBJdy3G.s:119    .text:00000054 TransferSdByte
-     /tmp/ccBJdy3G.s:149    .text:0000006e SendDummyByte
-     /tmp/ccBJdy3G.s:178    .text:00000088 SendSdCommand
-     /tmp/ccBJdy3G.s:395    .text:00000180 SdHandshake
-     /tmp/ccBJdy3G.s:778    .text:00000390 SdBeginSingleBlockRead
-     /tmp/ccBJdy3G.s:816    .text:000003b2 SdBeginSingleBlockWrite
+     /tmp/ccGBmFmI.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccGBmFmI.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccGBmFmI.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccGBmFmI.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccGBmFmI.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccGBmFmI.s:12     .text:00000000 UnInitSdInterface
+     /tmp/ccGBmFmI.s:43     .text:0000001c InitSdInterface
+     /tmp/ccGBmFmI.s:85     .text:0000004a EndSdTransfer
+     /tmp/ccGBmFmI.s:101    .text:0000004e StartSdTransfer
+     /tmp/ccGBmFmI.s:119    .text:00000054 TransferSdByte
+     /tmp/ccGBmFmI.s:149    .text:0000006e SendDummyByte
+     /tmp/ccGBmFmI.s:178    .text:00000088 SendSdCommand
+     /tmp/ccGBmFmI.s:395    .text:00000180 SdHandshake
+     /tmp/ccGBmFmI.s:778    .text:00000390 SdBeginSingleBlockRead
+     /tmp/ccGBmFmI.s:816    .text:000003b2 SdBeginSingleBlockWrite
 
 UNDEFINED SYMBOLS
 SetTimer

@@ -237,7 +237,7 @@ AVRDUDE_WRITE_FLASH = -U flash:w:$(TARGET).hex
 # to submit bug reports.
 AVRDUDE_VERBOSE = -v -v
 
-AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER)
+AVRDUDE_FLAGS = -p $(MCU) -P $(AVRDUDE_PORT) -c $(AVRDUDE_PROGRAMMER) -B 2
 AVRDUDE_FLAGS += $(AVRDUDE_NO_VERIFY)
 AVRDUDE_FLAGS += $(AVRDUDE_VERBOSE)
 AVRDUDE_FLAGS += $(AVRDUDE_ERASE_COUNTER)
@@ -357,22 +357,24 @@ sizeafter:
 gccversion : 
 	@$(CC) --version
 
-# Wed Apr 29 12:42:19 CDT 2009
-# Extra target that allows me to make kits faster for WTPA
-
-wtpa: fuses program
+# -------------------------------------------------------------------------------------------------------------------
+# Targets for burning the bootloader.  Really, you usually ought to do this at the same time as the application.
+# -------------------------------------------------------------------------------------------------------------------
 
 fuses:
+	@echo "Please burn fuses using the application Makefile."
+
 #	$(AVRDUDE) $(AVRDUDE_FLAGS) -F -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
-	$(AVRDUDE) $(AVRDUDE_FLAGS) -F -U efuse:w:0xFC:m -U hfuse:w:0xD2:m -U lfuse:w:0xF7:m
+#	$(AVRDUDE) $(AVRDUDE_FLAGS) -F -U efuse:w:0xFC:m -U hfuse:w:0xD2:m -U lfuse:w:0xF7:m
 #	efuse = 0xFC:	sets BOD level to max, about 4.3v typ (4.5v max)
 #	hfuse = 0xD2:	no ocd, no jtag, spi prog enabled, wdt NOT always on, eeprom preserved through erase, boot size 2048 words, go to bootloader at reset
 #	lfuse = 0xF7:	Select startup time and crystal osc source
 
 # Program the device.  
+burn: program
+
 program: $(TARGET).hex $(TARGET).eep
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -F $(AVRDUDE_WRITE_FLASH) $(AVRDUDE_WRITE_EEPROM)
-
 
 # Generate avr-gdb config/init file which does the following:
 #     define the reset signal, load the target file, connect to target, and set 

@@ -102,7 +102,7 @@ void InitSdInterface(void)
 //	UBRR1=99;							// 100kHz clock for testing
 
 	DDRD|=Om_SD_CS;			// CS pin to output.
-	PORTD|=Om_SD_CS;		// And start with CS low.
+	PORTD|=Om_SD_CS;		// And start with CS high.
 }
 
 //-----------------------------------------------------------------------

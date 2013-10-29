@@ -1440,34 +1440,34 @@
  808               		.file 3 "midi.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 midi.c
-     /tmp/ccPapznu.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccPapznu.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccPapznu.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccPapznu.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccPapznu.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccPapznu.s:11     .text:00000000 PutMidiMessageInIncomingFifo
+     /tmp/ccPfTPpD.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccPfTPpD.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccPfTPpD.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccPfTPpD.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccPfTPpD.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccPfTPpD.s:11     .text:00000000 PutMidiMessageInIncomingFifo
                             *COM*:00000001 midiMessagesInIncomingFifo
-     /tmp/ccPapznu.s:793    .bss:00000004 midiIncomingFifoWritePointer
+     /tmp/ccPfTPpD.s:793    .bss:00000004 midiIncomingFifoWritePointer
                             *COM*:00000018 midiMessageIncomingFifo
-     /tmp/ccPapznu.s:74     .text:0000004e GetMidiMessageFromIncomingFifo
+     /tmp/ccPfTPpD.s:74     .text:0000004e GetMidiMessageFromIncomingFifo
                              .bss:00000000 midiIncomingFifoReadPointer
-     /tmp/ccPapznu.s:136    .text:0000009c PutMidiMessageInOutgoingFifo
+     /tmp/ccPfTPpD.s:136    .text:0000009c PutMidiMessageInOutgoingFifo
                             *COM*:00000001 midiMessagesInOutgoingFifo
-     /tmp/ccPapznu.s:787    .bss:00000001 midiOutgoingFifoWritePointer
+     /tmp/ccPfTPpD.s:787    .bss:00000001 midiOutgoingFifoWritePointer
                             *COM*:00000018 midiMessageOutgoingFifo
                             *COM*:00000001 midiChannelNumberA
-     /tmp/ccPapznu.s:190    .text:000000d8 InitMidi
-     /tmp/ccPapznu.s:789    .bss:00000002 midiIncomingMessageState
-     /tmp/ccPapznu.s:791    .bss:00000003 midiOutgoingMessageState
-     /tmp/ccPapznu.s:795    .bss:00000005 midiOutgoingFifoReadPointer
-     /tmp/ccPapznu.s:229    .text:000000fc HandleIncomingMidiByte
+     /tmp/ccPfTPpD.s:190    .text:000000d8 InitMidi
+     /tmp/ccPfTPpD.s:789    .bss:00000002 midiIncomingMessageState
+     /tmp/ccPfTPpD.s:791    .bss:00000003 midiOutgoingMessageState
+     /tmp/ccPfTPpD.s:795    .bss:00000005 midiOutgoingFifoReadPointer
+     /tmp/ccPfTPpD.s:229    .text:000000fc HandleIncomingMidiByte
                             *COM*:00000001 midiChannelNumberB
-     /tmp/ccPapznu.s:797    .bss:00000006 temporaryChannel.1692
-     /tmp/ccPapznu.s:799    .bss:00000007 firstDataByte.1691
-     /tmp/ccPapznu.s:529    .text:00000276 MidiTxBufferNotEmpty
-     /tmp/ccPapznu.s:559    .text:00000290 PopOutgoingMidiByte
-     /tmp/ccPapznu.s:801    .bss:00000008 theMessage.1712
-     /tmp/ccPapznu.s:803    .bss:0000000c lastStatusByte.1714
+     /tmp/ccPfTPpD.s:797    .bss:00000006 temporaryChannel.1692
+     /tmp/ccPfTPpD.s:799    .bss:00000007 firstDataByte.1691
+     /tmp/ccPfTPpD.s:529    .text:00000276 MidiTxBufferNotEmpty
+     /tmp/ccPfTPpD.s:559    .text:00000290 PopOutgoingMidiByte
+     /tmp/ccPfTPpD.s:801    .bss:00000008 theMessage.1712
+     /tmp/ccPfTPpD.s:803    .bss:0000000c lastStatusByte.1714
 
 UNDEFINED SYMBOLS
 __do_clear_bss
