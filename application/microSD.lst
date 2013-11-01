@@ -1279,21 +1279,21 @@
  856               		.file 5 "WTPA.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 microSD.c
-     /tmp/cc3lvB3q.s:2      *ABS*:0000003e __SP_H__
-     /tmp/cc3lvB3q.s:3      *ABS*:0000003d __SP_L__
-     /tmp/cc3lvB3q.s:4      *ABS*:0000003f __SREG__
-     /tmp/cc3lvB3q.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/cc3lvB3q.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/cc3lvB3q.s:12     .text:00000000 UnInitSdInterface
-     /tmp/cc3lvB3q.s:43     .text:0000001c InitSdInterface
-     /tmp/cc3lvB3q.s:85     .text:0000004a EndSdTransfer
-     /tmp/cc3lvB3q.s:101    .text:0000004e StartSdTransfer
-     /tmp/cc3lvB3q.s:119    .text:00000054 TransferSdByte
-     /tmp/cc3lvB3q.s:149    .text:0000006e SendDummyByte
-     /tmp/cc3lvB3q.s:178    .text:00000088 SendSdCommand
-     /tmp/cc3lvB3q.s:395    .text:00000180 SdHandshake
-     /tmp/cc3lvB3q.s:778    .text:00000390 SdBeginSingleBlockRead
-     /tmp/cc3lvB3q.s:816    .text:000003b2 SdBeginSingleBlockWrite
+     /tmp/ccLO6Klz.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccLO6Klz.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccLO6Klz.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccLO6Klz.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccLO6Klz.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccLO6Klz.s:12     .text:00000000 UnInitSdInterface
+     /tmp/ccLO6Klz.s:43     .text:0000001c InitSdInterface
+     /tmp/ccLO6Klz.s:85     .text:0000004a EndSdTransfer
+     /tmp/ccLO6Klz.s:101    .text:0000004e StartSdTransfer
+     /tmp/ccLO6Klz.s:119    .text:00000054 TransferSdByte
+     /tmp/ccLO6Klz.s:149    .text:0000006e SendDummyByte
+     /tmp/ccLO6Klz.s:178    .text:00000088 SendSdCommand
+     /tmp/ccLO6Klz.s:395    .text:00000180 SdHandshake
+     /tmp/ccLO6Klz.s:778    .text:00000390 SdBeginSingleBlockRead
+     /tmp/ccLO6Klz.s:816    .text:000003b2 SdBeginSingleBlockWrite
 
 UNDEFINED SYMBOLS
 SetTimer

@@ -131,15 +131,15 @@
   91               		.file 3 "globals.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 softclock.c
-     /tmp/ccFaXMQ9.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccFaXMQ9.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccFaXMQ9.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccFaXMQ9.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccFaXMQ9.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccFaXMQ9.s:12     .text:00000000 SetTimer
+     /tmp/cceu3j5j.s:2      *ABS*:0000003e __SP_H__
+     /tmp/cceu3j5j.s:3      *ABS*:0000003d __SP_L__
+     /tmp/cceu3j5j.s:4      *ABS*:0000003f __SREG__
+     /tmp/cceu3j5j.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/cceu3j5j.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/cceu3j5j.s:12     .text:00000000 SetTimer
                              .bss:00000000 entryTime
-     /tmp/ccFaXMQ9.s:86     .bss:00000008 delayTime
-     /tmp/ccFaXMQ9.s:46     .text:00000024 CheckTimer
+     /tmp/cceu3j5j.s:86     .bss:00000008 delayTime
+     /tmp/cceu3j5j.s:46     .text:00000024 CheckTimer
 
 UNDEFINED SYMBOLS
 systemTicks

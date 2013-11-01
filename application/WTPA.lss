@@ -347,7 +347,7 @@ Disassembly of section .text:
      28a:	09 f4       	brne	.+2      	; 0x28e <UpdateAudioChannel0+0x19c>
      28c:	6a c0       	rjmp	.+212    	; 0x362 <UpdateAudioChannel0+0x270>
 		{
-			// Slice first, only worry about forward ###
+			// Slice first, only worry about forward ### @@@
 
 			if(sliceRemaining[BANK_0])	// Moving through our current slice?
      28e:	80 91 2d 04 	lds	r24, 0x042D
@@ -9404,7 +9404,7 @@ ISR(TIMER2_COMPB_vect)
 00003d46 <__vector_9>:
 
 ISR(TIMER2_COMPA_vect)
-// Serves exclusively to make our gay intro happen
+// Serves exclusively to make our FABULOUS intro happen
 // As far as the PWM goes, this should happen as often as possible.
 {
     3d46:	1f 92       	push	r1

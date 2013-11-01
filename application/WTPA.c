@@ -273,6 +273,50 @@ enum					// All the things the micro sd card's interrupt can be doing
 //----------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
+static void PlayCallback(BANK_STATE *theBank)
+// NOTE -- callbacks for different audio functions can allow us to combine output bytes more efficiently I think
+// Old functions summed 4 things -- contributions from MIDI for each bank and contributions from the oscillator clocked ISRs for each bank.
+// New functions can include an "output byte" in the bank datastructure and just use that, since a given bank can only really generate one output at a time
+// Call output callback from play/odub/saw BUT NOT record, too?
+{
+	// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
+	// The playback ISR also allows the various effects to change the output.
+	// Since we cannot count on the OE staying low or the AVR's DDR remaining an input, we will explicitly set all the registers we need to every time through this ISR.
+
+	// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
+	LATCH_PORT=(bankStates[BANK_0].currentAddress);	// Put the LSB of the address on the latch.
+	PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
+
+	LATCH_PORT=((bankStates[BANK_0].currentAddress>>8));	// Put the middle byte of the address on the latch.
+	PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
+
+	PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
+	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
+
+	// Calculate new addy while data bus settles
+
+	// Handle granular 
+	
+	// Handle backwards vs forwards
+	// Finish getting the byte from RAM.
+
+	outputByte=LATCH_INPUT;				// Get the byte from this address in RAM.
+	PORTA|=(Om_RAM_OE);					// Tristate the RAM.
+	LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
+
+	if(bankStates[BANK_0].bitReduction)	// Low bit rate?
+	{
+		outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
+		outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
+		outputByte^=0x80;											// Bring it back to signed.
+	}
+}
+
+
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 
@@ -372,7 +416,7 @@ static unsigned char UpdateAudioChannel0(void)
 
 		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
 		{
-			// Slice first, only worry about forward ###
+			// Slice first, only worry about forward ### @@@
 
 			if(sliceRemaining[BANK_0])	// Moving through our current slice?
 			{
@@ -1394,7 +1438,7 @@ ISR(TIMER2_COMPB_vect)
 }
 
 ISR(TIMER2_COMPA_vect)
-// Serves exclusively to make our gay intro happen
+// Serves exclusively to make our FABULOUS intro happen
 // As far as the PWM goes, this should happen as often as possible.
 {
 	static unsigned char
@@ -4938,8 +4982,7 @@ int main(void)
 
 	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
 
-	SetState(DoFruitcakeIntro);	// Get gay.
-//	SetState(DoStartupSelect);
+	SetState(DoFruitcakeIntro);	// Daze and Astound
 
 	while(1)
 	{
