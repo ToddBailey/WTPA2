@@ -9,9 +9,6 @@ typedef struct
 // In this structure we keep track of what's going on in any given independent sample (bank).
 // There are variables here for states and also for where we're looking in memory.  The sample start and end addresses should be hardcoded at the beginning and
 // end of RAM for the two-bank system we're using -- we'll count down and up respectively.
-// Wed Apr  8 17:09:13 CDT 2009
-// Wed Aug 24 14:13:26 EDT 2011
-// Added SD variables
 {
 	unsigned char
 		audioFunction;			// What should we do when we get to the isr?
@@ -25,6 +22,8 @@ typedef struct
 		sampleDirection;			// And which direction is reverse ACTUALLY right now (can change when samples are edited) 
 	bool
 		isLocked;					// Mutex which keeps the SRAM exclusive to either audio or SD functions so they don't step on each other
+	bool
+		realtimeOn;					// Is the bank processing in realtime?  This is used in MIDI to carry the realtime processing across a NOTE_OFF.
 	unsigned char
 		granularSlices;				// When doing granular playback how many pieces have we cut the sample into?
 	unsigned char

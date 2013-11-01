@@ -7,7 +7,7 @@
    7               		.text
    8               	.Ltext0:
    9               		.cfi_sections	.debug_frame
-  10               		.comm	bankStates,70,1
+  10               		.comm	bankStates,72,1
   11               		.comm	systemTicks,2,1
   12               	.Letext0:
   13               		.file 1 "globals.h"
@@ -15,12 +15,12 @@
   15               		.file 3 "globals.c"
 DEFINED SYMBOLS
                             *ABS*:00000000 globals.c
-     /tmp/ccaejevq.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccaejevq.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccaejevq.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccaejevq.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccaejevq.s:6      *ABS*:00000001 __zero_reg__
-                            *COM*:00000046 bankStates
+     /tmp/ccirry2Y.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccirry2Y.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccirry2Y.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccirry2Y.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccirry2Y.s:6      *ABS*:00000001 __zero_reg__
+                            *COM*:00000048 bankStates
                             *COM*:00000002 systemTicks
 
 UNDEFINED SYMBOLS

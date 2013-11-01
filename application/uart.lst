@@ -209,13 +209,13 @@
  102               		.file 3 "defines.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 uart.c
-     /tmp/ccaO5fPv.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccaO5fPv.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccaO5fPv.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccaO5fPv.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccaO5fPv.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccaO5fPv.s:12     .text:00000000 Uart0GotByte
-     /tmp/ccaO5fPv.s:33     .text:0000000c Uart0GetByte
-     /tmp/ccaO5fPv.s:50     .text:00000012 InitUart0
+     /tmp/ccwItrp8.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccwItrp8.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccwItrp8.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccwItrp8.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccwItrp8.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccwItrp8.s:12     .text:00000000 Uart0GotByte
+     /tmp/ccwItrp8.s:33     .text:0000000c Uart0GetByte
+     /tmp/ccwItrp8.s:50     .text:00000012 InitUart0
 
 NO UNDEFINED SYMBOLS

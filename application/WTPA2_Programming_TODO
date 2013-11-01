@@ -563,3 +563,6 @@ This also helps code flow -- can get rid of "flipFlop" variable.  Can also get r
 
 Mon Oct 28 12:18:50 EDT 2013
 Why can't we introduce jitter from manual inputs again?
+
+Tue Oct 29 15:43:22 EDT 2013
+Allow speed control (MIDI only perhaps) of SD streaming playback
