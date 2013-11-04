@@ -85,8 +85,9 @@ enum			// Here we enumerate however many banks we're actually implementing.
 
 // PORTC
 #define	Om_SWITCH_LA		(1<<PC3)	// This is an OE pin, not an LE pin, but a similar idea.
-#define	Om_TEST_PIN			(1<<PC7)	// Used to time ISRs, etc.
 #define	Im_CARD_DETECT		(1<<PC5)	// A hardware switch in the SD socket which tells us when a card is present.
+#define	Om_TEST_PIN_0		(1<<PC6)	// Used to time ISRs, etc.
+#define	Om_TEST_PIN_1		(1<<PC7)	// Used to time ISRs, etc.
 
 // Switch Input Bitmasks:
 // (NOTE -- these inputs are not hardwired to an MCU pin, they're read in from a latch)

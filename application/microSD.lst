@@ -7,10 +7,9 @@
    7               		.text
    8               	.Ltext0:
    9               		.cfi_sections	.debug_frame
-  10               	.global	UnInitSdInterface
-  12               	UnInitSdInterface:
-  13               	.LFB1:
-  14               		.file 1 "microSD.c"
+  11               	SendDummyByte:
+  12               	.LFB6:
+  13               		.file 1 "microSD.c"
    1:microSD.c     **** // Micro SD handling for WTPA2
    2:microSD.c     **** // Thu Jun  9 10:20:45 EDT 2011
    3:microSD.c     **** // Todd Michael Bailey
@@ -93,38 +92,10 @@
   80:microSD.c     **** 
   81:microSD.c     **** void UnInitSdInterface(void)
   82:microSD.c     **** {
-  15               		.loc 1 82 0
-  16               		.cfi_startproc
-  17               	/* prologue: function */
-  18               	/* frame size = 0 */
-  19               	/* stack size = 0 */
-  20               	.L__stack_usage = 0
   83:microSD.c     **** 	DDRD&=~(Om_SD_CS|Om_SD_CLK);	// Flash specific outputs back to inputs.
-  21               		.loc 1 83 0
-  22 0000 8AB1      		in r24,0xa
-  23 0002 8F7C      		andi r24,lo8(-49)
-  24 0004 8AB9      		out 0xa,r24
   84:microSD.c     **** 	PORTD|=(Om_SD_CS|Om_SD_CLK);	// Pullup pins so they don't float
-  25               		.loc 1 84 0
-  26 0006 8BB1      		in r24,0xb
-  27 0008 8063      		ori r24,lo8(48)
-  28 000a 8BB9      		out 0xb,r24
   85:microSD.c     **** 	UCSR1B=0;						// Disable transmission / reception
-  29               		.loc 1 85 0
-  30 000c 1092 C900 		sts 201,__zero_reg__
   86:microSD.c     **** 	PRR|=(1<<PRUSART1);				// Power off the UART.	
-  31               		.loc 1 86 0
-  32 0010 E4E6      		ldi r30,lo8(100)
-  33 0012 F0E0      		ldi r31,0
-  34 0014 8081      		ld r24,Z
-  35 0016 8061      		ori r24,lo8(16)
-  36 0018 8083      		st Z,r24
-  37 001a 0895      		ret
-  38               		.cfi_endproc
-  39               	.LFE1:
-  41               	.global	InitSdInterface
-  43               	InitSdInterface:
-  44               	.LFB2:
   87:microSD.c     **** }
   88:microSD.c     **** 
   89:microSD.c     **** void InitSdInterface(void)
@@ -134,56 +105,16 @@
   93:microSD.c     **** // All instructions, addresses, and data are transferred with the most significant bit (MSb) first.
   94:microSD.c     **** // We're starting with SCK = (Fosc / 4) or 5MHz with a 20MHz crystal.
   95:microSD.c     **** {
-  45               		.loc 1 95 0
-  46               		.cfi_startproc
-  47               	/* prologue: function */
-  48               	/* frame size = 0 */
-  49               	/* stack size = 0 */
-  50               	.L__stack_usage = 0
   96:microSD.c     **** 	PRR&=~(1<<PRUSART1);				// Power on the UART.
-  51               		.loc 1 96 0
-  52 001c E4E6      		ldi r30,lo8(100)
-  53 001e F0E0      		ldi r31,0
-  54 0020 8081      		ld r24,Z
-  55 0022 8F7E      		andi r24,lo8(-17)
-  56 0024 8083      		st Z,r24
   97:microSD.c     **** 	UBRR1=0;							// The baud rate register must be 0 when the transmitter is enabled.
-  57               		.loc 1 97 0
-  58 0026 ECEC      		ldi r30,lo8(-52)
-  59 0028 F0E0      		ldi r31,0
-  60 002a 1182      		std Z+1,__zero_reg__
-  61 002c 1082      		st Z,__zero_reg__
   98:microSD.c     **** 	DDRD|=(Om_SD_CLK);					// Set the XCK1 (normally the UART external clock, now the SCK out) to an o
-  62               		.loc 1 98 0
-  63 002e 549A      		sbi 0xa,4
   99:microSD.c     **** 	UCSR1C=((1<<UMSEL11) | (1<<UMSEL10));	// Set the USART to MPSIM mode, SPI mode 0, MSB first.
-  64               		.loc 1 99 0
-  65 0030 80EC      		ldi r24,lo8(-64)
-  66 0032 8093 CA00 		sts 202,r24
  100:microSD.c     **** 	UCSR1B=((1<<RXEN1)|(1<<TXEN1)); 	// Enable the transmitter and receiver.
-  67               		.loc 1 100 0
-  68 0036 88E1      		ldi r24,lo8(24)
-  69 0038 8093 C900 		sts 201,r24
  101:microSD.c     **** 	UBRR1=1;							// According to the datasheet this should be "5MBaud" or a 5MHz clock.  NOTE:  The 
-  70               		.loc 1 101 0
-  71 003c 81E0      		ldi r24,lo8(1)
-  72 003e 90E0      		ldi r25,0
-  73 0040 9183      		std Z+1,r25
-  74 0042 8083      		st Z,r24
  102:microSD.c     **** //	UBRR1=99;							// 100kHz clock for testing
  103:microSD.c     **** 
  104:microSD.c     **** 	DDRD|=Om_SD_CS;			// CS pin to output.
-  75               		.loc 1 104 0
-  76 0044 559A      		sbi 0xa,5
  105:microSD.c     **** 	PORTD|=Om_SD_CS;		// And start with CS high.
-  77               		.loc 1 105 0
-  78 0046 5D9A      		sbi 0xb,5
-  79 0048 0895      		ret
-  80               		.cfi_endproc
-  81               	.LFE2:
-  83               	.global	EndSdTransfer
-  85               	EndSdTransfer:
-  86               	.LFB3:
  106:microSD.c     **** }
  107:microSD.c     **** 
  108:microSD.c     **** //-----------------------------------------------------------------------
@@ -195,45 +126,15 @@
  114:microSD.c     **** void EndSdTransfer(void)
  115:microSD.c     **** // This ends an SPI transfer.  If called while the CS line is already high or there is no transfer 
  116:microSD.c     **** {
-  87               		.loc 1 116 0
-  88               		.cfi_startproc
-  89               	/* prologue: function */
-  90               	/* frame size = 0 */
-  91               	/* stack size = 0 */
-  92               	.L__stack_usage = 0
  117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
-  93               		.loc 1 117 0
-  94 004a 5D9A      		sbi 0xb,5
-  95 004c 0895      		ret
-  96               		.cfi_endproc
-  97               	.LFE3:
-  99               	.global	StartSdTransfer
- 101               	StartSdTransfer:
- 102               	.LFB4:
  118:microSD.c     **** }
  119:microSD.c     **** 
  120:microSD.c     **** void StartSdTransfer(void)
  121:microSD.c     **** // Just bring the Chip Select (Slave Select) line from high to low.
  122:microSD.c     **** // This will abort and restart a transfer if called in  the middle of a transfer process.
  123:microSD.c     **** {
- 103               		.loc 1 123 0
- 104               		.cfi_startproc
- 105               	/* prologue: function */
- 106               	/* frame size = 0 */
- 107               	/* stack size = 0 */
- 108               	.L__stack_usage = 0
  124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
- 109               		.loc 1 124 0
- 110 004e 5D9A      		sbi 0xb,5
  125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
- 111               		.loc 1 125 0
- 112 0050 5D98      		cbi 0xb,5
- 113 0052 0895      		ret
- 114               		.cfi_endproc
- 115               	.LFE4:
- 117               	.global	TransferSdByte
- 119               	TransferSdByte:
- 120               	.LFB5:
  126:microSD.c     **** }
  127:microSD.c     **** 
  128:microSD.c     **** unsigned char TransferSdByte(unsigned char theByte)
@@ -244,79 +145,223 @@
  133:microSD.c     **** // NOTE: Tue Oct 14 23:07:27 CDT 2008
  134:microSD.c     **** // This is a little different now with the UART hardware.  The UART is double buffered and the exam
  135:microSD.c     **** {
- 121               		.loc 1 135 0
- 122               		.cfi_startproc
- 123               	/* prologue: function */
- 124               	/* frame size = 0 */
- 125               	/* stack size = 0 */
- 126               	.L__stack_usage = 0
- 127               	.LVL0:
- 128               	.L6:
  136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
- 129               		.loc 1 136 0 discriminator 1
- 130 0054 9091 C800 		lds r25,200
- 131 0058 95FF      		sbrs r25,5
- 132 005a 00C0      		rjmp .L6
  137:microSD.c     **** 		;
  138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
- 133               		.loc 1 138 0
- 134 005c 8093 CE00 		sts 206,r24
- 135               	.LVL1:
- 136               	.L7:
  139:microSD.c     **** 
  140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
- 137               		.loc 1 140 0 discriminator 1
- 138 0060 8091 C800 		lds r24,200
- 139 0064 87FF      		sbrs r24,7
- 140 0066 00C0      		rjmp .L7
  141:microSD.c     **** 		;
  142:microSD.c     **** 
  143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
- 141               		.loc 1 143 0
- 142 0068 8091 CE00 		lds r24,206
  144:microSD.c     **** }
- 143               		.loc 1 144 0
- 144 006c 0895      		ret
- 145               		.cfi_endproc
- 146               	.LFE5:
- 149               	SendDummyByte:
- 150               	.LFB6:
  145:microSD.c     **** 
  146:microSD.c     **** static void SendDummyByte(void)
  147:microSD.c     **** // Needed to sync the card in some weird cases
  148:microSD.c     **** {
- 151               		.loc 1 148 0
- 152               		.cfi_startproc
- 153               	/* prologue: function */
- 154               	/* frame size = 0 */
- 155               	/* stack size = 0 */
- 156               	.L__stack_usage = 0
+  14               		.loc 1 148 0
+  15               		.cfi_startproc
+  16               	/* prologue: function */
+  17               	/* frame size = 0 */
+  18               	/* stack size = 0 */
+  19               	.L__stack_usage = 0
  149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
- 157               		.loc 1 149 0
- 158 006e 8091 C800 		lds r24,200
- 159 0072 8064      		ori r24,lo8(64)
- 160 0074 8093 C800 		sts 200,r24
+  20               		.loc 1 149 0
+  21 0000 8091 C800 		lds r24,200
+  22 0004 8064      		ori r24,lo8(64)
+  23 0006 8093 C800 		sts 200,r24
+  24               	.LVL0:
+  25               	.L2:
+  26               	.LBB86:
+  27               	.LBB87:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+  28               		.loc 1 136 0
+  29 000a 8091 C800 		lds r24,200
+  30 000e 85FF      		sbrs r24,5
+  31 0010 00C0      		rjmp .L2
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+  32               		.loc 1 138 0
+  33 0012 8FEF      		ldi r24,lo8(-1)
+  34 0014 8093 CE00 		sts 206,r24
+  35               	.L3:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+  36               		.loc 1 140 0
+  37 0018 8091 C800 		lds r24,200
+  38 001c 87FF      		sbrs r24,7
+  39 001e 00C0      		rjmp .L3
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+  40               		.loc 1 143 0
+  41 0020 8091 CE00 		lds r24,206
+  42               	.L4:
+  43               	.LBE87:
+  44               	.LBE86:
  150:microSD.c     **** 	TransferSdByte(0xFF);	
- 161               		.loc 1 150 0
- 162 0078 8FEF      		ldi r24,lo8(-1)
- 163 007a 0E94 0000 		call TransferSdByte
- 164               	.LVL2:
- 165               	.L14:
  151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
- 166               		.loc 1 151 0 discriminator 1
- 167 007e 8091 C800 		lds r24,200
- 168 0082 86FF      		sbrs r24,6
- 169 0084 00C0      		rjmp .L14
- 170               	/* epilogue start */
+  45               		.loc 1 151 0 discriminator 1
+  46 0024 8091 C800 		lds r24,200
+  47 0028 86FF      		sbrs r24,6
+  48 002a 00C0      		rjmp .L4
+  49               	/* epilogue start */
  152:microSD.c     **** 		;
  153:microSD.c     **** }
- 171               		.loc 1 153 0
- 172 0086 0895      		ret
- 173               		.cfi_endproc
- 174               	.LFE6:
- 176               	.global	SendSdCommand
- 178               	SendSdCommand:
- 179               	.LFB7:
+  50               		.loc 1 153 0
+  51 002c 0895      		ret
+  52               		.cfi_endproc
+  53               	.LFE6:
+  55               	.global	UnInitSdInterface
+  57               	UnInitSdInterface:
+  58               	.LFB1:
+  82:microSD.c     **** {
+  59               		.loc 1 82 0
+  60               		.cfi_startproc
+  61               	/* prologue: function */
+  62               	/* frame size = 0 */
+  63               	/* stack size = 0 */
+  64               	.L__stack_usage = 0
+  83:microSD.c     **** 	DDRD&=~(Om_SD_CS|Om_SD_CLK);	// Flash specific outputs back to inputs.
+  65               		.loc 1 83 0
+  66 002e 8AB1      		in r24,0xa
+  67 0030 8F7C      		andi r24,lo8(-49)
+  68 0032 8AB9      		out 0xa,r24
+  84:microSD.c     **** 	PORTD|=(Om_SD_CS|Om_SD_CLK);	// Pullup pins so they don't float
+  69               		.loc 1 84 0
+  70 0034 8BB1      		in r24,0xb
+  71 0036 8063      		ori r24,lo8(48)
+  72 0038 8BB9      		out 0xb,r24
+  85:microSD.c     **** 	UCSR1B=0;						// Disable transmission / reception
+  73               		.loc 1 85 0
+  74 003a 1092 C900 		sts 201,__zero_reg__
+  86:microSD.c     **** 	PRR|=(1<<PRUSART1);				// Power off the UART.	
+  75               		.loc 1 86 0
+  76 003e E4E6      		ldi r30,lo8(100)
+  77 0040 F0E0      		ldi r31,0
+  78 0042 8081      		ld r24,Z
+  79 0044 8061      		ori r24,lo8(16)
+  80 0046 8083      		st Z,r24
+  81 0048 0895      		ret
+  82               		.cfi_endproc
+  83               	.LFE1:
+  85               	.global	InitSdInterface
+  87               	InitSdInterface:
+  88               	.LFB2:
+  95:microSD.c     **** {
+  89               		.loc 1 95 0
+  90               		.cfi_startproc
+  91               	/* prologue: function */
+  92               	/* frame size = 0 */
+  93               	/* stack size = 0 */
+  94               	.L__stack_usage = 0
+  96:microSD.c     **** 	PRR&=~(1<<PRUSART1);				// Power on the UART.
+  95               		.loc 1 96 0
+  96 004a E4E6      		ldi r30,lo8(100)
+  97 004c F0E0      		ldi r31,0
+  98 004e 8081      		ld r24,Z
+  99 0050 8F7E      		andi r24,lo8(-17)
+ 100 0052 8083      		st Z,r24
+  97:microSD.c     **** 	UBRR1=0;							// The baud rate register must be 0 when the transmitter is enabled.
+ 101               		.loc 1 97 0
+ 102 0054 ECEC      		ldi r30,lo8(-52)
+ 103 0056 F0E0      		ldi r31,0
+ 104 0058 1182      		std Z+1,__zero_reg__
+ 105 005a 1082      		st Z,__zero_reg__
+  98:microSD.c     **** 	DDRD|=(Om_SD_CLK);					// Set the XCK1 (normally the UART external clock, now the SCK out) to an o
+ 106               		.loc 1 98 0
+ 107 005c 549A      		sbi 0xa,4
+  99:microSD.c     **** 	UCSR1C=((1<<UMSEL11) | (1<<UMSEL10));	// Set the USART to MPSIM mode, SPI mode 0, MSB first.
+ 108               		.loc 1 99 0
+ 109 005e 80EC      		ldi r24,lo8(-64)
+ 110 0060 8093 CA00 		sts 202,r24
+ 100:microSD.c     **** 	UCSR1B=((1<<RXEN1)|(1<<TXEN1)); 	// Enable the transmitter and receiver.
+ 111               		.loc 1 100 0
+ 112 0064 88E1      		ldi r24,lo8(24)
+ 113 0066 8093 C900 		sts 201,r24
+ 101:microSD.c     **** 	UBRR1=1;							// According to the datasheet this should be "5MBaud" or a 5MHz clock.  NOTE:  The 
+ 114               		.loc 1 101 0
+ 115 006a 81E0      		ldi r24,lo8(1)
+ 116 006c 90E0      		ldi r25,0
+ 117 006e 9183      		std Z+1,r25
+ 118 0070 8083      		st Z,r24
+ 104:microSD.c     **** 	DDRD|=Om_SD_CS;			// CS pin to output.
+ 119               		.loc 1 104 0
+ 120 0072 559A      		sbi 0xa,5
+ 105:microSD.c     **** 	PORTD|=Om_SD_CS;		// And start with CS high.
+ 121               		.loc 1 105 0
+ 122 0074 5D9A      		sbi 0xb,5
+ 123 0076 0895      		ret
+ 124               		.cfi_endproc
+ 125               	.LFE2:
+ 127               	.global	EndSdTransfer
+ 129               	EndSdTransfer:
+ 130               	.LFB3:
+ 116:microSD.c     **** {
+ 131               		.loc 1 116 0
+ 132               		.cfi_startproc
+ 133               	/* prologue: function */
+ 134               	/* frame size = 0 */
+ 135               	/* stack size = 0 */
+ 136               	.L__stack_usage = 0
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 137               		.loc 1 117 0
+ 138 0078 5D9A      		sbi 0xb,5
+ 139 007a 0895      		ret
+ 140               		.cfi_endproc
+ 141               	.LFE3:
+ 143               	.global	StartSdTransfer
+ 145               	StartSdTransfer:
+ 146               	.LFB4:
+ 123:microSD.c     **** {
+ 147               		.loc 1 123 0
+ 148               		.cfi_startproc
+ 149               	/* prologue: function */
+ 150               	/* frame size = 0 */
+ 151               	/* stack size = 0 */
+ 152               	.L__stack_usage = 0
+ 124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 153               		.loc 1 124 0
+ 154 007c 5D9A      		sbi 0xb,5
+ 125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
+ 155               		.loc 1 125 0
+ 156 007e 5D98      		cbi 0xb,5
+ 157 0080 0895      		ret
+ 158               		.cfi_endproc
+ 159               	.LFE4:
+ 161               	.global	TransferSdByte
+ 163               	TransferSdByte:
+ 164               	.LFB5:
+ 135:microSD.c     **** {
+ 165               		.loc 1 135 0
+ 166               		.cfi_startproc
+ 167               	/* prologue: function */
+ 168               	/* frame size = 0 */
+ 169               	/* stack size = 0 */
+ 170               	.L__stack_usage = 0
+ 171               	.LVL1:
+ 172               	.L20:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 173               		.loc 1 136 0 discriminator 1
+ 174 0082 9091 C800 		lds r25,200
+ 175 0086 95FF      		sbrs r25,5
+ 176 0088 00C0      		rjmp .L20
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 177               		.loc 1 138 0
+ 178 008a 8093 CE00 		sts 206,r24
+ 179               	.LVL2:
+ 180               	.L21:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 181               		.loc 1 140 0 discriminator 1
+ 182 008e 8091 C800 		lds r24,200
+ 183 0092 87FF      		sbrs r24,7
+ 184 0094 00C0      		rjmp .L21
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 185               		.loc 1 143 0
+ 186 0096 8091 CE00 		lds r24,206
+ 144:microSD.c     **** }
+ 187               		.loc 1 144 0
+ 188 009a 0895      		ret
+ 189               		.cfi_endproc
+ 190               	.LFE5:
+ 192               	.global	SendSdCommand
+ 194               	SendSdCommand:
+ 195               	.LFB7:
  154:microSD.c     **** 
  155:microSD.c     **** //-----------------------------------------------------------------------
  156:microSD.c     **** //-----------------------------------------------------------------------
@@ -330,250 +375,303 @@
  164:microSD.c     **** // This function will always assert CS, since it's needed to give a command, however frequently it 
  165:microSD.c     **** // That means the caller must remember to bring it high again when they're done.
  166:microSD.c     **** {
- 180               		.loc 1 166 0
- 181               		.cfi_startproc
- 182               	.LVL3:
- 183 0088 DF92      		push r13
- 184               	.LCFI0:
- 185               		.cfi_def_cfa_offset 3
- 186               		.cfi_offset 13, -2
- 187 008a EF92      		push r14
- 188               	.LCFI1:
- 189               		.cfi_def_cfa_offset 4
- 190               		.cfi_offset 14, -3
- 191 008c FF92      		push r15
- 192               	.LCFI2:
- 193               		.cfi_def_cfa_offset 5
- 194               		.cfi_offset 15, -4
- 195 008e 0F93      		push r16
- 196               	.LCFI3:
- 197               		.cfi_def_cfa_offset 6
- 198               		.cfi_offset 16, -5
- 199 0090 1F93      		push r17
- 200               	.LCFI4:
- 201               		.cfi_def_cfa_offset 7
- 202               		.cfi_offset 17, -6
- 203 0092 CF93      		push r28
- 204               	.LCFI5:
- 205               		.cfi_def_cfa_offset 8
- 206               		.cfi_offset 28, -7
- 207 0094 DF93      		push r29
- 208               	.LCFI6:
- 209               		.cfi_def_cfa_offset 9
- 210               		.cfi_offset 29, -8
- 211               	/* prologue: function */
- 212               	/* frame size = 0 */
- 213               	/* stack size = 7 */
- 214               	.L__stack_usage = 7
- 215 0096 C82F      		mov r28,r24
- 216 0098 042F      		mov r16,r20
- 217 009a F52E      		mov r15,r21
- 218 009c E62E      		mov r14,r22
- 219 009e D72E      		mov r13,r23
+ 196               		.loc 1 166 0
+ 197               		.cfi_startproc
+ 198               	.LVL3:
+ 199               	/* prologue: function */
+ 200               	/* frame size = 0 */
+ 201               	/* stack size = 0 */
+ 202               	.L__stack_usage = 0
+ 203 009c E82F      		mov r30,r24
+ 204               	.LBB134:
+ 205               	.LBB135:
+ 124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 206               		.loc 1 124 0
+ 207 009e 5D9A      		sbi 0xb,5
+ 125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
+ 208               		.loc 1 125 0
+ 209 00a0 5D98      		cbi 0xb,5
+ 210               	.L28:
+ 211               	.LBE135:
+ 212               	.LBE134:
+ 213               	.LBB136:
+ 214               	.LBB137:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 215               		.loc 1 136 0
+ 216 00a2 9091 C800 		lds r25,200
+ 217 00a6 95FF      		sbrs r25,5
+ 218 00a8 00C0      		rjmp .L28
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 219               		.loc 1 138 0
+ 220 00aa 8FEF      		ldi r24,lo8(-1)
+ 221               	.LVL4:
+ 222 00ac 8093 CE00 		sts 206,r24
+ 223               	.L29:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 224               		.loc 1 140 0
+ 225 00b0 9091 C800 		lds r25,200
+ 226 00b4 97FF      		sbrs r25,7
+ 227 00b6 00C0      		rjmp .L29
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 228               		.loc 1 143 0
+ 229 00b8 8091 CE00 		lds r24,206
+ 230               	.LBE137:
+ 231               	.LBE136:
  167:microSD.c     **** 	unsigned char
  168:microSD.c     **** 		i,
  169:microSD.c     **** 		response,
  170:microSD.c     **** 		tmpCrc;
  171:microSD.c     **** 
  172:microSD.c     **** 	StartSdTransfer();		// Assert CS
- 220               		.loc 1 172 0
- 221 00a0 0E94 0000 		call StartSdTransfer
- 222               	.LVL4:
  173:microSD.c     **** 	TransferSdByte(0xFF);	// Initial pad to make sure card is in the correct state for the command.
- 223               		.loc 1 173 0
- 224 00a4 8FEF      		ldi r24,lo8(-1)
- 225 00a6 0E94 0000 		call TransferSdByte
- 226               	.LVL5:
  174:microSD.c     **** 
  175:microSD.c     **** 	if(cmdIndex&0x80)	// We mark an ACMD with a 1 in bit 7 (no commands have this; the start bit is al
- 227               		.loc 1 175 0
- 228 00aa C7FF      		sbrs r28,7
- 229 00ac 00C0      		rjmp .L20
+ 232               		.loc 1 175 0
+ 233 00bc E7FD      		sbrc r30,7
+ 234 00be 00C0      		rjmp .L126
+ 235               	.L30:
  176:microSD.c     **** 	{
  177:microSD.c     **** 		TransferSdByte(0x40|CMD55);		// Put the start and transmission bits on the front of the command i
- 230               		.loc 1 177 0
- 231 00ae 87E7      		ldi r24,lo8(119)
- 232 00b0 0E94 0000 		call TransferSdByte
- 233               	.LVL6:
  178:microSD.c     **** 		TransferSdByte(0);				// No argument			
- 234               		.loc 1 178 0
- 235 00b4 80E0      		ldi r24,0
- 236 00b6 0E94 0000 		call TransferSdByte
- 237               	.LVL7:
  179:microSD.c     **** 		TransferSdByte(0);				// No argument			
- 238               		.loc 1 179 0
- 239 00ba 80E0      		ldi r24,0
- 240 00bc 0E94 0000 		call TransferSdByte
- 241               	.LVL8:
  180:microSD.c     **** 		TransferSdByte(0);				// No argument			
- 242               		.loc 1 180 0
- 243 00c0 80E0      		ldi r24,0
- 244 00c2 0E94 0000 		call TransferSdByte
- 245               	.LVL9:
  181:microSD.c     **** 		TransferSdByte(0);				// No argument					
- 246               		.loc 1 181 0
- 247 00c6 80E0      		ldi r24,0
- 248 00c8 0E94 0000 		call TransferSdByte
- 249               	.LVL10:
  182:microSD.c     **** 		TransferSdByte(0x01);			// Send the CRC7 byte (and stop bit)
- 250               		.loc 1 182 0
- 251 00cc 81E0      		ldi r24,lo8(1)
- 252 00ce 0E94 0000 		call TransferSdByte
- 253               	.LVL11:
- 254 00d2 1AE0      		ldi r17,lo8(10)
- 255               	.LVL12:
- 256               	.L22:
  183:microSD.c     **** 
  184:microSD.c     **** 		i=10;		// Give the SD card a 10 byte timeout in which to respond.
  185:microSD.c     **** 		do			
  186:microSD.c     **** 		{
  187:microSD.c     **** 			response=TransferSdByte(DUMMY_BYTE);		// Get response byte
- 257               		.loc 1 187 0 discriminator 1
- 258 00d4 8FEF      		ldi r24,lo8(-1)
- 259 00d6 0E94 0000 		call TransferSdByte
- 260               	.LVL13:
- 261 00da D82F      		mov r29,r24
- 262               	.LVL14:
  188:microSD.c     **** 		}
  189:microSD.c     **** 		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 b
- 263               		.loc 1 189 0 discriminator 1
- 264 00dc 8F3F      		cpi r24,lo8(-1)
- 265 00de 01F4      		brne .L21
- 266 00e0 1150      		subi r17,lo8(-(-1))
- 267 00e2 01F4      		brne .L22
- 268               	.L21:
  190:microSD.c     **** 
  191:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
- 269               		.loc 1 191 0
- 270 00e4 9091 C800 		lds r25,200
- 271 00e8 9064      		ori r25,lo8(64)
- 272 00ea 9093 C800 		sts 200,r25
  192:microSD.c     **** 		TransferSdByte(0xFF);		//	@@@ -- SOME CARDS NEED THIS.  See notes.
- 273               		.loc 1 192 0
- 274 00ee 8FEF      		ldi r24,lo8(-1)
- 275               	.LVL15:
- 276 00f0 0E94 0000 		call TransferSdByte
- 277               	.LVL16:
- 278               	.L23:
  193:microSD.c     **** 		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
- 279               		.loc 1 193 0 discriminator 1
- 280 00f4 8091 C800 		lds r24,200
- 281 00f8 86FF      		sbrs r24,6
- 282 00fa 00C0      		rjmp .L23
  194:microSD.c     **** 			;
  195:microSD.c     **** 
  196:microSD.c     **** 		if(response>1)				// Something wrong?
- 283               		.loc 1 196 0
- 284 00fc D230      		cpi r29,lo8(2)
- 285 00fe 00F0      		brlo .L24
  197:microSD.c     **** 		{
  198:microSD.c     **** 			EndSdTransfer();	// Bring CS high
- 286               		.loc 1 198 0
- 287 0100 0E94 0000 		call EndSdTransfer
- 288               	.LVL17:
  199:microSD.c     **** 			return(response);	// ACMD preambe returned something weird.  Bail.
- 289               		.loc 1 199 0
- 290 0104 00C0      		rjmp .L25
- 291               	.L24:
  200:microSD.c     **** 		}
  201:microSD.c     **** 
  202:microSD.c     **** 		EndSdTransfer();	// Bring CS high
- 292               		.loc 1 202 0
- 293 0106 0E94 0000 		call EndSdTransfer
- 294               	.LVL18:
  203:microSD.c     **** 		cmdIndex&=0x7F;		// Handled ACMD, so get rid of leading marker bit
- 295               		.loc 1 203 0
- 296 010a CF77      		andi r28,lo8(127)
- 297               	.LVL19:
  204:microSD.c     **** 		StartSdTransfer();	// Assert CS
- 298               		.loc 1 204 0
- 299 010c 0E94 0000 		call StartSdTransfer
- 300               	.LVL20:
- 301               	.L20:
  205:microSD.c     **** 	}
  206:microSD.c     **** 
  207:microSD.c     **** 	// Handled beginning an "application specific" command above, so do proper part of command now (co
  208:microSD.c     **** 		
  209:microSD.c     **** 	TransferSdByte(0x40|cmdIndex);						// Put the start and transmission bits on the front of the com
- 302               		.loc 1 209 0
- 303 0110 8C2F      		mov r24,r28
- 304 0112 8064      		ori r24,lo8(64)
- 305 0114 0E94 0000 		call TransferSdByte
- 306               	.LVL21:
+ 236               		.loc 1 209 0
+ 237 00c0 8E2F      		mov r24,r30
+ 238 00c2 8064      		ori r24,lo8(64)
+ 239               	.LVL5:
+ 240               	.L52:
+ 241               	.LBB138:
+ 242               	.LBB139:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 243               		.loc 1 136 0
+ 244 00c4 9091 C800 		lds r25,200
+ 245 00c8 95FF      		sbrs r25,5
+ 246 00ca 00C0      		rjmp .L52
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 247               		.loc 1 138 0
+ 248 00cc 8093 CE00 		sts 206,r24
+ 249               	.L53:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 250               		.loc 1 140 0
+ 251 00d0 9091 C800 		lds r25,200
+ 252 00d4 97FF      		sbrs r25,7
+ 253 00d6 00C0      		rjmp .L53
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 254               		.loc 1 143 0
+ 255 00d8 8091 CE00 		lds r24,206
+ 256               	.LVL6:
+ 257               	.L54:
+ 258               	.LBE139:
+ 259               	.LBE138:
+ 260               	.LBB140:
+ 261               	.LBB141:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 262               		.loc 1 136 0
+ 263 00dc 9091 C800 		lds r25,200
+ 264 00e0 95FF      		sbrs r25,5
+ 265 00e2 00C0      		rjmp .L54
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 266               		.loc 1 138 0
+ 267 00e4 7093 CE00 		sts 206,r23
+ 268               	.L55:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 269               		.loc 1 140 0
+ 270 00e8 9091 C800 		lds r25,200
+ 271 00ec 97FF      		sbrs r25,7
+ 272 00ee 00C0      		rjmp .L55
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 273               		.loc 1 143 0
+ 274 00f0 8091 CE00 		lds r24,206
+ 275               	.LVL7:
+ 276               	.L56:
+ 277               	.LBE141:
+ 278               	.LBE140:
+ 279               	.LBB142:
+ 280               	.LBB143:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 281               		.loc 1 136 0
+ 282 00f4 9091 C800 		lds r25,200
+ 283 00f8 95FF      		sbrs r25,5
+ 284 00fa 00C0      		rjmp .L56
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 285               		.loc 1 138 0
+ 286 00fc 6093 CE00 		sts 206,r22
+ 287               	.L57:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 288               		.loc 1 140 0
+ 289 0100 9091 C800 		lds r25,200
+ 290 0104 97FF      		sbrs r25,7
+ 291 0106 00C0      		rjmp .L57
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 292               		.loc 1 143 0
+ 293 0108 8091 CE00 		lds r24,206
+ 294               	.LVL8:
+ 295               	.L58:
+ 296               	.LBE143:
+ 297               	.LBE142:
+ 298               	.LBB144:
+ 299               	.LBB145:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 300               		.loc 1 136 0
+ 301 010c 9091 C800 		lds r25,200
+ 302 0110 95FF      		sbrs r25,5
+ 303 0112 00C0      		rjmp .L58
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 304               		.loc 1 138 0
+ 305 0114 5093 CE00 		sts 206,r21
+ 306               	.L59:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 307               		.loc 1 140 0
+ 308 0118 9091 C800 		lds r25,200
+ 309 011c 97FF      		sbrs r25,7
+ 310 011e 00C0      		rjmp .L59
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 311               		.loc 1 143 0
+ 312 0120 8091 CE00 		lds r24,206
+ 313               	.LVL9:
+ 314               	.L60:
+ 315               	.LBE145:
+ 316               	.LBE144:
+ 317               	.LBB146:
+ 318               	.LBB147:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 319               		.loc 1 136 0
+ 320 0124 9091 C800 		lds r25,200
+ 321 0128 95FF      		sbrs r25,5
+ 322 012a 00C0      		rjmp .L60
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 323               		.loc 1 138 0
+ 324 012c 4093 CE00 		sts 206,r20
+ 325               	.L61:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 326               		.loc 1 140 0
+ 327 0130 9091 C800 		lds r25,200
+ 328 0134 97FF      		sbrs r25,7
+ 329 0136 00C0      		rjmp .L61
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 330               		.loc 1 143 0
+ 331 0138 8091 CE00 		lds r24,206
+ 332               	.LVL10:
+ 333               	.LBE147:
+ 334               	.LBE146:
  210:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>24));		// MSB of argument
- 307               		.loc 1 210 0
- 308 0118 8D2D      		mov r24,r13
- 309 011a 0E94 0000 		call TransferSdByte
- 310               	.LVL22:
  211:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>16));		// next byte of argument
- 311               		.loc 1 211 0
- 312 011e 8E2D      		mov r24,r14
- 313 0120 0E94 0000 		call TransferSdByte
- 314               	.LVL23:
  212:microSD.c     **** 	TransferSdByte((unsigned char)(argument>>8));		// next byte of argument
- 315               		.loc 1 212 0
- 316 0124 8F2D      		mov r24,r15
- 317 0126 0E94 0000 		call TransferSdByte
- 318               	.LVL24:
  213:microSD.c     **** 	TransferSdByte((unsigned char)argument);			// LSB of argument
- 319               		.loc 1 213 0
- 320 012a 802F      		mov r24,r16
- 321 012c 0E94 0000 		call TransferSdByte
- 322               	.LVL25:
  214:microSD.c     **** 	
  215:microSD.c     **** 	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
  216:microSD.c     **** 
  217:microSD.c     **** 	if(cmdIndex==CMD0)	// except here where we actually need a real CRC
- 323               		.loc 1 217 0
- 324 0130 CC23      		tst r28
- 325 0132 01F0      		breq .L31
+ 335               		.loc 1 217 0
+ 336 013c EE23      		tst r30
+ 337 013e 01F4      		brne .+2
+ 338 0140 00C0      		rjmp .L76
  218:microSD.c     **** 	{
  219:microSD.c     **** 		tmpCrc=0x95;
  220:microSD.c     **** 	}
  221:microSD.c     **** 	if(cmdIndex==CMD8)	// and here where we actually need a real CRC
- 326               		.loc 1 221 0
- 327 0134 C830      		cpi r28,lo8(8)
- 328 0136 01F0      		breq .L32
- 215:microSD.c     **** 	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
- 329               		.loc 1 215 0
- 330 0138 81E0      		ldi r24,lo8(1)
- 331 013a 00C0      		rjmp .L27
- 332               	.L31:
- 219:microSD.c     **** 		tmpCrc=0x95;
- 333               		.loc 1 219 0
- 334 013c 85E9      		ldi r24,lo8(-107)
- 335 013e 00C0      		rjmp .L27
- 336               	.L32:
+ 339               		.loc 1 221 0
+ 340 0142 E830      		cpi r30,lo8(8)
+ 341 0144 01F0      		breq .+2
+ 342 0146 00C0      		rjmp .L189
  222:microSD.c     **** 	{
  223:microSD.c     **** 		tmpCrc=0x87;
- 337               		.loc 1 223 0
- 338 0140 87E8      		ldi r24,lo8(-121)
- 339               	.L27:
- 340               	.LVL26:
+ 343               		.loc 1 223 0
+ 344 0148 87E8      		ldi r24,lo8(-121)
+ 345               	.LVL11:
+ 346               	.L125:
+ 347               	.LBB148:
+ 348               	.LBB149:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 349               		.loc 1 136 0
+ 350 014a 9091 C800 		lds r25,200
+ 351 014e 95FF      		sbrs r25,5
+ 352 0150 00C0      		rjmp .L125
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 353               		.loc 1 138 0
+ 354 0152 8093 CE00 		sts 206,r24
+ 355               	.L65:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 356               		.loc 1 140 0
+ 357 0156 9091 C800 		lds r25,200
+ 358 015a 97FF      		sbrs r25,7
+ 359 015c 00C0      		rjmp .L65
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 360               		.loc 1 143 0
+ 361 015e 8091 CE00 		lds r24,206
+ 362               	.LBE149:
+ 363               	.LBE148:
  224:microSD.c     **** 	}
  225:microSD.c     **** 	
  226:microSD.c     **** 	TransferSdByte(tmpCrc);		// Send the CRC7 byte
- 341               		.loc 1 226 0
- 342 0142 0E94 0000 		call TransferSdByte
- 343               	.LVL27:
  227:microSD.c     **** 	
  228:microSD.c     **** 	// Now handle a response.
  229:microSD.c     **** 	
  230:microSD.c     **** 	if(cmdIndex==CMD12)	// This is a stop transmission command -- one byte of padding comes in before 
- 344               		.loc 1 230 0
- 345 0146 CC30      		cpi r28,lo8(12)
- 346 0148 01F4      		brne .L28
+ 364               		.loc 1 230 0
+ 365 0162 EC30      		cpi r30,lo8(12)
+ 366 0164 01F4      		brne .+2
+ 367 0166 00C0      		rjmp .L124
+ 368               	.L66:
+ 223:microSD.c     **** 		tmpCrc=0x87;
+ 369               		.loc 1 223 0 discriminator 1
+ 370 0168 2AE0      		ldi r18,lo8(10)
+ 371               	.LBB150:
+ 372               	.LBB151:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 373               		.loc 1 138 0 discriminator 1
+ 374 016a 3FEF      		ldi r19,lo8(-1)
+ 375               	.L188:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 376               		.loc 1 136 0
+ 377 016c 9091 C800 		lds r25,200
+ 378 0170 95FF      		sbrs r25,5
+ 379 0172 00C0      		rjmp .L188
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 380               		.loc 1 138 0
+ 381 0174 3093 CE00 		sts 206,r19
+ 382               	.L70:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 383               		.loc 1 140 0
+ 384 0178 9091 C800 		lds r25,200
+ 385 017c 97FF      		sbrs r25,7
+ 386 017e 00C0      		rjmp .L70
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 387               		.loc 1 143 0
+ 388 0180 8091 CE00 		lds r24,206
+ 389               	.LBE151:
+ 390               	.LBE150:
  231:microSD.c     **** 	{
  232:microSD.c     **** 		TransferSdByte(DUMMY_BYTE);		// Skip "stuff byte".
- 347               		.loc 1 232 0
- 348 014a 8FEF      		ldi r24,lo8(-1)
- 349 014c 0E94 0000 		call TransferSdByte
- 350               	.LVL28:
- 351               	.L28:
- 223:microSD.c     **** 		tmpCrc=0x87;
- 352               		.loc 1 223 0 discriminator 1
- 353 0150 1AE0      		ldi r17,lo8(10)
- 354               	.L30:
  233:microSD.c     **** 	}
  234:microSD.c     **** 	
  235:microSD.c     **** 	i=10;		// Give the SD card a 10 byte timeout in which to respond.
@@ -581,57 +679,358 @@
  237:microSD.c     **** 	do			
  238:microSD.c     **** 	{
  239:microSD.c     **** 		response=TransferSdByte(DUMMY_BYTE);		// Get response byte
- 355               		.loc 1 239 0 discriminator 1
- 356 0152 8FEF      		ldi r24,lo8(-1)
- 357 0154 0E94 0000 		call TransferSdByte
- 358               	.LVL29:
- 359 0158 D82F      		mov r29,r24
- 360               	.LVL30:
  240:microSD.c     **** 	}
  241:microSD.c     **** 	while((response==0xFF)&&--i);				// A valid response has a leading zero.  Wait for that or for 10 
- 361               		.loc 1 241 0 discriminator 1
- 362 015a 8F3F      		cpi r24,lo8(-1)
- 363 015c 01F4      		brne .L29
- 364 015e 1150      		subi r17,lo8(-(-1))
- 365 0160 01F4      		brne .L30
- 366               	.L29:
+ 391               		.loc 1 241 0
+ 392 0184 8F3F      		cpi r24,lo8(-1)
+ 393 0186 01F4      		brne .L71
+ 394 0188 2150      		subi r18,lo8(-(-1))
+ 395               		.loc 1 241 0 is_stmt 0 discriminator 1
+ 396 018a 01F4      		brne .L188
+ 397               	.L71:
  242:microSD.c     **** 
  243:microSD.c     **** // If we're not a command which has a multi-byte response, put in an extra 0xFF here.
  244:microSD.c     **** 	if(cmdIndex!=CMD8&&cmdIndex!=CMD58)		// Add post-command padding.  We add this pad byte manually t
- 367               		.loc 1 244 0
- 368 0162 C830      		cpi r28,lo8(8)
- 369 0164 01F0      		breq .L25
- 370               		.loc 1 244 0 is_stmt 0 discriminator 1
- 371 0166 CA33      		cpi r28,lo8(58)
- 372 0168 01F0      		breq .L25
+ 398               		.loc 1 244 0 is_stmt 1
+ 399 018c E830      		cpi r30,lo8(8)
+ 400 018e 01F0      		breq .L51
+ 401               		.loc 1 244 0 is_stmt 0 discriminator 1
+ 402 0190 EA33      		cpi r30,lo8(58)
+ 403 0192 01F0      		breq .L51
+ 404               	.LBB152:
+ 405               	.LBB153:
+ 149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 406               		.loc 1 149 0 is_stmt 1
+ 407 0194 9091 C800 		lds r25,200
+ 408 0198 9064      		ori r25,lo8(64)
+ 409 019a 9093 C800 		sts 200,r25
+ 410               	.LVL12:
+ 411               	.L73:
+ 412               	.LBB154:
+ 413               	.LBB155:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 414               		.loc 1 136 0
+ 415 019e 9091 C800 		lds r25,200
+ 416 01a2 95FF      		sbrs r25,5
+ 417 01a4 00C0      		rjmp .L73
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 418               		.loc 1 138 0
+ 419 01a6 9FEF      		ldi r25,lo8(-1)
+ 420 01a8 9093 CE00 		sts 206,r25
+ 421               	.L74:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 422               		.loc 1 140 0
+ 423 01ac 9091 C800 		lds r25,200
+ 424 01b0 97FF      		sbrs r25,7
+ 425 01b2 00C0      		rjmp .L74
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 426               		.loc 1 143 0
+ 427 01b4 9091 CE00 		lds r25,206
+ 428               	.L75:
+ 429               	.LBE155:
+ 430               	.LBE154:
+ 151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 431               		.loc 1 151 0
+ 432 01b8 9091 C800 		lds r25,200
+ 433 01bc 96FF      		sbrs r25,6
+ 434 01be 00C0      		rjmp .L75
+ 435               	.LVL13:
+ 436               	.L51:
+ 437               	.LBE153:
+ 438               	.LBE152:
  245:microSD.c     **** 	{
  246:microSD.c     **** 		SendDummyByte();	
- 373               		.loc 1 246 0 is_stmt 1
- 374 016a 0E94 0000 		call SendDummyByte
- 375               	.LVL31:
- 376               	.L25:
  247:microSD.c     **** 	}
  248:microSD.c     **** 
  249:microSD.c     **** 	return(response);		// Will be 0xFF if we timed out.  This should almost always be 0 or 1.
  250:microSD.c     **** }
- 377               		.loc 1 250 0
- 378 016e 8D2F      		mov r24,r29
- 379               	/* epilogue start */
- 380 0170 DF91      		pop r29
- 381               	.LVL32:
- 382 0172 CF91      		pop r28
- 383               	.LVL33:
- 384 0174 1F91      		pop r17
- 385 0176 0F91      		pop r16
- 386 0178 FF90      		pop r15
- 387 017a EF90      		pop r14
- 388 017c DF90      		pop r13
- 389 017e 0895      		ret
- 390               		.cfi_endproc
- 391               	.LFE7:
- 393               	.global	SdHandshake
- 395               	SdHandshake:
- 396               	.LFB8:
+ 439               		.loc 1 250 0
+ 440 01c0 0895      		ret
+ 441               	.LVL14:
+ 442               	.L126:
+ 443               	.LBB156:
+ 444               	.LBB157:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 445               		.loc 1 136 0
+ 446 01c2 8091 C800 		lds r24,200
+ 447 01c6 85FF      		sbrs r24,5
+ 448 01c8 00C0      		rjmp .L126
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 449               		.loc 1 138 0
+ 450 01ca 87E7      		ldi r24,lo8(119)
+ 451 01cc 8093 CE00 		sts 206,r24
+ 452               	.L32:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 453               		.loc 1 140 0
+ 454 01d0 8091 C800 		lds r24,200
+ 455 01d4 87FF      		sbrs r24,7
+ 456 01d6 00C0      		rjmp .L32
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 457               		.loc 1 143 0
+ 458 01d8 8091 CE00 		lds r24,206
+ 459               	.LVL15:
+ 460               	.L33:
+ 461               	.LBE157:
+ 462               	.LBE156:
+ 463               	.LBB158:
+ 464               	.LBB159:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 465               		.loc 1 136 0
+ 466 01dc 8091 C800 		lds r24,200
+ 467 01e0 85FF      		sbrs r24,5
+ 468 01e2 00C0      		rjmp .L33
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 469               		.loc 1 138 0
+ 470 01e4 1092 CE00 		sts 206,__zero_reg__
+ 471               	.L34:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 472               		.loc 1 140 0
+ 473 01e8 8091 C800 		lds r24,200
+ 474 01ec 87FF      		sbrs r24,7
+ 475 01ee 00C0      		rjmp .L34
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 476               		.loc 1 143 0
+ 477 01f0 8091 CE00 		lds r24,206
+ 478               	.LVL16:
+ 479               	.L35:
+ 480               	.LBE159:
+ 481               	.LBE158:
+ 482               	.LBB160:
+ 483               	.LBB161:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 484               		.loc 1 136 0
+ 485 01f4 8091 C800 		lds r24,200
+ 486 01f8 85FF      		sbrs r24,5
+ 487 01fa 00C0      		rjmp .L35
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 488               		.loc 1 138 0
+ 489 01fc 1092 CE00 		sts 206,__zero_reg__
+ 490               	.L36:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 491               		.loc 1 140 0
+ 492 0200 8091 C800 		lds r24,200
+ 493 0204 87FF      		sbrs r24,7
+ 494 0206 00C0      		rjmp .L36
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 495               		.loc 1 143 0
+ 496 0208 8091 CE00 		lds r24,206
+ 497               	.LVL17:
+ 498               	.L37:
+ 499               	.LBE161:
+ 500               	.LBE160:
+ 501               	.LBB162:
+ 502               	.LBB163:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 503               		.loc 1 136 0
+ 504 020c 8091 C800 		lds r24,200
+ 505 0210 85FF      		sbrs r24,5
+ 506 0212 00C0      		rjmp .L37
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 507               		.loc 1 138 0
+ 508 0214 1092 CE00 		sts 206,__zero_reg__
+ 509               	.L38:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 510               		.loc 1 140 0
+ 511 0218 8091 C800 		lds r24,200
+ 512 021c 87FF      		sbrs r24,7
+ 513 021e 00C0      		rjmp .L38
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 514               		.loc 1 143 0
+ 515 0220 8091 CE00 		lds r24,206
+ 516               	.LVL18:
+ 517               	.L39:
+ 518               	.LBE163:
+ 519               	.LBE162:
+ 520               	.LBB164:
+ 521               	.LBB165:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 522               		.loc 1 136 0
+ 523 0224 8091 C800 		lds r24,200
+ 524 0228 85FF      		sbrs r24,5
+ 525 022a 00C0      		rjmp .L39
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 526               		.loc 1 138 0
+ 527 022c 1092 CE00 		sts 206,__zero_reg__
+ 528               	.L40:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 529               		.loc 1 140 0
+ 530 0230 8091 C800 		lds r24,200
+ 531 0234 87FF      		sbrs r24,7
+ 532 0236 00C0      		rjmp .L40
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 533               		.loc 1 143 0
+ 534 0238 8091 CE00 		lds r24,206
+ 535               	.LVL19:
+ 536               	.L41:
+ 537               	.LBE165:
+ 538               	.LBE164:
+ 539               	.LBB166:
+ 540               	.LBB167:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 541               		.loc 1 136 0
+ 542 023c 8091 C800 		lds r24,200
+ 543 0240 85FF      		sbrs r24,5
+ 544 0242 00C0      		rjmp .L41
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 545               		.loc 1 138 0
+ 546 0244 81E0      		ldi r24,lo8(1)
+ 547 0246 8093 CE00 		sts 206,r24
+ 548               	.L42:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 549               		.loc 1 140 0
+ 550 024a 8091 C800 		lds r24,200
+ 551 024e 87FF      		sbrs r24,7
+ 552 0250 00C0      		rjmp .L42
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 553               		.loc 1 143 0
+ 554 0252 8091 CE00 		lds r24,206
+ 555               	.LVL20:
+ 556 0256 2AE0      		ldi r18,lo8(10)
+ 557               	.LBE167:
+ 558               	.LBE166:
+ 559               	.LBB168:
+ 560               	.LBB169:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 561               		.loc 1 138 0
+ 562 0258 3FEF      		ldi r19,lo8(-1)
+ 563               	.LVL21:
+ 564               	.L187:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 565               		.loc 1 136 0
+ 566 025a 9091 C800 		lds r25,200
+ 567 025e 95FF      		sbrs r25,5
+ 568 0260 00C0      		rjmp .L187
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 569               		.loc 1 138 0
+ 570 0262 3093 CE00 		sts 206,r19
+ 571               	.L44:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 572               		.loc 1 140 0
+ 573 0266 9091 C800 		lds r25,200
+ 574 026a 97FF      		sbrs r25,7
+ 575 026c 00C0      		rjmp .L44
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 576               		.loc 1 143 0
+ 577 026e 8091 CE00 		lds r24,206
+ 578               	.LBE169:
+ 579               	.LBE168:
+ 189:microSD.c     **** 		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 b
+ 580               		.loc 1 189 0
+ 581 0272 8F3F      		cpi r24,lo8(-1)
+ 582 0274 01F4      		brne .L45
+ 583 0276 2150      		subi r18,lo8(-(-1))
+ 189:microSD.c     **** 		while((response==0xFF)&&--i);		// A valid response has a leading zero.  Wait for that or for 10 b
+ 584               		.loc 1 189 0 is_stmt 0 discriminator 1
+ 585 0278 01F4      		brne .L187
+ 586               	.L45:
+ 191:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 587               		.loc 1 191 0 is_stmt 1
+ 588 027a 9091 C800 		lds r25,200
+ 589 027e 9064      		ori r25,lo8(64)
+ 590 0280 9093 C800 		sts 200,r25
+ 591               	.LVL22:
+ 592               	.L47:
+ 593               	.LBB170:
+ 594               	.LBB171:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 595               		.loc 1 136 0
+ 596 0284 9091 C800 		lds r25,200
+ 597 0288 95FF      		sbrs r25,5
+ 598 028a 00C0      		rjmp .L47
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 599               		.loc 1 138 0
+ 600 028c 9FEF      		ldi r25,lo8(-1)
+ 601 028e 9093 CE00 		sts 206,r25
+ 602               	.L48:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 603               		.loc 1 140 0
+ 604 0292 9091 C800 		lds r25,200
+ 605 0296 97FF      		sbrs r25,7
+ 606 0298 00C0      		rjmp .L48
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 607               		.loc 1 143 0
+ 608 029a 9091 CE00 		lds r25,206
+ 609               	.L49:
+ 610               	.LBE171:
+ 611               	.LBE170:
+ 193:microSD.c     **** 		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 612               		.loc 1 193 0 discriminator 1
+ 613 029e 9091 C800 		lds r25,200
+ 614 02a2 96FF      		sbrs r25,6
+ 615 02a4 00C0      		rjmp .L49
+ 616               	.LBB172:
+ 617               	.LBB173:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 618               		.loc 1 117 0
+ 619 02a6 5D9A      		sbi 0xb,5
+ 620               	.LBE173:
+ 621               	.LBE172:
+ 196:microSD.c     **** 		if(response>1)				// Something wrong?
+ 622               		.loc 1 196 0
+ 623 02a8 8230      		cpi r24,lo8(2)
+ 624 02aa 00F0      		brlo .L50
+ 199:microSD.c     **** 			return(response);	// ACMD preambe returned something weird.  Bail.
+ 625               		.loc 1 199 0
+ 626 02ac 0895      		ret
+ 627               	.LVL23:
+ 628               	.L124:
+ 629               	.LBB174:
+ 630               	.LBB175:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 631               		.loc 1 136 0
+ 632 02ae 8091 C800 		lds r24,200
+ 633 02b2 85FF      		sbrs r24,5
+ 634 02b4 00C0      		rjmp .L124
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 635               		.loc 1 138 0
+ 636 02b6 8FEF      		ldi r24,lo8(-1)
+ 637 02b8 8093 CE00 		sts 206,r24
+ 638               	.L68:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 639               		.loc 1 140 0
+ 640 02bc 8091 C800 		lds r24,200
+ 641 02c0 87FF      		sbrs r24,7
+ 642 02c2 00C0      		rjmp .L68
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 643               		.loc 1 143 0
+ 644 02c4 8091 CE00 		lds r24,206
+ 645 02c8 00C0      		rjmp .L66
+ 646               	.LVL24:
+ 647               	.L76:
+ 648               	.LBE175:
+ 649               	.LBE174:
+ 219:microSD.c     **** 		tmpCrc=0x95;
+ 650               		.loc 1 219 0
+ 651 02ca 85E9      		ldi r24,lo8(-107)
+ 652 02cc 00C0      		rjmp .L125
+ 653               	.LVL25:
+ 654               	.L50:
+ 203:microSD.c     **** 		cmdIndex&=0x7F;		// Handled ACMD, so get rid of leading marker bit
+ 655               		.loc 1 203 0
+ 656 02ce EF77      		andi r30,lo8(127)
+ 657               	.LVL26:
+ 658               	.LBB176:
+ 659               	.LBB177:
+ 124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 660               		.loc 1 124 0
+ 661 02d0 5D9A      		sbi 0xb,5
+ 125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
+ 662               		.loc 1 125 0
+ 663 02d2 5D98      		cbi 0xb,5
+ 664 02d4 00C0      		rjmp .L30
+ 665               	.LVL27:
+ 666               	.L189:
+ 667               	.LBE177:
+ 668               	.LBE176:
+ 215:microSD.c     **** 	tmpCrc=0x01;		// Fake CRC with stop bit (most cases)
+ 669               		.loc 1 215 0
+ 670 02d6 81E0      		ldi r24,lo8(1)
+ 671 02d8 00C0      		rjmp .L125
+ 672               		.cfi_endproc
+ 673               	.LFE7:
+ 675               	.global	SdHandshake
+ 677               	SdHandshake:
+ 678               	.LFB8:
  251:microSD.c     **** 
  252:microSD.c     **** //-----------------------------------------------------------------------
  253:microSD.c     **** //-----------------------------------------------------------------------
@@ -646,45 +1045,50 @@
  262:microSD.c     **** // Returns true if we successfully initialize the all the stuff we need to do to talk to the card.
  263:microSD.c     **** // NOTE -- this process takes time, and will hang operation for hundreds of milliseconds on a succe
  264:microSD.c     **** {
- 397               		.loc 1 264 0
- 398               		.cfi_startproc
- 399 0180 EF92      		push r14
- 400               	.LCFI7:
- 401               		.cfi_def_cfa_offset 3
- 402               		.cfi_offset 14, -2
- 403 0182 FF92      		push r15
- 404               	.LCFI8:
- 405               		.cfi_def_cfa_offset 4
- 406               		.cfi_offset 15, -3
- 407 0184 0F93      		push r16
- 408               	.LCFI9:
- 409               		.cfi_def_cfa_offset 5
- 410               		.cfi_offset 16, -4
- 411 0186 1F93      		push r17
- 412               	.LCFI10:
- 413               		.cfi_def_cfa_offset 6
- 414               		.cfi_offset 17, -5
- 415 0188 CF93      		push r28
- 416               	.LCFI11:
- 417               		.cfi_def_cfa_offset 7
- 418               		.cfi_offset 28, -6
- 419 018a DF93      		push r29
- 420               	.LCFI12:
- 421               		.cfi_def_cfa_offset 8
- 422               		.cfi_offset 29, -7
- 423 018c 00D0      		rcall .
- 424 018e 00D0      		rcall .
- 425 0190 1F92      		push __zero_reg__
- 426               	.LCFI13:
- 427               		.cfi_def_cfa_offset 13
- 428 0192 CDB7      		in r28,__SP_L__
- 429 0194 DEB7      		in r29,__SP_H__
- 430               	.LCFI14:
- 431               		.cfi_def_cfa_register 28
- 432               	/* prologue: function */
- 433               	/* frame size = 5 */
- 434               	/* stack size = 11 */
- 435               	.L__stack_usage = 11
+ 679               		.loc 1 264 0
+ 680               		.cfi_startproc
+ 681 02da 1F93      		push r17
+ 682               	.LCFI0:
+ 683               		.cfi_def_cfa_offset 3
+ 684               		.cfi_offset 17, -2
+ 685 02dc CF93      		push r28
+ 686               	.LCFI1:
+ 687               		.cfi_def_cfa_offset 4
+ 688               		.cfi_offset 28, -3
+ 689 02de DF93      		push r29
+ 690               	.LCFI2:
+ 691               		.cfi_def_cfa_offset 5
+ 692               		.cfi_offset 29, -4
+ 693 02e0 00D0      		rcall .
+ 694 02e2 00D0      		rcall .
+ 695               	.LCFI3:
+ 696               		.cfi_def_cfa_offset 9
+ 697 02e4 CDB7      		in r28,__SP_L__
+ 698 02e6 DEB7      		in r29,__SP_H__
+ 699               	.LCFI4:
+ 700               		.cfi_def_cfa_register 28
+ 701               	/* prologue: function */
+ 702               	/* frame size = 4 */
+ 703               	/* stack size = 7 */
+ 704               	.L__stack_usage = 7
+ 705               	.LBB228:
+ 706               	.LBB229:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 707               		.loc 1 117 0
+ 708 02e8 5D9A      		sbi 0xb,5
+ 709               	.LVL28:
+ 710 02ea 94E1      		ldi r25,lo8(20)
+ 711               	.LBE229:
+ 712               	.LBE228:
+ 713               	.LBB230:
+ 714               	.LBB231:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 715               		.loc 1 138 0
+ 716 02ec 2FEF      		ldi r18,lo8(-1)
+ 717               	.LVL29:
+ 718               	.L193:
+ 719               	.LBE231:
+ 720               	.LBE230:
  265:microSD.c     **** 	unsigned char
  266:microSD.c     **** 		ocr[4],
  267:microSD.c     **** 		i;
@@ -696,35 +1100,70 @@
  273:microSD.c     **** 	// Card starts in SD mode, and needs a bunch of clocks (74 at least) to reach "idle" state.  CS mu
  274:microSD.c     **** 
  275:microSD.c     **** 	EndSdTransfer();	// Bring CS high
- 436               		.loc 1 275 0
- 437 0196 0E94 0000 		call EndSdTransfer
- 438               	.LVL34:
- 439 019a 14E1      		ldi r17,lo8(20)
- 440               	.LVL35:
- 441               	.L46:
  276:microSD.c     **** 	for(i=0;i<20;i++)
  277:microSD.c     **** 	{
  278:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
- 442               		.loc 1 278 0 discriminator 2
- 443 019c 8091 C800 		lds r24,200
- 444 01a0 8064      		ori r24,lo8(64)
- 445 01a2 8093 C800 		sts 200,r24
- 279:microSD.c     **** 		TransferSdByte(DUMMY_BYTE);	// Transfer ten dummy bytes (80 clocks).
- 446               		.loc 1 279 0 discriminator 2
- 447 01a6 8FEF      		ldi r24,lo8(-1)
- 448 01a8 0E94 0000 		call TransferSdByte
- 449               	.LVL36:
- 450 01ac 1150      		subi r17,lo8(-(-1))
+ 721               		.loc 1 278 0 discriminator 2
+ 722 02ee 8091 C800 		lds r24,200
+ 723 02f2 8064      		ori r24,lo8(64)
+ 724 02f4 8093 C800 		sts 200,r24
+ 725               	.LVL30:
+ 726               	.L191:
+ 727               	.LBB233:
+ 728               	.LBB232:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 729               		.loc 1 136 0
+ 730 02f8 8091 C800 		lds r24,200
+ 731 02fc 85FF      		sbrs r24,5
+ 732 02fe 00C0      		rjmp .L191
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 733               		.loc 1 138 0
+ 734 0300 2093 CE00 		sts 206,r18
+ 735               	.L192:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 736               		.loc 1 140 0
+ 737 0304 8091 C800 		lds r24,200
+ 738 0308 87FF      		sbrs r24,7
+ 739 030a 00C0      		rjmp .L192
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 740               		.loc 1 143 0
+ 741 030c 8091 CE00 		lds r24,206
+ 742 0310 9150      		subi r25,lo8(-(-1))
+ 743               	.LBE232:
+ 744               	.LBE233:
  276:microSD.c     **** 	for(i=0;i<20;i++)
- 451               		.loc 1 276 0 discriminator 2
- 452 01ae 01F4      		brne .L46
- 453               	.L79:
+ 745               		.loc 1 276 0
+ 746 0312 01F4      		brne .L193
+ 747               	.L264:
+ 279:microSD.c     **** 		TransferSdByte(DUMMY_BYTE);	// Transfer ten dummy bytes (80 clocks).
  280:microSD.c     **** 	}	
  281:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
- 454               		.loc 1 281 0
- 455 01b0 8091 C800 		lds r24,200
- 456 01b4 86FF      		sbrs r24,6
- 457 01b6 00C0      		rjmp .L79
+ 748               		.loc 1 281 0 discriminator 1
+ 749 0314 8091 C800 		lds r24,200
+ 750 0318 86FF      		sbrs r24,6
+ 751 031a 00C0      		rjmp .L264
+ 752               	.LBB234:
+ 753               	.LBB235:
+ 124:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 754               		.loc 1 124 0
+ 755 031c 5D9A      		sbi 0xb,5
+ 125:microSD.c     **** 	PORTD&=~Om_SD_CS;				// Then bring it low.
+ 756               		.loc 1 125 0
+ 757 031e 5D98      		cbi 0xb,5
+ 758               	.LVL31:
+ 759 0320 80E0      		ldi r24,0
+ 760 0322 92E0      		ldi r25,lo8(2)
+ 761               	.LBE235:
+ 762               	.LBE234:
+ 763               	.LBB236:
+ 764               	.LBB237:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 765               		.loc 1 138 0
+ 766 0324 3FEF      		ldi r19,lo8(-1)
+ 767               	.LVL32:
+ 768               	.L197:
+ 769               	.LBE237:
+ 770               	.LBE236:
  282:microSD.c     **** 		;
  283:microSD.c     **** 
  284:microSD.c     **** 
@@ -732,295 +1171,154 @@
  286:microSD.c     **** 	// Thu Jul 28 14:15:53 EDT 2011	-- Totally just experienced this hang, and understand this now.
  287:microSD.c     **** 
  288:microSD.c     **** 	StartSdTransfer();						
- 458               		.loc 1 288 0
- 459 01b8 0E94 0000 		call StartSdTransfer
- 460               	.LVL37:
- 461 01bc 00E0      		ldi r16,0
- 462 01be 12E0      		ldi r17,lo8(2)
- 463               	.LVL38:
- 464               	.L48:
  289:microSD.c     **** 	for(n=0;n<SD_BLOCK_LENGTH;n++)
  290:microSD.c     **** 	{
  291:microSD.c     **** 		UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
- 465               		.loc 1 291 0 discriminator 2
- 466 01c0 8091 C800 		lds r24,200
- 467 01c4 8064      		ori r24,lo8(64)
- 468 01c6 8093 C800 		sts 200,r24
- 292:microSD.c     **** 		TransferSdByte(0xFF);	
- 469               		.loc 1 292 0 discriminator 2
- 470 01ca 8FEF      		ldi r24,lo8(-1)
- 471 01cc 0E94 0000 		call TransferSdByte
- 472               	.LVL39:
- 473 01d0 0150      		subi r16,1
- 474 01d2 1109      		sbc r17,__zero_reg__
+ 771               		.loc 1 291 0 discriminator 2
+ 772 0326 2091 C800 		lds r18,200
+ 773 032a 2064      		ori r18,lo8(64)
+ 774 032c 2093 C800 		sts 200,r18
+ 775               	.LVL33:
+ 776               	.L195:
+ 777               	.LBB239:
+ 778               	.LBB238:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 779               		.loc 1 136 0
+ 780 0330 2091 C800 		lds r18,200
+ 781 0334 25FF      		sbrs r18,5
+ 782 0336 00C0      		rjmp .L195
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 783               		.loc 1 138 0
+ 784 0338 3093 CE00 		sts 206,r19
+ 785               	.L196:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 786               		.loc 1 140 0
+ 787 033c 2091 C800 		lds r18,200
+ 788 0340 27FF      		sbrs r18,7
+ 789 0342 00C0      		rjmp .L196
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 790               		.loc 1 143 0
+ 791 0344 2091 CE00 		lds r18,206
+ 792 0348 0197      		sbiw r24,1
+ 793               	.LBE238:
+ 794               	.LBE239:
  289:microSD.c     **** 	for(n=0;n<SD_BLOCK_LENGTH;n++)
- 475               		.loc 1 289 0 discriminator 2
- 476 01d4 01F4      		brne .L48
- 477               	.L78:
+ 795               		.loc 1 289 0
+ 796 034a 01F4      		brne .L197
+ 797               	.L263:
+ 292:microSD.c     **** 		TransferSdByte(0xFF);	
  293:microSD.c     **** 	}
  294:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
- 478               		.loc 1 294 0
- 479 01d6 8091 C800 		lds r24,200
- 480 01da 86FF      		sbrs r24,6
- 481 01dc 00C0      		rjmp .L78
+ 798               		.loc 1 294 0 discriminator 1
+ 799 034c 8091 C800 		lds r24,200
+ 800 0350 86FF      		sbrs r24,6
+ 801 0352 00C0      		rjmp .L263
+ 802               	.LBB240:
+ 803               	.LBB241:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 804               		.loc 1 117 0
+ 805 0354 5D9A      		sbi 0xb,5
+ 806               	.LVL34:
+ 807               	.LBE241:
+ 808               	.LBE240:
  295:microSD.c     **** 		;
  296:microSD.c     **** 	EndSdTransfer();
- 482               		.loc 1 296 0
- 483 01de 0E94 0000 		call EndSdTransfer
- 484               	.LVL40:
  297:microSD.c     **** 
  298:microSD.c     **** 	// Should be in "idle mode" now.  Set SPI mode by asserting the CS and sending CMD 0.
  299:microSD.c     **** 	cardValid=false;			// Card not valid until we say it is.	
  300:microSD.c     **** 	SendSdCommand(CMD0,0);		// Send first time for good measure, also to make sure onboard pullups get
- 485               		.loc 1 300 0
- 486 01e2 40E0      		ldi r20,0
- 487 01e4 50E0      		ldi r21,0
- 488 01e6 BA01      		movw r22,r20
- 489 01e8 80E0      		ldi r24,0
- 490 01ea 0E94 0000 		call SendSdCommand
- 491               	.LVL41:
- 492               	.L50:
+ 809               		.loc 1 300 0
+ 810 0356 40E0      		ldi r20,0
+ 811 0358 50E0      		ldi r21,0
+ 812 035a BA01      		movw r22,r20
+ 813 035c 80E0      		ldi r24,0
+ 814 035e 0E94 0000 		call SendSdCommand
+ 815               	.LVL35:
+ 816               	.L199:
  301:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
- 493               		.loc 1 301 0 discriminator 1
- 494 01ee 8091 C800 		lds r24,200
- 495 01f2 86FF      		sbrs r24,6
- 496 01f4 00C0      		rjmp .L50
+ 817               		.loc 1 301 0 discriminator 1
+ 818 0362 8091 C800 		lds r24,200
+ 819 0366 86FF      		sbrs r24,6
+ 820 0368 00C0      		rjmp .L199
+ 821               	.LBB242:
+ 822               	.LBB243:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 823               		.loc 1 117 0
+ 824 036a 5D9A      		sbi 0xb,5
+ 825               	.LBE243:
+ 826               	.LBE242:
  302:microSD.c     **** 		;
  303:microSD.c     **** 	EndSdTransfer();
- 497               		.loc 1 303 0
- 498 01f6 0E94 0000 		call EndSdTransfer
- 499               	.LVL42:
  304:microSD.c     **** 
  305:microSD.c     **** 	// Send CMD0 again, actually check response now.
  306:microSD.c     **** 	if(SendSdCommand(CMD0,0)==0x01)		// Tell card to enter idle state.  If we get the right response, 
- 500               		.loc 1 306 0
- 501 01fa 40E0      		ldi r20,0
- 502 01fc 50E0      		ldi r21,0
- 503 01fe BA01      		movw r22,r20
- 504 0200 80E0      		ldi r24,0
- 505 0202 0E94 0000 		call SendSdCommand
- 506               	.LVL43:
- 507 0206 8130      		cpi r24,lo8(1)
- 508 0208 01F0      		breq .L51
- 509               	.L55:
+ 827               		.loc 1 306 0
+ 828 036c 40E0      		ldi r20,0
+ 829 036e 50E0      		ldi r21,0
+ 830 0370 BA01      		movw r22,r20
+ 831 0372 80E0      		ldi r24,0
+ 832 0374 0E94 0000 		call SendSdCommand
+ 833               	.LVL36:
+ 834 0378 8130      		cpi r24,lo8(1)
+ 835 037a 01F0      		breq .L200
+ 836               	.L209:
  299:microSD.c     **** 	cardValid=false;			// Card not valid until we say it is.	
- 510               		.loc 1 299 0
- 511 020a 80E0      		ldi r24,0
- 512 020c 00C0      		rjmp .L52
- 513               	.L51:
+ 837               		.loc 1 299 0
+ 838 037c 80E0      		ldi r24,0
+ 839               	.LVL37:
+ 840               	.L201:
+ 841               	.LBB244:
+ 842               	.LBB245:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 843               		.loc 1 117 0
+ 844 037e 5D9A      		sbi 0xb,5
+ 845               	/* epilogue start */
+ 846               	.LBE245:
+ 847               	.LBE244:
  307:microSD.c     **** 	{
  308:microSD.c     **** 		EndSdTransfer();					// Bring CS high
- 514               		.loc 1 308 0
- 515 020e 0E94 0000 		call EndSdTransfer
- 516               	.LVL44:
  309:microSD.c     **** 
  310:microSD.c     **** 		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we'
- 517               		.loc 1 310 0
- 518 0212 4AEA      		ldi r20,lo8(-86)
- 519 0214 51E0      		ldi r21,lo8(1)
- 520 0216 60E0      		ldi r22,0
- 521 0218 70E0      		ldi r23,0
- 522 021a 88E0      		ldi r24,lo8(8)
- 523 021c 0E94 0000 		call SendSdCommand
- 524               	.LVL45:
- 525 0220 8130      		cpi r24,lo8(1)
- 526 0222 01F0      		breq .+2
- 527 0224 00C0      		rjmp .L53
- 528 0226 8E01      		movw r16,r28
- 529 0228 0F5F      		subi r16,-1
- 530 022a 1F4F      		sbci r17,-1
- 258:microSD.c     **** bool SdHandshake(void)
- 531               		.loc 1 258 0
- 532 022c 7E01      		movw r14,r28
- 533 022e 85E0      		ldi r24,5
- 534 0230 E80E      		add r14,r24
- 535 0232 F11C      		adc r15,__zero_reg__
- 536               	.L54:
  311:microSD.c     **** 		{
  312:microSD.c     **** 			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
  313:microSD.c     **** 			{
  314:microSD.c     **** 				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
- 537               		.loc 1 314 0 discriminator 2
- 538 0234 8FEF      		ldi r24,lo8(-1)
- 539 0236 0E94 0000 		call TransferSdByte
- 540               	.LVL46:
- 541 023a F801      		movw r30,r16
- 542 023c 8193      		st Z+,r24
- 543 023e 8F01      		movw r16,r30
- 312:microSD.c     **** 			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
- 544               		.loc 1 312 0 discriminator 2
- 545 0240 EE15      		cp r30,r14
- 546 0242 FF05      		cpc r31,r15
- 547 0244 01F4      		brne .L54
  315:microSD.c     **** 			}
  316:microSD.c     **** 
  317:microSD.c     **** 			SendDummyByte();		// Send extra FF after multibyte response. 
- 548               		.loc 1 317 0
- 549 0246 0E94 0000 		call SendDummyByte
- 550               	.LVL47:
  318:microSD.c     **** 			EndSdTransfer();		// Bring CS high
- 551               		.loc 1 318 0
- 552 024a 0E94 0000 		call EndSdTransfer
- 553               	.LVL48:
  319:microSD.c     **** 
  320:microSD.c     **** 			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it c
- 554               		.loc 1 320 0
- 555 024e 8B81      		ldd r24,Y+3
- 556 0250 8130      		cpi r24,lo8(1)
- 557 0252 01F4      		brne .L55
- 558               		.loc 1 320 0 is_stmt 0 discriminator 1
- 559 0254 8C81      		ldd r24,Y+4
- 560 0256 8A3A      		cpi r24,lo8(-86)
- 561 0258 01F4      		brne .L55
  321:microSD.c     **** 			{				
  322:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
- 562               		.loc 1 322 0 is_stmt 1
- 563 025a 64EC      		ldi r22,lo8(-60)
- 564 025c 74E0      		ldi r23,lo8(4)
- 565 025e 83E0      		ldi r24,lo8(3)
- 566 0260 0E94 0000 		call SetTimer
- 567               	.LVL49:
  323:microSD.c     **** 
  324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 568               		.loc 1 324 0
- 569 0264 00C0      		rjmp .L56
- 570               	.L59:
  325:microSD.c     **** 				{
  326:microSD.c     **** 					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell th
- 571               		.loc 1 326 0
- 572 0266 0E94 0000 		call EndSdTransfer
- 573               	.LVL50:
  327:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
- 574               		.loc 1 327 0
- 575 026a 0E94 0000 		call HandleSoftclock
- 576               	.LVL51:
- 577               	.L56:
- 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 578               		.loc 1 324 0 discriminator 1
- 579 026e 83E0      		ldi r24,lo8(3)
- 580 0270 0E94 0000 		call CheckTimer
- 581               	.LVL52:
- 582 0274 8823      		tst r24
- 583 0276 01F0      		breq .L57
- 584               	.L60:
  328:microSD.c     **** 				}		
  329:microSD.c     **** 				
  330:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
- 585               		.loc 1 330 0
- 586 0278 83E0      		ldi r24,lo8(3)
- 587 027a 0E94 0000 		call CheckTimer
- 588               	.LVL53:
- 589 027e 8823      		tst r24
- 590 0280 01F0      		breq .L86
- 591 0282 00C0      		rjmp .L55
- 592               	.L57:
- 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 593               		.loc 1 324 0 discriminator 2
- 594 0284 40E0      		ldi r20,0
- 595 0286 50E0      		ldi r21,0
- 596 0288 BA01      		movw r22,r20
- 597 028a 89EA      		ldi r24,lo8(-87)
- 598 028c 0E94 0000 		call SendSdCommand
- 599               	.LVL54:
- 600 0290 8111      		cpse r24,__zero_reg__
- 601 0292 00C0      		rjmp .L59
- 602 0294 00C0      		rjmp .L60
- 603               	.L63:
  331:microSD.c     **** 				{
  332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
  333:microSD.c     **** 					{
  334:microSD.c     **** 						SendDummyByte();		// Send extra FF (it's busy)
- 604               		.loc 1 334 0
- 605 0296 0E94 0000 		call SendDummyByte
- 606               	.LVL55:
  335:microSD.c     **** 						HandleSoftclock();	// Keep the timer timing.
- 607               		.loc 1 335 0
- 608 029a 0E94 0000 		call HandleSoftclock
- 609               	.LVL56:
  336:microSD.c     **** 						EndSdTransfer();		// Bring CS high.
- 610               		.loc 1 336 0
- 611 029e 0E94 0000 		call EndSdTransfer
- 612               	.LVL57:
- 613               	.L86:
- 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
- 614               		.loc 1 332 0 discriminator 1
- 615 02a2 83E0      		ldi r24,lo8(3)
- 616 02a4 0E94 0000 		call CheckTimer
- 617               	.LVL58:
- 618 02a8 8823      		tst r24
- 619 02aa 01F0      		breq .L61
- 620               	.L64:
  337:microSD.c     **** 					}
  338:microSD.c     **** 					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
- 621               		.loc 1 338 0
- 622 02ac 83E0      		ldi r24,lo8(3)
- 623 02ae 0E94 0000 		call CheckTimer
- 624               	.LVL59:
- 625 02b2 8823      		tst r24
- 626 02b4 01F0      		breq .L62
- 627 02b6 00C0      		rjmp .L55
- 628               	.L61:
- 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
- 629               		.loc 1 332 0 discriminator 2
- 630 02b8 40E0      		ldi r20,0
- 631 02ba 50E0      		ldi r21,0
- 632 02bc BA01      		movw r22,r20
- 633 02be 8AE3      		ldi r24,lo8(58)
- 634 02c0 0E94 0000 		call SendSdCommand
- 635               	.LVL60:
- 636 02c4 8111      		cpse r24,__zero_reg__
- 637 02c6 00C0      		rjmp .L63
- 638 02c8 00C0      		rjmp .L64
- 639               	.L62:
- 640               	.LVL61:
  339:microSD.c     **** 					{
  340:microSD.c     **** 						for(i=0;i<4;i++)						// This is an "R3" response, so we need to grab four more bytes.
  341:microSD.c     **** 						{
  342:microSD.c     **** 							ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
- 641               		.loc 1 342 0 discriminator 1
- 642 02ca 8FEF      		ldi r24,lo8(-1)
- 643 02cc 0E94 0000 		call TransferSdByte
- 644               	.LVL62:
- 645 02d0 8FEF      		ldi r24,lo8(-1)
- 646 02d2 0E94 0000 		call TransferSdByte
- 647               	.LVL63:
- 648 02d6 8FEF      		ldi r24,lo8(-1)
- 649 02d8 0E94 0000 		call TransferSdByte
- 650               	.LVL64:
- 651 02dc 8FEF      		ldi r24,lo8(-1)
- 652 02de 0E94 0000 		call TransferSdByte
- 653               	.LVL65:
  343:microSD.c     **** 						}
  344:microSD.c     **** 
  345:microSD.c     **** 						SendDummyByte();			// Send extra FF after multibyte response. 
- 654               		.loc 1 345 0 discriminator 1
- 655 02e2 0E94 0000 		call SendDummyByte
- 656               	.LVL66:
  346:microSD.c     **** 						EndSdTransfer();			// Bring CS high.
- 657               		.loc 1 346 0 discriminator 1
- 658 02e6 0E94 0000 		call EndSdTransfer
- 659               	.LVL67:
  347:microSD.c     **** 
  348:microSD.c     **** 						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
- 660               		.loc 1 348 0 discriminator 1
- 661 02ea 40E0      		ldi r20,0
- 662 02ec 52E0      		ldi r21,lo8(2)
- 663 02ee 60E0      		ldi r22,0
- 664 02f0 70E0      		ldi r23,0
- 665 02f2 80E1      		ldi r24,lo8(16)
- 666 02f4 0E94 0000 		call SendSdCommand
- 667               	.LVL68:
  349:microSD.c     **** 						EndSdTransfer();						// Bring CS high.
- 668               		.loc 1 349 0 discriminator 1
- 669 02f8 0E94 0000 		call EndSdTransfer
- 670               	.LVL69:
  350:microSD.c     **** 						SendDummyByte();						
- 671               		.loc 1 350 0 discriminator 1
- 672 02fc 0E94 0000 		call SendDummyByte
- 673               	.LVL70:
- 674 0300 00C0      		rjmp .L91
- 675               	.LVL71:
- 676               	.L53:
  351:microSD.c     **** 						cardValid=true;				// SD card present, and standard capacity.
  352:microSD.c     **** 					}
  353:microSD.c     **** 				}
@@ -1029,134 +1327,498 @@
  356:microSD.c     **** 		else	// We're either an SDC v1 card or an MMC.  SDC v1 is OK.
  357:microSD.c     **** 		{
  358:microSD.c     **** 			SendDummyByte();					// Send extra FF after multibyte response. 
- 677               		.loc 1 358 0
- 678 0302 0E94 0000 		call SendDummyByte
- 679               	.LVL72:
  359:microSD.c     **** 			EndSdTransfer();					// Bring CS high
- 680               		.loc 1 359 0
- 681 0306 0E94 0000 		call EndSdTransfer
- 682               	.LVL73:
  360:microSD.c     **** 			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, ke
- 683               		.loc 1 360 0
- 684 030a 40E0      		ldi r20,0
- 685 030c 50E0      		ldi r21,0
- 686 030e BA01      		movw r22,r20
- 687 0310 89EA      		ldi r24,lo8(-87)
- 688 0312 0E94 0000 		call SendSdCommand
- 689               	.LVL74:
- 690 0316 8230      		cpi r24,lo8(2)
- 691 0318 00F0      		brlo .+2
- 692 031a 00C0      		rjmp .L55
  361:microSD.c     **** 			{
  362:microSD.c     **** 				EndSdTransfer();			// Bring CS high.
- 693               		.loc 1 362 0
- 694 031c 0E94 0000 		call EndSdTransfer
- 695               	.LVL75:
  363:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
- 696               		.loc 1 363 0
- 697 0320 64EC      		ldi r22,lo8(-60)
- 698 0322 74E0      		ldi r23,lo8(4)
- 699 0324 83E0      		ldi r24,lo8(3)
- 700 0326 0E94 0000 		call SetTimer
- 701               	.LVL76:
  364:microSD.c     **** 
  365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 702               		.loc 1 365 0
- 703 032a 00C0      		rjmp .L65
- 704               	.L68:
  366:microSD.c     **** 				{
  367:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
- 705               		.loc 1 367 0
- 706 032c 0E94 0000 		call HandleSoftclock
- 707               	.LVL77:
  368:microSD.c     **** 					EndSdTransfer();	// Bring CS high. NOTE -- Sending an ACMD41 with the HCS bit set will tell th
- 708               		.loc 1 368 0
- 709 0330 0E94 0000 		call EndSdTransfer
- 710               	.LVL78:
- 711               	.L65:
- 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 712               		.loc 1 365 0 discriminator 1
- 713 0334 83E0      		ldi r24,lo8(3)
- 714 0336 0E94 0000 		call CheckTimer
- 715               	.LVL79:
- 716 033a 8823      		tst r24
- 717 033c 01F0      		breq .L66
- 718               	.L69:
  369:microSD.c     **** 				}		
  370:microSD.c     **** 
  371:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized!
- 719               		.loc 1 371 0
- 720 033e 83E0      		ldi r24,lo8(3)
- 721 0340 0E94 0000 		call CheckTimer
- 722               	.LVL80:
- 723 0344 8111      		cpse r24,__zero_reg__
- 724 0346 00C0      		rjmp .L55
- 725 0348 00C0      		rjmp .L67
- 726               	.L66:
- 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
- 727               		.loc 1 365 0 discriminator 2
- 728 034a 40E0      		ldi r20,0
- 729 034c 50E0      		ldi r21,0
- 730 034e BA01      		movw r22,r20
- 731 0350 89EA      		ldi r24,lo8(-87)
- 732 0352 0E94 0000 		call SendSdCommand
- 733               	.LVL81:
- 734 0356 8111      		cpse r24,__zero_reg__
- 735 0358 00C0      		rjmp .L68
- 736 035a 00C0      		rjmp .L69
- 737               	.L67:
  372:microSD.c     **** 				{
  373:microSD.c     **** 					SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
- 738               		.loc 1 373 0
- 739 035c 40E0      		ldi r20,0
- 740 035e 52E0      		ldi r21,lo8(2)
- 741 0360 60E0      		ldi r22,0
- 742 0362 70E0      		ldi r23,0
- 743 0364 80E1      		ldi r24,lo8(16)
- 744 0366 0E94 0000 		call SendSdCommand
- 745               	.LVL82:
  374:microSD.c     **** 					EndSdTransfer();						// Bring CS high.
- 746               		.loc 1 374 0
- 747 036a 0E94 0000 		call EndSdTransfer
- 748               	.LVL83:
- 749               	.L91:
  375:microSD.c     **** 					cardValid=true;							// SDC v1 card, good to go
- 750               		.loc 1 375 0
- 751 036e 81E0      		ldi r24,lo8(1)
- 752               	.LVL84:
- 753               	.L52:
  376:microSD.c     **** 				}
  377:microSD.c     **** 			}
  378:microSD.c     **** 		}
  379:microSD.c     **** 	}
  380:microSD.c     **** 
  381:microSD.c     **** 	EndSdTransfer();	// Bring CS high
- 754               		.loc 1 381 0
- 755 0370 8D83      		std Y+5,r24
- 756 0372 0E94 0000 		call EndSdTransfer
- 757               	.LVL85:
  382:microSD.c     **** 	return(cardValid);	// Report success or failure of initialization -- fails on timeout or bad respo
  383:microSD.c     **** }
- 758               		.loc 1 383 0
- 759 0376 8D81      		ldd r24,Y+5
- 760               	/* epilogue start */
- 761 0378 0F90      		pop __tmp_reg__
- 762 037a 0F90      		pop __tmp_reg__
- 763 037c 0F90      		pop __tmp_reg__
- 764 037e 0F90      		pop __tmp_reg__
- 765 0380 0F90      		pop __tmp_reg__
- 766 0382 DF91      		pop r29
- 767 0384 CF91      		pop r28
- 768 0386 1F91      		pop r17
- 769 0388 0F91      		pop r16
- 770 038a FF90      		pop r15
- 771 038c EF90      		pop r14
- 772 038e 0895      		ret
- 773               		.cfi_endproc
- 774               	.LFE8:
- 776               	.global	SdBeginSingleBlockRead
- 778               	SdBeginSingleBlockRead:
- 779               	.LFB9:
+ 848               		.loc 1 383 0
+ 849 0380 0F90      		pop __tmp_reg__
+ 850 0382 0F90      		pop __tmp_reg__
+ 851 0384 0F90      		pop __tmp_reg__
+ 852 0386 0F90      		pop __tmp_reg__
+ 853 0388 DF91      		pop r29
+ 854 038a CF91      		pop r28
+ 855 038c 1F91      		pop r17
+ 856 038e 0895      		ret
+ 857               	.LVL38:
+ 858               	.L200:
+ 859               	.LBB246:
+ 860               	.LBB247:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 861               		.loc 1 117 0
+ 862 0390 5D9A      		sbi 0xb,5
+ 863               	.LBE247:
+ 864               	.LBE246:
+ 310:microSD.c     **** 		if(SendSdCommand(CMD8,0x1AA)==1)	// Check card voltage.  This is only supported in SDC v2, so we'
+ 865               		.loc 1 310 0
+ 866 0392 4AEA      		ldi r20,lo8(-86)
+ 867 0394 51E0      		ldi r21,lo8(1)
+ 868 0396 60E0      		ldi r22,0
+ 869 0398 70E0      		ldi r23,0
+ 870 039a 88E0      		ldi r24,lo8(8)
+ 871 039c 0E94 0000 		call SendSdCommand
+ 872               	.LVL39:
+ 873 03a0 8130      		cpi r24,lo8(1)
+ 874 03a2 01F4      		brne .+2
+ 875 03a4 00C0      		rjmp .L303
+ 876               	.LBB248:
+ 877               	.LBB249:
+ 149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 878               		.loc 1 149 0
+ 879 03a6 8091 C800 		lds r24,200
+ 880 03aa 8064      		ori r24,lo8(64)
+ 881 03ac 8093 C800 		sts 200,r24
+ 882               	.LVL40:
+ 883               	.L224:
+ 884               	.LBB250:
+ 885               	.LBB251:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 886               		.loc 1 136 0
+ 887 03b0 8091 C800 		lds r24,200
+ 888 03b4 85FF      		sbrs r24,5
+ 889 03b6 00C0      		rjmp .L224
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 890               		.loc 1 138 0
+ 891 03b8 8FEF      		ldi r24,lo8(-1)
+ 892 03ba 8093 CE00 		sts 206,r24
+ 893               	.L225:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 894               		.loc 1 140 0
+ 895 03be 8091 C800 		lds r24,200
+ 896 03c2 87FF      		sbrs r24,7
+ 897 03c4 00C0      		rjmp .L225
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 898               		.loc 1 143 0
+ 899 03c6 8091 CE00 		lds r24,206
+ 900               	.L226:
+ 901               	.LBE251:
+ 902               	.LBE250:
+ 151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 903               		.loc 1 151 0
+ 904 03ca 8091 C800 		lds r24,200
+ 905 03ce 86FF      		sbrs r24,6
+ 906 03d0 00C0      		rjmp .L226
+ 907               	.LBE249:
+ 908               	.LBE248:
+ 909               	.LBB252:
+ 910               	.LBB253:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 911               		.loc 1 117 0
+ 912 03d2 5D9A      		sbi 0xb,5
+ 913               	.LBE253:
+ 914               	.LBE252:
+ 360:microSD.c     **** 			if(SendSdCommand(ACMD41,0)<=1)		// If we don't get an error trying to initialize the SD card, ke
+ 915               		.loc 1 360 0
+ 916 03d4 40E0      		ldi r20,0
+ 917 03d6 50E0      		ldi r21,0
+ 918 03d8 BA01      		movw r22,r20
+ 919 03da 89EA      		ldi r24,lo8(-87)
+ 920 03dc 0E94 0000 		call SendSdCommand
+ 921               	.LVL41:
+ 922 03e0 8230      		cpi r24,lo8(2)
+ 923 03e2 00F4      		brsh .L209
+ 924               	.LBB254:
+ 925               	.LBB255:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 926               		.loc 1 117 0
+ 927 03e4 5D9A      		sbi 0xb,5
+ 928               	.LBE255:
+ 929               	.LBE254:
+ 363:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
+ 930               		.loc 1 363 0
+ 931 03e6 64EC      		ldi r22,lo8(-60)
+ 932 03e8 74E0      		ldi r23,lo8(4)
+ 933 03ea 83E0      		ldi r24,lo8(3)
+ 934 03ec 0E94 0000 		call SetTimer
+ 935               	.LVL42:
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 936               		.loc 1 365 0
+ 937 03f0 00C0      		rjmp .L227
+ 938               	.L228:
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 939               		.loc 1 365 0 is_stmt 0 discriminator 2
+ 940 03f2 40E0      		ldi r20,0
+ 941 03f4 50E0      		ldi r21,0
+ 942 03f6 BA01      		movw r22,r20
+ 943 03f8 89EA      		ldi r24,lo8(-87)
+ 944 03fa 0E94 0000 		call SendSdCommand
+ 945               	.LVL43:
+ 946 03fe 8823      		tst r24
+ 947 0400 01F0      		breq .L231
+ 367:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
+ 948               		.loc 1 367 0 is_stmt 1
+ 949 0402 0E94 0000 		call HandleSoftclock
+ 950               	.LVL44:
+ 951               	.LBB256:
+ 952               	.LBB257:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 953               		.loc 1 117 0
+ 954 0406 5D9A      		sbi 0xb,5
+ 955               	.L227:
+ 956               	.LBE257:
+ 957               	.LBE256:
+ 365:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 958               		.loc 1 365 0 discriminator 1
+ 959 0408 83E0      		ldi r24,lo8(3)
+ 960 040a 0E94 0000 		call CheckTimer
+ 961               	.LVL45:
+ 962 040e 8823      		tst r24
+ 963 0410 01F0      		breq .L228
+ 964               	.L231:
+ 371:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized!
+ 965               		.loc 1 371 0
+ 966 0412 83E0      		ldi r24,lo8(3)
+ 967 0414 0E94 0000 		call CheckTimer
+ 968               	.LVL46:
+ 969 0418 8111      		cpse r24,__zero_reg__
+ 970 041a 00C0      		rjmp .L209
+ 373:microSD.c     **** 					SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+ 971               		.loc 1 373 0
+ 972 041c 40E0      		ldi r20,0
+ 973 041e 52E0      		ldi r21,lo8(2)
+ 974 0420 60E0      		ldi r22,0
+ 975 0422 70E0      		ldi r23,0
+ 976 0424 80E1      		ldi r24,lo8(16)
+ 977 0426 0E94 0000 		call SendSdCommand
+ 978               	.LVL47:
+ 979               	.LBB258:
+ 980               	.LBB259:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 981               		.loc 1 117 0
+ 982 042a 5D9A      		sbi 0xb,5
+ 983               	.LVL48:
+ 375:microSD.c     **** 					cardValid=true;							// SDC v1 card, good to go
+ 984               		.loc 1 375 0
+ 985 042c 81E0      		ldi r24,lo8(1)
+ 986 042e 00C0      		rjmp .L201
+ 987               	.LVL49:
+ 988               	.L303:
+ 989 0430 FE01      		movw r30,r28
+ 990 0432 3196      		adiw r30,1
+ 991               	.LBE259:
+ 992               	.LBE258:
+ 258:microSD.c     **** bool SdHandshake(void)
+ 993               		.loc 1 258 0
+ 994 0434 CE01      		movw r24,r28
+ 995 0436 0596      		adiw r24,5
+ 996               	.LBB260:
+ 997               	.LBB261:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 998               		.loc 1 138 0
+ 999 0438 3FEF      		ldi r19,lo8(-1)
+ 1000               	.L300:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 1001               		.loc 1 136 0
+ 1002 043a 2091 C800 		lds r18,200
+ 1003 043e 25FF      		sbrs r18,5
+ 1004 0440 00C0      		rjmp .L300
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1005               		.loc 1 138 0
+ 1006 0442 3093 CE00 		sts 206,r19
+ 1007               	.L204:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 1008               		.loc 1 140 0
+ 1009 0446 2091 C800 		lds r18,200
+ 1010 044a 27FF      		sbrs r18,7
+ 1011 044c 00C0      		rjmp .L204
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 1012               		.loc 1 143 0
+ 1013 044e 2091 CE00 		lds r18,206
+ 1014               	.LBE261:
+ 1015               	.LBE260:
+ 314:microSD.c     **** 				ocr[i]=TransferSdByte(DUMMY_BYTE);	// Inhale OCR bytes
+ 1016               		.loc 1 314 0
+ 1017 0452 2193      		st Z+,r18
+ 312:microSD.c     **** 			for(i=0;i<4;i++)						// This is an "R7" response, so we need to grab four more bytes.
+ 1018               		.loc 1 312 0
+ 1019 0454 E817      		cp r30,r24
+ 1020 0456 F907      		cpc r31,r25
+ 1021 0458 01F4      		brne .L300
+ 1022               	.LBB262:
+ 1023               	.LBB263:
+ 149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 1024               		.loc 1 149 0
+ 1025 045a 8091 C800 		lds r24,200
+ 1026 045e 8064      		ori r24,lo8(64)
+ 1027 0460 8093 C800 		sts 200,r24
+ 1028               	.LVL50:
+ 1029               	.L206:
+ 1030               	.LBB264:
+ 1031               	.LBB265:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 1032               		.loc 1 136 0
+ 1033 0464 8091 C800 		lds r24,200
+ 1034 0468 85FF      		sbrs r24,5
+ 1035 046a 00C0      		rjmp .L206
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1036               		.loc 1 138 0
+ 1037 046c 8FEF      		ldi r24,lo8(-1)
+ 1038 046e 8093 CE00 		sts 206,r24
+ 1039               	.L207:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 1040               		.loc 1 140 0
+ 1041 0472 8091 C800 		lds r24,200
+ 1042 0476 87FF      		sbrs r24,7
+ 1043 0478 00C0      		rjmp .L207
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 1044               		.loc 1 143 0
+ 1045 047a 8091 CE00 		lds r24,206
+ 1046               	.L208:
+ 1047               	.LBE265:
+ 1048               	.LBE264:
+ 151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 1049               		.loc 1 151 0
+ 1050 047e 8091 C800 		lds r24,200
+ 1051 0482 86FF      		sbrs r24,6
+ 1052 0484 00C0      		rjmp .L208
+ 1053               	.LBE263:
+ 1054               	.LBE262:
+ 1055               	.LBB266:
+ 1056               	.LBB267:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 1057               		.loc 1 117 0
+ 1058 0486 5D9A      		sbi 0xb,5
+ 1059               	.LBE267:
+ 1060               	.LBE266:
+ 320:microSD.c     **** 			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it c
+ 1061               		.loc 1 320 0
+ 1062 0488 8B81      		ldd r24,Y+3
+ 1063 048a 8130      		cpi r24,lo8(1)
+ 1064 048c 01F0      		breq .+2
+ 1065 048e 00C0      		rjmp .L209
+ 320:microSD.c     **** 			if(ocr[2] == 0x01 && ocr[3] == 0xAA)	// The card can work at vdd range of 2.7-3.6V (bail if it c
+ 1066               		.loc 1 320 0 is_stmt 0 discriminator 1
+ 1067 0490 8C81      		ldd r24,Y+4
+ 1068 0492 8A3A      		cpi r24,lo8(-86)
+ 1069 0494 01F0      		breq .+2
+ 1070 0496 00C0      		rjmp .L209
+ 322:microSD.c     **** 				SetTimer(TIMER_SD,SECOND);
+ 1071               		.loc 1 322 0 is_stmt 1
+ 1072 0498 64EC      		ldi r22,lo8(-60)
+ 1073 049a 74E0      		ldi r23,lo8(4)
+ 1074 049c 83E0      		ldi r24,lo8(3)
+ 1075 049e 0E94 0000 		call SetTimer
+ 1076               	.LVL51:
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 1077               		.loc 1 324 0
+ 1078 04a2 00C0      		rjmp .L210
+ 1079               	.L211:
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 1080               		.loc 1 324 0 is_stmt 0 discriminator 2
+ 1081 04a4 40E0      		ldi r20,0
+ 1082 04a6 50E0      		ldi r21,0
+ 1083 04a8 BA01      		movw r22,r20
+ 1084 04aa 89EA      		ldi r24,lo8(-87)
+ 1085 04ac 0E94 0000 		call SendSdCommand
+ 1086               	.LVL52:
+ 1087 04b0 8823      		tst r24
+ 1088 04b2 01F0      		breq .L214
+ 1089               	.LBB268:
+ 1090               	.LBB269:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 1091               		.loc 1 117 0 is_stmt 1
+ 1092 04b4 5D9A      		sbi 0xb,5
+ 1093               	.LBE269:
+ 1094               	.LBE268:
+ 327:microSD.c     **** 					HandleSoftclock();	// Keep the timer timing.
+ 1095               		.loc 1 327 0
+ 1096 04b6 0E94 0000 		call HandleSoftclock
+ 1097               	.LVL53:
+ 1098               	.L210:
+ 324:microSD.c     **** 				while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(ACMD41,0)!=0))	// Initialize card, disable high
+ 1099               		.loc 1 324 0 discriminator 1
+ 1100 04ba 83E0      		ldi r24,lo8(3)
+ 1101 04bc 0E94 0000 		call CheckTimer
+ 1102               	.LVL54:
+ 1103 04c0 8823      		tst r24
+ 1104 04c2 01F0      		breq .L211
+ 1105               	.L214:
+ 330:microSD.c     **** 				if(!(CheckTimer(TIMER_SD)))		// Initialized! (didn't time out)
+ 1106               		.loc 1 330 0
+ 1107 04c4 83E0      		ldi r24,lo8(3)
+ 1108 04c6 0E94 0000 		call CheckTimer
+ 1109               	.LVL55:
+ 1110 04ca 8111      		cpse r24,__zero_reg__
+ 1111 04cc 00C0      		rjmp .L209
+ 1112               	.LBB270:
+ 1113               	.LBB271:
+ 1114               	.LBB272:
+ 1115               	.LBB273:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1116               		.loc 1 138 0 discriminator 1
+ 1117 04ce 1FEF      		ldi r17,lo8(-1)
+ 1118               	.L302:
+ 1119               	.LBE273:
+ 1120               	.LBE272:
+ 1121               	.LBE271:
+ 1122               	.LBE270:
+ 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
+ 1123               		.loc 1 332 0 discriminator 1
+ 1124 04d0 83E0      		ldi r24,lo8(3)
+ 1125 04d2 0E94 0000 		call CheckTimer
+ 1126               	.LVL56:
+ 1127 04d6 8111      		cpse r24,__zero_reg__
+ 1128 04d8 00C0      		rjmp .L221
+ 332:microSD.c     **** 					while((!(CheckTimer(TIMER_SD)))&&(SendSdCommand(CMD58,0)!=0))	// Read card capacity -- I think
+ 1129               		.loc 1 332 0 is_stmt 0 discriminator 2
+ 1130 04da 40E0      		ldi r20,0
+ 1131 04dc 50E0      		ldi r21,0
+ 1132 04de BA01      		movw r22,r20
+ 1133 04e0 8AE3      		ldi r24,lo8(58)
+ 1134 04e2 0E94 0000 		call SendSdCommand
+ 1135               	.LVL57:
+ 1136 04e6 8823      		tst r24
+ 1137 04e8 01F0      		breq .L221
+ 1138               	.LBB277:
+ 1139               	.LBB276:
+ 149:microSD.c     **** 	UCSR1A|=(1<<TXC1);			// Clear transmit complete flag
+ 1140               		.loc 1 149 0 is_stmt 1
+ 1141 04ea 8091 C800 		lds r24,200
+ 1142 04ee 8064      		ori r24,lo8(64)
+ 1143 04f0 8093 C800 		sts 200,r24
+ 1144               	.LVL58:
+ 1145               	.L215:
+ 1146               	.LBB275:
+ 1147               	.LBB274:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 1148               		.loc 1 136 0
+ 1149 04f4 8091 C800 		lds r24,200
+ 1150 04f8 85FF      		sbrs r24,5
+ 1151 04fa 00C0      		rjmp .L215
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1152               		.loc 1 138 0
+ 1153 04fc 1093 CE00 		sts 206,r17
+ 1154               	.L216:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 1155               		.loc 1 140 0
+ 1156 0500 8091 C800 		lds r24,200
+ 1157 0504 87FF      		sbrs r24,7
+ 1158 0506 00C0      		rjmp .L216
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 1159               		.loc 1 143 0
+ 1160 0508 8091 CE00 		lds r24,206
+ 1161               	.L217:
+ 1162               	.LBE274:
+ 1163               	.LBE275:
+ 151:microSD.c     **** 	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+ 1164               		.loc 1 151 0
+ 1165 050c 8091 C800 		lds r24,200
+ 1166 0510 86FF      		sbrs r24,6
+ 1167 0512 00C0      		rjmp .L217
+ 1168               	.LBE276:
+ 1169               	.LBE277:
+ 335:microSD.c     **** 						HandleSoftclock();	// Keep the timer timing.
+ 1170               		.loc 1 335 0
+ 1171 0514 0E94 0000 		call HandleSoftclock
+ 1172               	.LVL59:
+ 1173               	.LBB278:
+ 1174               	.LBB279:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 1175               		.loc 1 117 0
+ 1176 0518 5D9A      		sbi 0xb,5
+ 1177 051a 00C0      		rjmp .L302
+ 1178               	.LVL60:
+ 1179               	.L221:
+ 1180               	.LBE279:
+ 1181               	.LBE278:
+ 338:microSD.c     **** 					if(!(CheckTimer(TIMER_SD)))		// Didn't time out.
+ 1182               		.loc 1 338 0
+ 1183 051c 83E0      		ldi r24,lo8(3)
+ 1184 051e 0E94 0000 		call CheckTimer
+ 1185               	.LVL61:
+ 1186 0522 8111      		cpse r24,__zero_reg__
+ 1187 0524 00C0      		rjmp .L209
+ 1188 0526 84E0      		ldi r24,lo8(4)
+ 1189               	.LBB280:
+ 1190               	.LBB281:
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1191               		.loc 1 138 0
+ 1192 0528 9FEF      		ldi r25,lo8(-1)
+ 1193               	.L301:
+ 136:microSD.c     **** 	while(!(UCSR1A&(1<<UDRE1)))	// Spin until the transmit buffer is ready to receive data.
+ 1194               		.loc 1 136 0
+ 1195 052a 2091 C800 		lds r18,200
+ 1196 052e 25FF      		sbrs r18,5
+ 1197 0530 00C0      		rjmp .L301
+ 138:microSD.c     **** 	UDR1=theByte;				// Load the xmit buffer and start the transfer.
+ 1198               		.loc 1 138 0
+ 1199 0532 9093 CE00 		sts 206,r25
+ 1200               	.L223:
+ 140:microSD.c     **** 	while(!(UCSR1A&(1<<RXC1)))	// Spin until the recieve buffer has unread data.
+ 1201               		.loc 1 140 0
+ 1202 0536 2091 C800 		lds r18,200
+ 1203 053a 27FF      		sbrs r18,7
+ 1204 053c 00C0      		rjmp .L223
+ 143:microSD.c     **** 	return(UDR1);				// Return the data clocked in from the slave.
+ 1205               		.loc 1 143 0
+ 1206 053e 2091 CE00 		lds r18,206
+ 1207 0542 8150      		subi r24,lo8(-(-1))
+ 1208               	.LBE281:
+ 1209               	.LBE280:
+ 340:microSD.c     **** 						for(i=0;i<4;i++)						// This is an "R3" response, so we need to grab four more bytes.
+ 1210               		.loc 1 340 0
+ 1211 0544 01F4      		brne .L301
+ 345:microSD.c     **** 						SendDummyByte();			// Send extra FF after multibyte response. 
+ 1212               		.loc 1 345 0
+ 1213 0546 0E94 0000 		call SendDummyByte
+ 1214               	.LVL62:
+ 1215               	.LBB282:
+ 1216               	.LBB283:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 1217               		.loc 1 117 0
+ 1218 054a 5D9A      		sbi 0xb,5
+ 1219               	.LBE283:
+ 1220               	.LBE282:
+ 348:microSD.c     **** 						SendSdCommand(CMD16,SD_BLOCK_LENGTH);	// Set block length to 512.
+ 1221               		.loc 1 348 0
+ 1222 054c 40E0      		ldi r20,0
+ 1223 054e 52E0      		ldi r21,lo8(2)
+ 1224 0550 60E0      		ldi r22,0
+ 1225 0552 70E0      		ldi r23,0
+ 1226 0554 80E1      		ldi r24,lo8(16)
+ 1227 0556 0E94 0000 		call SendSdCommand
+ 1228               	.LVL63:
+ 1229               	.LBB284:
+ 1230               	.LBB285:
+ 117:microSD.c     **** 	PORTD|=Om_SD_CS;				// Make sure the CS (SS) line is high.
+ 1231               		.loc 1 117 0
+ 1232 055a 5D9A      		sbi 0xb,5
+ 1233               	.LBE285:
+ 1234               	.LBE284:
+ 350:microSD.c     **** 						SendDummyByte();						
+ 1235               		.loc 1 350 0
+ 1236 055c 0E94 0000 		call SendDummyByte
+ 1237               	.LVL64:
+ 351:microSD.c     **** 						cardValid=true;				// SD card present, and standard capacity.
+ 1238               		.loc 1 351 0
+ 1239 0560 81E0      		ldi r24,lo8(1)
+ 1240 0562 00C0      		rjmp .L201
+ 1241               		.cfi_endproc
+ 1242               	.LFE8:
+ 1244               	.global	SdBeginSingleBlockRead
+ 1246               	SdBeginSingleBlockRead:
+ 1247               	.LFB9:
  384:microSD.c     **** 
  385:microSD.c     **** //-----------------------------------------------------------------------
  386:microSD.c     **** //-----------------------------------------------------------------------
@@ -1176,37 +1838,37 @@
  400:microSD.c     **** // These are all based on TAAC and not NSAC (which always seems to be 0).
  401:microSD.c     **** // Either way, best to open with this command, then do your polling for the data token somewhere el
  402:microSD.c     **** {
- 780               		.loc 1 402 0
- 781               		.cfi_startproc
- 782               	.LVL86:
- 783               	/* prologue: function */
- 784               	/* frame size = 0 */
- 785               	/* stack size = 0 */
- 786               	.L__stack_usage = 0
- 787 0390 AB01      		movw r20,r22
- 788 0392 BC01      		movw r22,r24
- 789               	.LVL87:
+ 1248               		.loc 1 402 0
+ 1249               		.cfi_startproc
+ 1250               	.LVL65:
+ 1251               	/* prologue: function */
+ 1252               	/* frame size = 0 */
+ 1253               	/* stack size = 0 */
+ 1254               	.L__stack_usage = 0
+ 1255 0564 AB01      		movw r20,r22
+ 1256 0566 BC01      		movw r22,r24
+ 1257               	.LVL66:
  403:microSD.c     **** 	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate t
- 790               		.loc 1 403 0
- 791 0394 89E0      		ldi r24,9
- 792               		1:
- 793 0396 440F      		lsl r20
- 794 0398 551F      		rol r21
- 795 039a 661F      		rol r22
- 796 039c 771F      		rol r23
- 797 039e 8A95      		dec r24
- 798 03a0 01F4      		brne 1b
- 799               	.LVL88:
+ 1258               		.loc 1 403 0
+ 1259 0568 89E0      		ldi r24,9
+ 1260               		1:
+ 1261 056a 440F      		lsl r20
+ 1262 056c 551F      		rol r21
+ 1263 056e 661F      		rol r22
+ 1264 0570 771F      		rol r23
+ 1265 0572 8A95      		dec r24
+ 1266 0574 01F4      		brne 1b
+ 1267               	.LVL67:
  404:microSD.c     **** 
  405:microSD.c     **** 	if(SendSdCommand(CMD17,theBlock)==0)	// If we send the command and get the correct response...
- 800               		.loc 1 405 0
- 801 03a2 81E1      		ldi r24,lo8(17)
- 802 03a4 0E94 0000 		call SendSdCommand
- 803               	.LVL89:
- 804 03a8 91E0      		ldi r25,lo8(1)
- 805 03aa 8111      		cpse r24,__zero_reg__
- 806 03ac 90E0      		ldi r25,0
- 807               	.L93:
+ 1268               		.loc 1 405 0
+ 1269 0576 81E1      		ldi r24,lo8(17)
+ 1270 0578 0E94 0000 		call SendSdCommand
+ 1271               	.LVL68:
+ 1272 057c 91E0      		ldi r25,lo8(1)
+ 1273 057e 8111      		cpse r24,__zero_reg__
+ 1274 0580 90E0      		ldi r25,0
+ 1275               	.L305:
  406:microSD.c     **** 	{
  407:microSD.c     **** 		return(true);
  408:microSD.c     **** 	}
@@ -1215,50 +1877,50 @@
  411:microSD.c     **** 		return(false);
  412:microSD.c     **** 	}
  413:microSD.c     **** }
- 808               		.loc 1 413 0
- 809 03ae 892F      		mov r24,r25
- 810 03b0 0895      		ret
- 811               		.cfi_endproc
- 812               	.LFE9:
- 814               	.global	SdBeginSingleBlockWrite
- 816               	SdBeginSingleBlockWrite:
- 817               	.LFB10:
+ 1276               		.loc 1 413 0
+ 1277 0582 892F      		mov r24,r25
+ 1278 0584 0895      		ret
+ 1279               		.cfi_endproc
+ 1280               	.LFE9:
+ 1282               	.global	SdBeginSingleBlockWrite
+ 1284               	SdBeginSingleBlockWrite:
+ 1285               	.LFB10:
  414:microSD.c     **** 
  415:microSD.c     **** bool SdBeginSingleBlockWrite(unsigned long theBlock)
  416:microSD.c     **** // Opens up the SD card for a single block write, starting at the beginning of the passed block.
  417:microSD.c     **** // Returns false if something goes wrong.  Otherwise, we exit ready to write bytes to the block.
  418:microSD.c     **** {
- 818               		.loc 1 418 0
- 819               		.cfi_startproc
- 820               	.LVL90:
- 821               	/* prologue: function */
- 822               	/* frame size = 0 */
- 823               	/* stack size = 0 */
- 824               	.L__stack_usage = 0
- 825 03b2 AB01      		movw r20,r22
- 826 03b4 BC01      		movw r22,r24
- 827               	.LVL91:
+ 1286               		.loc 1 418 0
+ 1287               		.cfi_startproc
+ 1288               	.LVL69:
+ 1289               	/* prologue: function */
+ 1290               	/* frame size = 0 */
+ 1291               	/* stack size = 0 */
+ 1292               	.L__stack_usage = 0
+ 1293 0586 AB01      		movw r20,r22
+ 1294 0588 BC01      		movw r22,r24
+ 1295               	.LVL70:
  419:microSD.c     **** 	theBlock*=SD_BLOCK_LENGTH;		// SDSC cards want read addresses in bytes, not blocks, so translate t
- 828               		.loc 1 419 0
- 829 03b6 99E0      		ldi r25,9
- 830               		1:
- 831 03b8 440F      		lsl r20
- 832 03ba 551F      		rol r21
- 833 03bc 661F      		rol r22
- 834 03be 771F      		rol r23
- 835 03c0 9A95      		dec r25
- 836 03c2 01F4      		brne 1b
- 837               	.LVL92:
+ 1296               		.loc 1 419 0
+ 1297 058a 99E0      		ldi r25,9
+ 1298               		1:
+ 1299 058c 440F      		lsl r20
+ 1300 058e 551F      		rol r21
+ 1301 0590 661F      		rol r22
+ 1302 0592 771F      		rol r23
+ 1303 0594 9A95      		dec r25
+ 1304 0596 01F4      		brne 1b
+ 1305               	.LVL71:
  420:microSD.c     **** 
  421:microSD.c     **** 	if(SendSdCommand(CMD24,theBlock)==0)	// If we send the command and get the correct response...
- 838               		.loc 1 421 0
- 839 03c4 88E1      		ldi r24,lo8(24)
- 840 03c6 0E94 0000 		call SendSdCommand
- 841               	.LVL93:
- 842 03ca 91E0      		ldi r25,lo8(1)
- 843 03cc 8111      		cpse r24,__zero_reg__
- 844 03ce 90E0      		ldi r25,0
- 845               	.L98:
+ 1306               		.loc 1 421 0
+ 1307 0598 88E1      		ldi r24,lo8(24)
+ 1308 059a 0E94 0000 		call SendSdCommand
+ 1309               	.LVL72:
+ 1310 059e 91E0      		ldi r25,lo8(1)
+ 1311 05a0 8111      		cpse r24,__zero_reg__
+ 1312 05a2 90E0      		ldi r25,0
+ 1313               	.L310:
  422:microSD.c     **** 	{
  423:microSD.c     **** 		return(true);
  424:microSD.c     **** 	}
@@ -1267,33 +1929,33 @@
  427:microSD.c     **** 		return(false);
  428:microSD.c     **** 	}
  429:microSD.c     **** }
- 846               		.loc 1 429 0
- 847 03d0 892F      		mov r24,r25
- 848 03d2 0895      		ret
- 849               		.cfi_endproc
- 850               	.LFE10:
- 852               	.Letext0:
- 853               		.file 2 "/usr/local/avr/bin/../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h"
- 854               		.file 3 "defines.h"
- 855               		.file 4 "softclock.h"
- 856               		.file 5 "WTPA.h"
+ 1314               		.loc 1 429 0
+ 1315 05a4 892F      		mov r24,r25
+ 1316 05a6 0895      		ret
+ 1317               		.cfi_endproc
+ 1318               	.LFE10:
+ 1320               	.Letext0:
+ 1321               		.file 2 "/usr/local/avr/bin/../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h"
+ 1322               		.file 3 "defines.h"
+ 1323               		.file 4 "WTPA.h"
+ 1324               		.file 5 "softclock.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 microSD.c
-     /tmp/ccLO6Klz.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccLO6Klz.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccLO6Klz.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccLO6Klz.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccLO6Klz.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccLO6Klz.s:12     .text:00000000 UnInitSdInterface
-     /tmp/ccLO6Klz.s:43     .text:0000001c InitSdInterface
-     /tmp/ccLO6Klz.s:85     .text:0000004a EndSdTransfer
-     /tmp/ccLO6Klz.s:101    .text:0000004e StartSdTransfer
-     /tmp/ccLO6Klz.s:119    .text:00000054 TransferSdByte
-     /tmp/ccLO6Klz.s:149    .text:0000006e SendDummyByte
-     /tmp/ccLO6Klz.s:178    .text:00000088 SendSdCommand
-     /tmp/ccLO6Klz.s:395    .text:00000180 SdHandshake
-     /tmp/ccLO6Klz.s:778    .text:00000390 SdBeginSingleBlockRead
-     /tmp/ccLO6Klz.s:816    .text:000003b2 SdBeginSingleBlockWrite
+     /tmp/cc9IxhwH.s:2      *ABS*:0000003e __SP_H__
+     /tmp/cc9IxhwH.s:3      *ABS*:0000003d __SP_L__
+     /tmp/cc9IxhwH.s:4      *ABS*:0000003f __SREG__
+     /tmp/cc9IxhwH.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/cc9IxhwH.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/cc9IxhwH.s:11     .text:00000000 SendDummyByte
+     /tmp/cc9IxhwH.s:57     .text:0000002e UnInitSdInterface
+     /tmp/cc9IxhwH.s:87     .text:0000004a InitSdInterface
+     /tmp/cc9IxhwH.s:129    .text:00000078 EndSdTransfer
+     /tmp/cc9IxhwH.s:145    .text:0000007c StartSdTransfer
+     /tmp/cc9IxhwH.s:163    .text:00000082 TransferSdByte
+     /tmp/cc9IxhwH.s:194    .text:0000009c SendSdCommand
+     /tmp/cc9IxhwH.s:677    .text:000002da SdHandshake
+     /tmp/cc9IxhwH.s:1246   .text:00000564 SdBeginSingleBlockRead
+     /tmp/cc9IxhwH.s:1284   .text:00000586 SdBeginSingleBlockWrite
 
 UNDEFINED SYMBOLS
 SetTimer

@@ -90,14 +90,14 @@
   61               	/* stack size = 0 */
   62               	.L__stack_usage = 0
   63               	.LVL2:
-  64               	.L5:
+  64               	.L6:
   33:eeprom.c      **** 	unsigned char 
   34:eeprom.c      **** 		sreg;
   35:eeprom.c      **** 
   36:eeprom.c      **** 	while(EECR&(1<<EEPE))	// Spin until EEPROM is ready.
   65               		.loc 1 36 0 discriminator 1
   66 001a F999      		sbic 0x1f,1
-  67 001c 00C0      		rjmp .L5
+  67 001c 00C0      		rjmp .L6
   37:eeprom.c      **** 		;
   38:eeprom.c      **** 
   39:eeprom.c      **** 	sreg=SREG;	// Keep operations atomic (interrupts can mess up eeprom access)
@@ -142,12 +142,12 @@
   97               		.file 2 "/usr/local/avr/bin/../lib/gcc/avr/4.7.2/../../../../avr/include/stdint.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 eeprom.c
-     /tmp/ccM0zEpc.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccM0zEpc.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccM0zEpc.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccM0zEpc.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccM0zEpc.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccM0zEpc.s:12     .text:00000000 EepromWrite
-     /tmp/ccM0zEpc.s:55     .text:0000001a EepromRead
+     /tmp/ccn7bYxc.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccn7bYxc.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccn7bYxc.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccn7bYxc.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccn7bYxc.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccn7bYxc.s:12     .text:00000000 EepromWrite
+     /tmp/ccn7bYxc.s:55     .text:0000001a EepromRead
 
 NO UNDEFINED SYMBOLS

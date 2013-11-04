@@ -174,34 +174,25 @@
   77 0038 8091 C000 		lds r24,192
   78 003c 85FF      		sbrs r24,5
   79 003e 00C0      		rjmp .L4
-  80 0040 00C0      		rjmp .L11
-  81               	.L6:
-  82               	.LBB4:
-  83               	.LBB5:
+  80               	.L13:
+  81               	.LBB6:
+  82               	.LBB7:
+  36:uart.c        **** 	if(UCSR0A&(1<<RXC0))	
+  83               		.loc 1 36 0
+  84 0040 8091 C000 		lds r24,192
+  85 0044 87FF      		sbrs r24,7
+  86 0046 0895      		ret
+  87               	.L9:
+  88               	.LBE7:
+  89               	.LBE6:
+  90               	.LBB8:
+  91               	.LBB9:
   58:uart.c        **** 	return(UDR0);		// Get one byte back from the receive buffer.  Note that there may be (one) more in
-  84               		.loc 1 58 0
-  85 0042 8091 C600 		lds r24,198
-  86               	.L11:
-  87               	.LBE5:
-  88               	.LBE4:
- 103:uart.c        **** 	{
- 104:uart.c        **** 		;
- 105:uart.c        **** 	}
- 106:uart.c        **** 
- 107:uart.c        **** //	Uart0FlushBuffer();						// Get rid of any poo poo hanging out in the input buffer.
- 108:uart.c        **** 	while(Uart0GotByte())
-  89               		.loc 1 108 0 discriminator 1
-  90 0046 0E94 0000 		call Uart0GotByte
-  91               	.LVL0:
-  92 004a 8111      		cpse r24,__zero_reg__
-  93 004c 00C0      		rjmp .L6
-  94               	/* epilogue start */
- 109:uart.c        **** 	{
- 110:uart.c        **** 		Uart0GetByte();
- 111:uart.c        **** 	}		
- 112:uart.c        **** }
-  95               		.loc 1 112 0
-  96 004e 0895      		ret
+  92               		.loc 1 58 0
+  93 0048 8091 C600 		lds r24,198
+  94 004c 00C0      		rjmp .L13
+  95               	.LBE9:
+  96               	.LBE8:
   97               		.cfi_endproc
   98               	.LFE3:
  100               	.Letext0:
@@ -209,13 +200,13 @@
  102               		.file 3 "defines.h"
 DEFINED SYMBOLS
                             *ABS*:00000000 uart.c
-     /tmp/ccLAQeTi.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccLAQeTi.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccLAQeTi.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccLAQeTi.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccLAQeTi.s:6      *ABS*:00000001 __zero_reg__
-     /tmp/ccLAQeTi.s:12     .text:00000000 Uart0GotByte
-     /tmp/ccLAQeTi.s:33     .text:0000000c Uart0GetByte
-     /tmp/ccLAQeTi.s:50     .text:00000012 InitUart0
+     /tmp/ccAKDRkj.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccAKDRkj.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccAKDRkj.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccAKDRkj.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccAKDRkj.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccAKDRkj.s:12     .text:00000000 Uart0GotByte
+     /tmp/ccAKDRkj.s:33     .text:0000000c Uart0GetByte
+     /tmp/ccAKDRkj.s:50     .text:00000012 InitUart0
 
 NO UNDEFINED SYMBOLS

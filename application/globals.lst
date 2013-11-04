@@ -15,11 +15,11 @@
   15               		.file 3 "globals.c"
 DEFINED SYMBOLS
                             *ABS*:00000000 globals.c
-     /tmp/ccdsHUia.s:2      *ABS*:0000003e __SP_H__
-     /tmp/ccdsHUia.s:3      *ABS*:0000003d __SP_L__
-     /tmp/ccdsHUia.s:4      *ABS*:0000003f __SREG__
-     /tmp/ccdsHUia.s:5      *ABS*:00000000 __tmp_reg__
-     /tmp/ccdsHUia.s:6      *ABS*:00000001 __zero_reg__
+     /tmp/ccvw4hka.s:2      *ABS*:0000003e __SP_H__
+     /tmp/ccvw4hka.s:3      *ABS*:0000003d __SP_L__
+     /tmp/ccvw4hka.s:4      *ABS*:0000003f __SREG__
+     /tmp/ccvw4hka.s:5      *ABS*:00000000 __tmp_reg__
+     /tmp/ccvw4hka.s:6      *ABS*:00000001 __zero_reg__
                             *COM*:00000048 bankStates
                             *COM*:00000002 systemTicks
 
