@@ -273,6 +273,7 @@ enum					// All the things the micro sd card's interrupt can be doing
 //----------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
+<<<<<<< HEAD
 /*
 static void PlayCallback(BANK_STATE *theBank)
 // NOTE -- callbacks for different audio functions can allow us to combine output bytes more efficiently I think
@@ -318,6 +319,9 @@ static void PlayCallback(BANK_STATE *theBank)
 }
 */
 
+
+=======
+>>>>>>> fd6955b... Started messing with specific audio fcn callbacks, made DPCM functions
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 
@@ -374,20 +378,36 @@ static unsigned char UpdateAudioChannel0(void)
 		LATCH_PORT=((bankStates[BANK_0].currentAddress>>8));	// Put the middle byte of the address on the latch.
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		PORTC=(0x48|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC6 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+//		PORTC&=~0x07;											// Clear PORTC bits 0-2
+//		PORTC|=((bankStates[BANK_0].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_PORT=adcByte;				// Put the data to write on the RAM's input port
 		// Compute address while bus settles.
 
-		bankStates[BANK_0].currentAddress++;										// Next address please.
-		bankStates[BANK_0].endAddress=bankStates[BANK_0].currentAddress;			// Match ending address of the sample to the current memory address.
+		// 7uS with this:
+//		bankStates[BANK_0].currentAddress++;										// Next address please.
+//		bankStates[BANK_0].endAddress=bankStates[BANK_0].currentAddress;			// Match ending address of the sample to the current memory address.
+//		bankStates[BANK_0].adjustedEndAddress=bankStates[BANK_0].currentAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).
+
+//		if(bankStates[BANK_0].endAddress>=bankStates[BANK_1].endAddress)	// Banks stepping on each other?  Note, this test will result in one overlapping RAM location.
+//		{
+//			bankStates[BANK_0].audioFunction=AUDIO_IDLE;	// Stop recording on this channel.
+//			outOfRam=true;									// Signal mainline code that we're out of memory.
+//		}
+
+		// 6.6uS with this:
+		bankStates[BANK_0].endAddress=++bankStates[BANK_0].currentAddress;			// Next address please, match ending address of the sample to the current memory address.
 		bankStates[BANK_0].adjustedEndAddress=bankStates[BANK_0].currentAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).
 
 		if(bankStates[BANK_0].endAddress>=bankStates[BANK_1].endAddress)	// Banks stepping on each other?  Note, this test will result in one overlapping RAM location.
 		{
 			bankStates[BANK_0].audioFunction=AUDIO_IDLE;	// Stop recording on this channel.
 			outOfRam=true;									// Signal mainline code that we're out of memory.
-		}
+		}		
 
 		// Finish writing to RAM.
 		PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
@@ -408,7 +428,11 @@ static unsigned char UpdateAudioChannel0(void)
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		PORTC=(0x48|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC6 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+//		PORTC&=~0x07;											// Clear PORTC bits 0-2
+//		PORTC|=((bankStates[BANK_0].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -417,7 +441,7 @@ static unsigned char UpdateAudioChannel0(void)
 
 		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
 		{
-			// Slice first, only worry about forward ### @@@
+			// Slice first, only worry about forward ###
 
 			if(sliceRemaining[BANK_0])	// Moving through our current slice?
 			{
@@ -486,23 +510,7 @@ static unsigned char UpdateAudioChannel0(void)
 				}
 			}
 		}
-/*
-// @@@ Isr speed test hooey
-		if(bankStates[BANK_0].currentAddress==daNextJump)
-		{
-			bankStates[BANK_0].currentAddress=daNextJumpPrime;
-		}
-		else
-		{
-			bankStates[BANK_0].currentAddress++;
-		}
 
-		if(bankStates[BANK_0].sampleDirection==false)
-		{
-			bankStates[BANK_0].currentAddress-=2;
-		}
-
-*/
 		// Finish getting the byte from RAM.
 
 		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM.
@@ -528,7 +536,11 @@ static unsigned char UpdateAudioChannel0(void)
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		PORTC=(0x48|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC6 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+//		PORTC&=~0x07;											// Clear PORTC bits 0-2
+//		PORTC|=((bankStates[BANK_0].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -684,7 +696,11 @@ static unsigned char UpdateAudioChannel1(void)
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		//PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+		PORTC&=~0x07;											// Clear PORTC bits 0-2
+		PORTC|=((bankStates[BANK_1].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_PORT=adcByte;				// Put the data to write on the RAM's input port
 
@@ -719,7 +735,11 @@ static unsigned char UpdateAudioChannel1(void)
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		//PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+		PORTC&=~0x07;											// Clear PORTC bits 0-2
+		PORTC|=((bankStates[BANK_1].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -823,7 +843,11 @@ static unsigned char UpdateAudioChannel1(void)
 		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		//PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+		PORTC&=~0x07;											// Clear PORTC bits 0-2
+		PORTC|=((bankStates[BANK_1].currentAddress>>16)&0x07);	// Set high addy bits on PORTC0-2
 
 		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -1139,9 +1163,10 @@ ISR(TIMER1_CAPT_vect)
 	static bool
 		flipFlop;		// Used for half-time
 
-	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
+	PORTC|=Om_TEST_PIN_0;		// @@@ Used to time ISRs
 	if((bankStates[BANK_0].halfSpeed==false)||(bankStates[BANK_0].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
 	{
+		UpdateAudioChannel0();							// If so, then call the audioIsr for bank 0 and do whatever it's currently supposed to do.
 		extIsrOutputBank0=UpdateAudioChannel0();		// If so, then call the audioIsr for bank 0 and do whatever it's currently supposed to do.
 	}
 	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
@@ -1151,7 +1176,7 @@ ISR(TIMER1_CAPT_vect)
 		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
 		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
 	}
-	PORTC&=~Om_TEST_PIN;		// @@@ Used to time ISRs
+	PORTC&=~Om_TEST_PIN_0;		// @@@ Used to time ISRs
 }
 
 ISR(PCINT2_vect)
@@ -1161,7 +1186,7 @@ ISR(PCINT2_vect)
 	static bool
 		flipFlop;		// Used for half-time
 
-//	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
+	PORTC|=Om_TEST_PIN_1;		// @@@ Used to time ISRs
 	if((bankStates[BANK_1].halfSpeed==false)||(bankStates[BANK_1].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
 	{
 		extIsrOutputBank1=UpdateAudioChannel1();		// If so, then call the audioIsr for bank 1 and do whatever it's currently supposed to do.
@@ -1194,7 +1219,7 @@ ISR(TIMER1_COMPA_vect)
 	static bool
 		flipFlop;		// Used for half-time
 
-//	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
+	PORTC|=Om_TEST_PIN_0;		// @@@ Used to time ISRs
 
 	if((bankStates[BANK_0].halfSpeed==false)||(bankStates[BANK_0].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
 	{
@@ -1230,7 +1255,7 @@ ISR(TIMER1_COMPB_vect)
 	static bool
 		flipFlop;		// Used for half-time
 
-//	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
+//	PORTC|=Om_TEST_PIN_1;		// @@@ Used to time ISRs
 
 	if((bankStates[BANK_1].halfSpeed==false)||(bankStates[BANK_1].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
 	{
@@ -1264,6 +1289,8 @@ ISR(TIMER2_COMPB_vect)
 	unsigned char
 		theByte;
 
+//	PORTC|=Om_TEST_PIN_1;		// @@@ Used to time ISRs
+
 	if(sdIsrState==SD_ISR_LOADING_RAM)	// Putting data from the SD buffer into a RAM bank?
 	{
 		if(sdRamSampleRemaining)	// Bytes remaining in the sample?
@@ -1291,7 +1318,11 @@ ISR(TIMER2_COMPB_vect)
 				LATCH_PORT=(sdRamAddress>>8);				// Put the middle byte of the address on the latch.
 				PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
 				PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
-				PORTC=(0x88|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+				//PORTC=(0x88|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+				// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+				PORTC&=~0x07;											// Clear PORTC bits 0-2
+				PORTC|=((sdRamAddress>>16)&0x07);						// Set high addy bits on PORTC0-2
 
 				LATCH_PORT=theByte;							// Put the data to write on the RAM's input port
 
@@ -1347,7 +1378,11 @@ ISR(TIMER2_COMPB_vect)
 				PORTA|=(Om_RAM_H_ADR_LA);				// Strobe it to the latch output...
 				PORTA&=~(Om_RAM_H_ADR_LA);				// ...Keep it there.
 
-				PORTC=(0x88|((sdRamAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+				//PORTC=(0x88|((sdRamAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+				// @@@ Note, the below operations are needed to not mess with the TEST pins.  You can do an operation more like the above once testing is over to save a few cycles.
+				PORTC&=~0x07;											// Clear PORTC bits 0-2
+				PORTC|=((sdRamAddress>>16)&0x07);						// Set high addy bits on PORTC0-2
 
 				LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 				PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -1431,12 +1466,13 @@ ISR(TIMER2_COMPB_vect)
 
 			// Set this contribution to the DAC to midscale (this output source is now quiet)
 			sdStreamOutput=0;
+			UpdateOutput();				// Update the DAC
 		}
 	}
 }
 
 ISR(TIMER2_COMPA_vect)
-// Serves exclusively to make our FABULOUS intro happen
+// Serves exclusively to make our gay intro happen
 // As far as the PWM goes, this should happen as often as possible.
 {
 	static unsigned char
@@ -4980,7 +5016,8 @@ int main(void)
 
 	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
 
-	SetState(DoFruitcakeIntro);	// Daze and Astound
+	SetState(DoFruitcakeIntro);	// Get gay.
+//	SetState(DoStartupSelect);
 
 	while(1)
 	{
