@@ -49,7 +49,16 @@ typedef struct
 	unsigned char
 		sampleWindowOffset;			// Used to shift the sample backwards and forwards in chunks -- an offset applied to the adjusted start and end addresses
 	unsigned long
-		currentAddress;
+		currentAddress;				// Points to the sample's current location in SRAM
+
+	unsigned long
+		targetAddress;				// When the current ram location gets here, we should do something (like loop, or stop, etc)
+	unsigned long
+		addressAfterLoop;			// Holds the relative beginning of the sample or sample chunk; it's where we go after looping.
+	signed char
+		audioOutput;				// This is the signed audio output from this bank, before being converted to whatever format is needed to go into the DAC.
+	signed char
+		sampleIncrement;			// The amount we should increment a sample when reading (normal playback this is 1 or -1 for BANK_1)
 }	BANK_STATE;
 
 extern volatile BANK_STATE					// Keep track of what's going on in all the implemented banks.
