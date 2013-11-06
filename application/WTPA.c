@@ -32,10 +32,12 @@
 //=============================
 // Atmel AVR Atmega644p MCU, 5v operation.
 // 20MHz Crystal Oscillator.
-// Originally built with:
-// AVR-Binutils 2.19,
-// AVR-GCC 4.3.2,
-// AVR-libc 1.6.4
+// Last build:
+// AVR_8_bit_GNU_Toolchain_3.4.2_939
+// Likely from the Atmel site
+// AVR-Binutils 2.23.1
+// AVR-GCC 4.7.2
+// AVR-libc 1.8.0
 //==============================
 
 /*
@@ -493,7 +495,7 @@ static void RecordCallback(volatile BANK_STATE *theBank)
 	if(!(ADCSRA&(1<<ADSC)))		// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
 	{
 		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
+		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it at the end of the callback so the ADC S/H acquires the sample after noisy RAM/DAC digital bus activity on PORTA -- this matters a lot)
 	}
 }
 
