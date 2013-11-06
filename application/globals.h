@@ -59,6 +59,11 @@ typedef struct
 		audioOutput;				// This is the signed audio output from this bank, before being converted to whatever format is needed to go into the DAC.
 	signed char
 		sampleIncrement;			// The amount we should increment a sample when reading (normal playback this is 1 or -1 for BANK_1)
+
+	unsigned char
+		sampleSkipCounter;			// Used to handle half time / time division
+	unsigned char
+		samplesToSkip;
 }	BANK_STATE;
 
 extern volatile BANK_STATE					// Keep track of what's going on in all the implemented banks.

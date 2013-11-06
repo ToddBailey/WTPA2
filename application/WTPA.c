@@ -275,9 +275,9 @@ enum					// All the things the micro sd card's interrupt can be doing
 //----------------------------------------------------------------------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------------------------------------------------------------------
 
-typedef void CALLBACK_FUNCTION(volatile BANK_STATE *theBank);	// Creates a datatype -- a void function called CALLBACK_FUNCTION which returns void
+typedef void CALLBACK_FUNCTION(volatile BANK_STATE *theBank);	// Creates a function datatype with that is passed a pointer to a bank as the input argument
 
-CALLBACK_FUNCTION
+CALLBACK_FUNCTION		// Instantiations of callback functions
 	*AudioCallback0,
 	*AudioCallback1;
 	
@@ -300,6 +300,12 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // NOTE -- for the record, before you started messing around (Oct 2013):
 //		Playback ISR speed:		About 13.1-13.2uS
 //		Record ISR speed:		About 11.45uS
+// Wed Nov  6 12:55:16 EST 2013
+//		As of last push:
+//		Playback ISR time:		7.80uS
+//		Rec ISR time:			6.50uS	
+// Adding half time:
+//		Play					8.25uS (9 cycles added)
 
 // NOTE -- callbacks for different audio functions can allow us to combine output bytes more efficiently I think
 // Old functions summed 4 things -- contributions from MIDI for each bank and contributions from the oscillator clocked ISRs for each bank.
@@ -320,6 +326,14 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // Can we replace the audioFunction variable with a check of the Callback function?  Think so.
 // Make "slice" vars associated with bank structure
 
+// @@@ remove "half speed" variable -- perhaps include speed divisions as an option now
+
+// NOTE -- instead of comparing to ending address each sample to see if a loop is done, could we perhaps decrement the amount of sample remaining?
+// This involves decrementing and comparing a 32 bit number to zero rather than comparing two 32 bit numbers.
+// NOTE -- Initial looking at the LSS files show the dec/compareZ to be slower (17cy vs 13cy)
+// NOTE -- this is how granular does it right now.  It would however allow us to skip individual samples more easily (ie -- INCREASE sample speed): we could dec the "remaining" counter by the "increment" amount and check to see if it went negative
+//		This would allow us to decrement by 2, say and not worry if we missed targetAddress 
+
 {
 	// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
 	// The playback ISR also allows the various effects to change the output.
@@ -334,118 +348,117 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 	unsigned char
 		dacOutput;		// What to put on the DAC
 			
-	theAddy=theBank->currentAddress;		// Using a local nonvolatile variable allows the compiler to be smarter about the address resolution and not load a 32-bit number every time.
-
-//	LATCH_PORT=(theBank->currentAddress);	// Put the LSB of the address on the latch.
-//	LATCH_PORT=(unsigned char)theAddy;				// Put the LSB of the address on the latch.
-	LATCH_PORT=theAddy;								// Put the LSB of the address on the latch.
-
-	PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-	PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-//	LATCH_PORT=((theBank->currentAddress>>8));	// Put the middle byte of the address on the latch.
-//	LATCH_PORT=(unsigned char)(theAddy>>8);					// Put the LSB of the address on the latch.
-	LATCH_PORT=(theAddy>>8);								// Put the LSB of the address on the latch.
-
-	PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-	PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-//	PORTC=(0x88|((theBank->currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-	PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));				// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
-	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
-
-	// Calculate new addy while data bus settles
-
-	if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+	if(theBank->sampleSkipCounter)		// Used for time division
 	{
-		if(theBank->loopOnce==true)									// Yes, and we should be done now.
-		{
-			theBank->audioFunction=AUDIO_IDLE;
-			theBank->clockMode=CLK_NONE;		
-		}
-		else
-		{
-			theBank->currentAddress=theBank->addressAfterLoop;		// We're at the end of the sample and we need to go back to the relative beginning of the sample.
-		}
+		theBank->sampleSkipCounter--;	// Don't play anything this time around
 	}
 	else
 	{
-//		theBank->currentAddress+=theBank->sampleIncrement;					// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
-		theBank->currentAddress=(theBank->sampleIncrement+theAddy);			// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+		theBank->sampleSkipCounter=theBank->samplesToSkip;		// Reload number of samples to skip
+
+		theAddy=theBank->currentAddress;		// Using a local nonvolatile variable allows the compiler to be smarter about the address resolution and not load a 32-bit number every time.
+
+		LATCH_PORT=theAddy;							// Put the LSB of the address on the latch.
+		PORTA|=(Om_RAM_L_ADR_LA);					// Strobe it to the latch output...
+		PORTA&=~(Om_RAM_L_ADR_LA);					// ...Keep it there.
+
+		LATCH_PORT=(theAddy>>8);					// Put the LSB of the address on the latch.
+		PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
+		PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
+
+		PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		LATCH_DDR=0x00;								// Turn the data bus around (AVR's data port to inputs)
+		PORTA&=~(Om_RAM_OE);						// RAM's IO pins to outputs.
+
+		// Calculate new addy while data bus settles
+
+		if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+		{
+			if(theBank->loopOnce==true)									// Yes, and we should be done now.
+			{
+				theBank->audioFunction=AUDIO_IDLE;
+				theBank->clockMode=CLK_NONE;		
+			}
+			else
+			{
+				theBank->currentAddress=theBank->addressAfterLoop;		// We're at the end of the sample and we need to go back to the relative beginning of the sample.
+			}
+		}
+		else
+		{
+			theBank->currentAddress=(theBank->sampleIncrement+theAddy);			// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+		}
+
+		// Finish getting the byte from RAM.
+
+		theBank->audioOutput=LATCH_INPUT;		// Get the byte from this address in RAM.
+		PORTA|=(Om_RAM_OE);								// Tristate the RAM.
+		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
+
+		if(theBank->bitReduction)	// Low bit rate?
+		{
+			// @@@ if you never change the top bit do you need to xor it off?
+			// @@@ also, sanity check this
+
+	//		theBank->audioOutput^=0x80;											// Bring the signed char back to unsigned for the bitmask.
+			theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
+	//		theBank->audioOutput^=0x80;											// Bring it back to signed.
+		}
+
+		// --------------------------------------------------	
+		// Now deal with outputting the byte on the DAC.
+		// --------------------------------------------------	
+
+		// @@@ may want to favor the ADD function here, maybe with an if statement
+				
+		switch(outputFunction)		// How do we combine the audio outputs?  We can add them of course but also mess with them in artsy ways.
+		{
+			case OUTPUT_MULTIPLY:																				// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
+				sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;			// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
+				break;
+			
+			case OUTPUT_XOR:
+				sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise XOR the bank outputs, add in the SD card stream.
+				break;
+			
+			case OUTPUT_AND:
+				sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise AND the bank outputs, add in the SD card stream.
+				break;
+			
+			case OUTPUT_SUBTRACT:
+				sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Subtract bank1 from bank0 and add in the SD card output.
+				break;
+			
+			case OUTPUT_ADD:
+			default:
+				sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;					// Sum everything that might be involved in our output waveform.				
+				break;
+		}
+
+		// Pin to range and spit it out.
+		if(sum0>127)		// Pin high.
+		{
+			sum0=127;
+		}
+		else if(sum0<-128)		// Pin low.
+		{
+			sum0=-128;
+		}
+
+		dacOutput=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
+
+		if(dacOutput!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+		{
+			LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+			LATCH_PORT=dacOutput;		// Put the output on the output latch's input.
+			PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+			PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+		}
+
+		lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
 	}
-
-	// Finish getting the byte from RAM.
-
-	theBank->audioOutput=LATCH_INPUT;		// Get the byte from this address in RAM.
-	PORTA|=(Om_RAM_OE);								// Tristate the RAM.
-	LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
-
-	if(theBank->bitReduction)	// Low bit rate?
-	{
-		// @@@ if you never change the top bit do you need to xor it off?
-		// @@@ also, sanity check this
-
-//		theBank->audioOutput^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-		theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
-//		theBank->audioOutput^=0x80;											// Bring it back to signed.
-	}
-
-	// --------------------------------------------------	
-	// Now deal with outputting the byte on the DAC.
-	// --------------------------------------------------	
-
-	// @@@ may want to favor the ADD function here, maybe with an if statement
-	
-	switch(outputFunction)		// How do we combine the audio outputs?  We can add them of course but also mess with them in artsy ways.
-	{
-		case OUTPUT_MULTIPLY:																				// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
-			sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;			// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
-			break;
-		
-		case OUTPUT_XOR:
-//			output=(((signed char)sum0)^0x80)^(((signed char)sum1)^0x80);									// Cast each sum back to 8 bits, make them unsigned, then xor them.
-			sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise XOR the bank outputs, add in the SD card stream.
-			break;
-		
-		case OUTPUT_AND:
-//			output=(((signed char)sum0)^0x80)&(((signed char)sum1)^0x80);									// Cast each sum back to 8 bits, make them unsigned, then and them.
-			sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise AND the bank outputs, add in the SD card stream.
-			break;
-		
-		case OUTPUT_SUBTRACT:
-			sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Subtract bank1 from bank0 and add in the SD card output.
-			break;
-		
-		case OUTPUT_ADD:
-		default:
-			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;					// Sum everything that might be involved in our output waveform.				
-			break;
-	}
-
-	// Pin to range and spit it out.
-	if(sum0>127)		// Pin high.
-	{
-		sum0=127;
-	}
-	else if(sum0<-128)		// Pin low.
-	{
-		sum0=-128;
-	}
-
-	dacOutput=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
-
-	if(dacOutput!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
-	{
-		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
-
-		LATCH_PORT=dacOutput;		// Put the output on the output latch's input.
-		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
-		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
-	}
-
-	lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
 }
 
 /*
@@ -498,6 +511,22 @@ static void RecordCallback(volatile BANK_STATE *theBank)
 		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it at the end of the callback so the ADC S/H acquires the sample after noisy RAM/DAC digital bus activity on PORTA -- this matters a lot)
 	}
 }
+
+static void OverdubCallback(volatile BANK_STATE *theBank)
+{
+
+}
+
+static void SawtoothCallback(volatile BANK_STATE *theBank)
+{
+
+}
+
+static void RealtimeCallback(volatile BANK_STATE *theBank)
+{
+
+}
+
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
@@ -1451,6 +1480,7 @@ ISR(TIMER2_COMPB_vect)
 				sdRamSampleRemaining--;			// One less byte in the sample
 
 				// Now put this byte into the RAM bank in the correct address.
+				// @@@ NOTE -- we may be able to speed this up although sdRamAddress is not volatile
 
 				LATCH_DDR=0xFF;								// Data bus to output -- we never need to read the RAM in this version of the ISR.
 				LATCH_PORT=sdRamAddress;					// Put the LSB of the address on the latch.
@@ -1460,8 +1490,8 @@ ISR(TIMER2_COMPB_vect)
 				LATCH_PORT=(sdRamAddress>>8);				// Put the middle byte of the address on the latch.
 				PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
 				PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
-				PORTC=(0x88|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 
+				PORTC=(0x88|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 				LATCH_PORT=theByte;							// Put the data to write on the RAM's input port
 
 				// Compute address while bus settles.
@@ -1589,6 +1619,7 @@ ISR(TIMER2_COMPB_vect)
 				// Now spit the byte out the DAC.
 
 				sdStreamOutput=theByte;		// Mark this byte as the one we want to go out in our DAC-updating routine
+				// @@@ fix output stuff here
 				UpdateOutput();				// Update the DAC
 			}
 		}
@@ -4405,6 +4436,8 @@ static void UpdateUserSwitches(void)
 			bankStates[currentBank].sampleDirection=true;
 			bankStates[currentBank].loopOnce=false;
 			bankStates[currentBank].realtimeOn=false;
+			bankStates[currentBank].sampleSkipCounter=0;
+			bankStates[currentBank].samplesToSkip=0;
 			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_CANCEL_EFFECTS,0);			// Send it out to the techno nerds.
 			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REVERT_SAMPLE_TO_FULL,0);		// Send it out to the techno nerds.
 		}
@@ -4434,11 +4467,13 @@ static void UpdateUserSwitches(void)
 			if(bankStates[currentBank].halfSpeed==false)
 			{
 				bankStates[currentBank].halfSpeed=true;
+				bankStates[currentBank].samplesToSkip=1;
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
 			}
 			else
 			{
 				bankStates[currentBank].halfSpeed=false;
+				bankStates[currentBank].samplesToSkip=0;
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,0);		// Send it out to the techno nerds.
 			}
 		}
@@ -4748,10 +4783,12 @@ static void DoSampler(void)
 					if(currentMidiMessage.dataByteTwo)
 					{
 						bankStates[currentMidiMessage.channelNumber].halfSpeed=true;
+						bankStates[currentMidiMessage.channelNumber].samplesToSkip=1;
 					}
 					else
 					{
 						bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
+						bankStates[currentMidiMessage.channelNumber].samplesToSkip=0;
 					}
 					break;
 
@@ -4759,6 +4796,7 @@ static void DoSampler(void)
 					if(currentMidiMessage.dataByteTwo)
 					{
 						bankStates[currentMidiMessage.channelNumber].backwardsPlayback=true;
+						// @@@ Fix this to account for banked increment etc etc
 					}
 					else
 					{
@@ -4777,6 +4815,8 @@ static void DoSampler(void)
 					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
 					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;
 					bankStates[currentMidiMessage.channelNumber].realtimeOn=false;			// We'll default to playback.
+					bankStates[currentMidiMessage.channelNumber].samplesToSkip=0;
+					bankStates[currentMidiMessage.channelNumber].sampleSkipCounter=0;
 					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
 					break;
 
@@ -4911,6 +4951,8 @@ static void InitSampler(void)
 		bankStates[i].jitterValue=0;				// No hissies yet.
 		bankStates[i].granularSlices=0;				// No remix yet.
 		bankStates[i].halfSpeed=false;
+		bankStates[currentBank].sampleSkipCounter=0;
+		bankStates[currentBank].samplesToSkip=0;
 		bankStates[i].sampleDirection=true;			// Samples go forward normally (no editing has happend yet)
 		bankStates[i].backwardsPlayback=false;		// User hasn't said reverse normal direction
 		bankStates[i].currentAddress=bankStates[i].startAddress;	// Point initial ram address to the beginning of the bank.
