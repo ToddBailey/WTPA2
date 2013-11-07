@@ -19,13 +19,9 @@ typedef struct
 	bool
 		backwardsPlayback;			// Does the user want intend for the sample to be played in reverse?
 	bool
-		sampleDirection;			// And which direction is reverse ACTUALLY right now (can change when samples are edited) 
-	bool
 		isLocked;					// Mutex which keeps the SRAM exclusive to either audio or SD functions so they don't step on each other
 	bool
 		realtimeOn;					// Is the bank processing in realtime?  This is used in MIDI to carry the realtime processing across a NOTE_OFF.
-	unsigned char
-		granularSlices;				// When doing granular playback how many pieces have we cut the sample into?
 	unsigned char
 		jitterValue;				// How much should the clock jitter?  How much more than usual, I mean :-)
 	unsigned char
@@ -64,6 +60,18 @@ typedef struct
 		sampleSkipCounter;			// Used to handle half time / time division
 	unsigned char
 		samplesToSkip;
+
+	unsigned char
+		granularSlices;				// When doing granular playback how many pieces have we cut the sample into?
+	volatile unsigned long
+		sliceRemaining;				// How far are we into our slice of memory?
+	volatile unsigned long
+		sliceSize;					// How big are our slices of memory?
+	unsigned char
+		granularPositionArray[MAX_SLICES];	// Keeps the list of slices in the shuffled order in which we're playing them.
+	unsigned char
+		granularPositionArrayPointer;		// Which slice in the list are we looking at?
+
 }	BANK_STATE;
 
 extern volatile BANK_STATE					// Keep track of what's going on in all the implemented banks.

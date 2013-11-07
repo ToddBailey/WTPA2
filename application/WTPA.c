@@ -160,21 +160,10 @@ static unsigned char
 //-----------------------------------------------------------------------
 
 #define	JITTER_VALUE_MAX	127
-#define MAX_SLICES			128
 
 static unsigned long
 //	random31 __attribute__((section(".noinit")));	//32 bit random number, seeded from noinit sram (so it comes up a mess, in theory)
 	random31=0xBEEF;								// No chance to come up zero because we threw out init code.
-
-static volatile unsigned char
-	granularPositionArrayPointer[NUM_BANKS];	// Where are we in the array right now?
-
-static volatile unsigned long
-	sliceSize[NUM_BANKS],						// How big are our slices of memory?
-	sliceRemaining[NUM_BANKS];					// How far are we into our slice of memory?
-
-static unsigned char
-	granularPositionArray[NUM_BANKS][MAX_SLICES];
 
 enum	// Flags we use to determine what to set our clock source to when setting up an audio interrupt.
 {
@@ -280,7 +269,7 @@ typedef void CALLBACK_FUNCTION(volatile BANK_STATE *theBank);	// Creates a funct
 CALLBACK_FUNCTION		// Instantiations of callback functions
 	*AudioCallback0,
 	*AudioCallback1;
-	
+
 enum	// Ways we can recombine the audio before we send it out the DAC
 	{
 		OUTPUT_ADD=0,
@@ -303,7 +292,7 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // Wed Nov  6 12:55:16 EST 2013
 //		As of last push:
 //		Playback ISR time:		7.80uS
-//		Rec ISR time:			6.50uS	
+//		Rec ISR time:			6.50uS
 // Adding half time:
 //		Play					8.25uS (9 cycles added)
 
@@ -326,19 +315,36 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // Can we replace the audioFunction variable with a check of the Callback function?  Think so.
 // Make "slice" vars associated with bank structure
 
-// @@@ remove "half speed" variable -- perhaps include speed divisions as an option now
+// @@@ maybe remove "half speed" variable -- perhaps include speed divisions as an option now
 
 // NOTE -- instead of comparing to ending address each sample to see if a loop is done, could we perhaps decrement the amount of sample remaining?
 // This involves decrementing and comparing a 32 bit number to zero rather than comparing two 32 bit numbers.
 // NOTE -- Initial looking at the LSS files show the dec/compareZ to be slower (17cy vs 13cy)
 // NOTE -- this is how granular does it right now.  It would however allow us to skip individual samples more easily (ie -- INCREASE sample speed): we could dec the "remaining" counter by the "increment" amount and check to see if it went negative
-//		This would allow us to decrement by 2, say and not worry if we missed targetAddress 
+//		This would allow us to decrement by 2, say and not worry if we missed targetAddress
 
 // Thu Nov  7 11:52:24 EST 2013
 //	Tried implementing bank combinations as a function call.  Started a new branch.  It was slower by about 1.5-1.75uS (about 10uS playback)
 //	Came back to switch model
 // Thu Nov  7 13:09:23 EST 2013
 //	Found that an if-else was faster (at least where ADD was concerned) assuming the optimizer flag was -O2 or -O3
+//	Currently ~75% of the loops are at 8uS and the rest are at 7.7uS
+
+// Thu Nov  7 14:54:34 EST 2013
+// Added in granularity to playback again.
+// Currently ~75% of the loops are at 8.6uS and the rest are at 8.3uS
+// So we lost 600nS (12 cycles) including the granularity in the regular playback routine.
+// We can break it out to a new callback if needed...
+
+// Thu Nov  7 18:14:35 EST 2013
+// Change out of RAM light to an SD card access light
+
+// Thu Nov  7 18:32:09 EST 2013
+// Everything runs great at the same time now.  No bogs.
+// However, there's an occasional bug where the sample seems to miss looping on the end of the sample and keeps going.  Seems to happen with the backwards effect
+
+// Thu Nov  7 18:36:06 EST 2013
+// Edit window stuff is still screwy
 {
 	// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
 	// The playback ISR also allows the various effects to change the output.
@@ -352,7 +358,7 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		sum0;		// Temporary variables for saturated adds, multiplies, other math.
 	unsigned char
 		dacOutput;		// What to put on the DAC
-			
+
 	if(theBank->sampleSkipCounter)		// Used for time division
 	{
 		theBank->sampleSkipCounter--;	// Don't play anything this time around
@@ -378,12 +384,44 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 
 		// Calculate new addy while data bus settles
 
-		if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+		if(theBank->granularSlices)			// Are we granularizing the playback?
 		{
-			if(theBank->loopOnce==true)									// Yes, and we should be done now.
+			if(theBank->sliceRemaining--)	// Moving through our current slice?
+			{
+				theBank->currentAddress=(theBank->sampleIncrement+theAddy);			// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+//				theBank->sliceRemaining--;											// A little less slice
+			}
+			else	// Slice done, jump to new slice.
+			{
+				theBank->sliceRemaining=theBank->sliceSize;		// Reload the slice counter.
+				theBank->granularPositionArrayPointer++;		// Point to the next slice in memory.
+
+				if(theBank->granularPositionArrayPointer==theBank->granularSlices)	// Roll around list of slices
+				{
+					theBank->granularPositionArrayPointer=0;	// Point back at the first slice.
+					if(theBank->loopOnce==true)					// If we're only supposed to play once we should be done now.
+					{
+						theBank->audioFunction=AUDIO_IDLE;
+						theBank->clockMode=CLK_NONE;
+					}
+				}
+
+				if(theBank->startAddress==0)		// @@@ Bullshit way of checking if this is BANK_0.  Since our offset into the granular array is signed, we need to differentiate banks here.  Perhaps there's a better way to do this
+				{
+					theBank->currentAddress=((theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize)+BANK_0_START_ADDRESS);
+				}
+				else
+				{
+					theBank->currentAddress=(BANK_1_START_ADDRESS-(theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize));
+				}
+			}
+		}
+		else if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+		{
+			if(theBank->loopOnce==true)							// Yes, and we should be done now.
 			{
 				theBank->audioFunction=AUDIO_IDLE;
-				theBank->clockMode=CLK_NONE;		
+				theBank->clockMode=CLK_NONE;
 			}
 			else
 			{
@@ -392,7 +430,7 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		}
 		else
 		{
-			theBank->currentAddress=(theBank->sampleIncrement+theAddy);			// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+			theBank->currentAddress=(theBank->sampleIncrement+theAddy);	// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
 		}
 
 		// Finish getting the byte from RAM.
@@ -405,47 +443,47 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		// With the IF taken out, 8.7uS with no bit reduction, about 9.8uS when it's on.
 		// Note, this is with 7-bit reduction.  Smaller numbers of bits give smaller delays.
 		// So, keep the check.
-		
-		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the 
+
+		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the
 		{
 			theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
 		}
 
-		// --------------------------------------------------	
+		// --------------------------------------------------
 		// Now deal with outputting the byte on the DAC.
-		// --------------------------------------------------	
+		// --------------------------------------------------
 		// @@@ NOTE -- may want to somehow favor the ADD here.  Giving it's own IF doesn't help.
-				
+
 /*
 		switch(outputFunction)		// How do we combine the audio outputs?  We can add them of course but also mess with them in artsy ways.
 		{
 			case OUTPUT_MULTIPLY:																				// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
 				sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;			// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
 				break;
-			
+
 			case OUTPUT_XOR:
 				sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise XOR the bank outputs, add in the SD card stream.
 				break;
-			
+
 			case OUTPUT_AND:
 				sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Bitwise AND the bank outputs, add in the SD card stream.
 				break;
-			
+
 			case OUTPUT_SUBTRACT:
 				sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;				// Subtract bank1 from bank0 and add in the SD card output.
 				break;
-			
+
 			case OUTPUT_ADD:
 			default:
-				sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;					// Sum everything that might be involved in our output waveform.				
+				sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;					// Sum everything that might be involved in our output waveform.
 				break;
 		}
 */
 
-	// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
+		// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
 		if(outputFunction==OUTPUT_ADD)
 		{
-			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.
 		}
 		else if(outputFunction==OUTPUT_SUBTRACT)
 		{
@@ -553,7 +591,7 @@ static void OverdubCallback(volatile BANK_STATE *theBank)
 		sum0;		// Temporary variables for saturated adds, multiplies, other math.
 	unsigned char
 		dacOutput;		// What to put on the DAC
-			
+
 	if(theBank->sampleSkipCounter)		// Used for time division
 	{
 		theBank->sampleSkipCounter--;	// Don't play anything this time around
@@ -578,13 +616,13 @@ static void OverdubCallback(volatile BANK_STATE *theBank)
 		PORTA&=~(Om_RAM_OE);						// RAM's IO pins to outputs.
 
 		// Calculate new addy while data bus settles
-
+// @@@ add granular bullshit in here
 		if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
 		{
 			if(theBank->loopOnce==true)									// Yes, and we should be done now.
 			{
 				theBank->audioFunction=AUDIO_IDLE;
-				theBank->clockMode=CLK_NONE;		
+				theBank->clockMode=CLK_NONE;
 			}
 			else
 			{
@@ -602,19 +640,19 @@ static void OverdubCallback(volatile BANK_STATE *theBank)
 		PORTA|=(Om_RAM_OE);						// Tristate the RAM.
 		LATCH_DDR=0xFF;							// Turn the data bus around (AVR's data port to outputs)
 
-		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the 
+		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the
 		{
 			theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
 		}
 
-		// --------------------------------------------------	
+		// --------------------------------------------------
 		// Now deal with outputting the byte on the DAC.
-		// --------------------------------------------------	
+		// --------------------------------------------------
 
 		// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
 		if(outputFunction==OUTPUT_ADD)
 		{
-			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.
 		}
 		else if(outputFunction==OUTPUT_SUBTRACT)
 		{
@@ -708,14 +746,14 @@ static void RealtimeCallback(volatile BANK_STATE *theBank)
 		theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
 	}
 
-	// --------------------------------------------------	
+	// --------------------------------------------------
 	// Now deal with outputting the byte on the DAC.
-	// --------------------------------------------------	
+	// --------------------------------------------------
 
 	// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
 	if(outputFunction==OUTPUT_ADD)
 	{
-		sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+		sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.
 	}
 	else if(outputFunction==OUTPUT_SUBTRACT)
 	{
@@ -766,794 +804,6 @@ static void RealtimeCallback(volatile BANK_STATE *theBank)
 	}
 }
 
-//-----------------------------------------------------------------------
-//-----------------------------------------------------------------------
-
-// Sun Sep 19 13:38:34 EDT 2010
-// Audio Channel Update Code for each bank:
-
-//-----------------------------------------------------------------------
-//-----------------------------------------------------------------------
-// This is where all the audio business happens in this program.
-// Variables messed with in the ISRs AND mainline code should be declared volatile.
-// The functions declared up here should _ONLY_ ever be called from an interrupt.
-
-static unsigned char UpdateAudioChannel0(void)
-// New banked idea of the audio handler -- ONE FOR EACH BANK!
-// These channel update routines basically handle getting data into or out of RAM based on what the sampler is supposed to be doing (playing, recording, overdubbing).
-// Each channel may write something to RAM, and will pass out a byte based on what (if anything) it got from RAM and any processing it did.  Once all the channels are done, these outputs are combined in some way and put on the DAC.
-{
-	signed int
-		sum;			// For doing saturated adds.
-	signed char
-		outputByte;		// What will we pass out at the end?
-	static unsigned char
-		sawtooth;		// Used for generating sawteeth.
-
-	outputByte=0;		// Pass out midscale by default.
-
-	switch(bankStates[BANK_0].audioFunction)
-	{
-
-		case AUDIO_SAWTOOTH:
-		// Puts out a noble sawtooth wave.  Doesn't talk to the RAM at all.
-		outputByte=sawtooth++;			// Increment a variable for the dac and just pass it back out.
-		break;
-
-		case AUDIO_REALTIME:
-		// Does FX in realtime to the input -- just grabs an ADC byte, effects it, and spits it out.  No RAM usage.  Used to bit reduce, alias, or multiply an input in real time.
-		outputByte=adcByte;				// Grab the value from the ADC, and put it back out.
-
-		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-		break;
-
-		case AUDIO_RECORD:
-		// Samples the current ADC channel and loads it into RAM.  Overwrites whatever is there and ALWAYS writes from the beginning of the sample to the end.
-		LATCH_DDR=0xFF;						// Data bus to output -- we never need to read the RAM in this version of the ISR.
-		LATCH_PORT=(bankStates[BANK_0].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_0].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_PORT=adcByte;				// Put the data to write on the RAM's input port
-		// Compute address while bus settles.
-
-		bankStates[BANK_0].currentAddress++;										// Next address please.
-		bankStates[BANK_0].endAddress=bankStates[BANK_0].currentAddress;			// Match ending address of the sample to the current memory address.
-		bankStates[BANK_0].adjustedEndAddress=bankStates[BANK_0].currentAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).
-
-		if(bankStates[BANK_0].endAddress>=bankStates[BANK_1].endAddress)	// Banks stepping on each other?  Note, this test will result in one overlapping RAM location.
-		{
-			bankStates[BANK_0].audioFunction=AUDIO_IDLE;	// Stop recording on this channel.
-			outOfRam=true;									// Signal mainline code that we're out of memory.
-		}
-
-		// Finish writing to RAM.
-		PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
-		PORTA|=(Om_RAM_WE);					// Disbale writes.
-		break;
-
-		case AUDIO_PLAYBACK:
-		// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
-		// The playback ISR also allows the various effects to change the output.
-		// Since we cannot count on the OE staying low or the AVR's DDR remaining an input, we will explicitly set all the registers we need to every time through this ISR.
-
-		// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
-		LATCH_PORT=(bankStates[BANK_0].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_0].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
-		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
-
-		// Calculate new addy while data bus settles
-
-		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
-		{
-			// Slice first, only worry about forward ### @@@
-
-			if(sliceRemaining[BANK_0])	// Moving through our current slice?
-			{
-				bankStates[BANK_0].currentAddress++;
-				sliceRemaining[BANK_0]--;
-			}
-			else	// Slice done, jump to new slice.
-			{
-				sliceRemaining[BANK_0]=sliceSize[BANK_0];	// Reload the slice counter.
-				granularPositionArrayPointer[BANK_0]++;	// Point to the next slice in memory.
-
-				if(granularPositionArrayPointer[BANK_0]==bankStates[BANK_0].granularSlices)
-				{
-					granularPositionArrayPointer[BANK_0]=0;	// Point back at the first slice.
-				}
-
-				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);
-			}
-		}
-		else
-		{
-			if(bankStates[BANK_0].sampleDirection==false)	// Paul is dead?  Devil voices?
-			{
-				if((bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].loopOnce==true))	// If we're looping once AND we're at the beginning of the sample, stop playing back.
-				{
-					bankStates[BANK_0].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_0].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedStartAddress)	// We're looping and have reached the beginning of the sample, so...
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;			// Back to the, um, future.
-				}
-				else
-				{
-					if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].startAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_0].currentAddress=bankStates[BANK_0].endAddress;		// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_0].currentAddress--;		// In BANK_0, the beginning is low.
-					}
-				}
-			}
-			else	// Going forward through the sample.
-			{
-				if((bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedEndAddress)&&(bankStates[BANK_0].loopOnce==true))	// If we're looping once AND we're at the end of the sample, stop playing back.
-				{
-					bankStates[BANK_0].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_0].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedEndAddress)		// We're looping and have reached the end of the sample, so...
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;			// Loop around to the beginning.
-				}
-				else
-				{
-					if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].endAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_0].currentAddress=bankStates[BANK_0].startAddress;	// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_0].currentAddress++;		// In BANK_0, the end is high.
-					}
-				}
-			}
-		}
-
-		// Finish getting the byte from RAM.
-
-		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM.
-		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
-		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
-
-		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-		break;
-
-		case AUDIO_OVERDUB:
-		// WTPA has a destructive overdub as of now.
-		// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
-		LATCH_PORT=(bankStates[BANK_0].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_0].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-		PORTC=(0x88|((bankStates[BANK_0].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
-		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
-
-		// Calculate new address while bus settles (were nops in here)
-
-		if(bankStates[BANK_0].granularSlices)		// Big ugly conditional branch
-		{
-			// Slice first, only worry about forward ###
-
-			if(sliceRemaining[BANK_0])	// Moving through our current slice?
-			{
-				bankStates[BANK_0].currentAddress++;
-				sliceRemaining[BANK_0]--;
-			}
-			else	// Slice done, jump to new slice.
-			{
-				sliceRemaining[BANK_0]=sliceSize[BANK_0];	// Reload the slice counter.
-				granularPositionArrayPointer[BANK_0]++;	// Point to the next slice in memory.
-
-				if(granularPositionArrayPointer[BANK_0]==bankStates[BANK_0].granularSlices)
-				{
-					granularPositionArrayPointer[BANK_0]=0;	// Point back at the first slice.
-				}
-
-				bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][granularPositionArrayPointer[BANK_0]]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);
-			}
-		}
-		else
-		{
-			if(bankStates[BANK_0].sampleDirection==false)	// Paul is dead?  Devil voices?
-			{
-				if((bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].loopOnce==true))	// If we're looping once AND we're at the beginning of the sample, stop playing back.
-				{
-					bankStates[BANK_0].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_0].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedStartAddress)	// We're looping and have reached the beginning of the sample, so...
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;			// Back to the, um, future.
-				}
-				else
-				{
-					if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].startAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_0].currentAddress=bankStates[BANK_0].endAddress;		// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_0].currentAddress--;		// In BANK_0, the beginning is low.
-					}
-				}
-			}
-			else	// Going forward through the sample.
-			{
-				if((bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedEndAddress)&&(bankStates[BANK_0].loopOnce==true))	// If we're looping once AND we're at the end of the sample, stop playing back.
-				{
-					bankStates[BANK_0].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_0].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].adjustedEndAddress)		// We're looping and have reached the end of the sample, so...
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;			// Loop around to the beginning.
-				}
-				else
-				{
-					if(bankStates[BANK_0].currentAddress==bankStates[BANK_0].endAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_0].currentAddress=bankStates[BANK_0].startAddress;	// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_0].currentAddress++;		// In BANK_0, the end is high.
-					}
-				}
-			}
-		}
-
-		// Finished calculating address, bus should be settled, so finish the exchange with RAM
-
-		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM -- this will get sent to the DAC.
-
-		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
-		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
-
-		if(bankStates[BANK_0].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_0].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-
-		sum=outputByte+adcByte;			// Do saturated add mess.
-		if(sum>127)		// Saturate to top rail.
-		{
-			sum=127;
-		}
-		else if(sum<-128) // Saturate to bottom rail.
-		{
-			sum=-128;
-		}
-
-		LATCH_PORT=(signed char)sum;	// Now replace the data at this RAM location with the data summed from the ADC and output bytes.
-		PORTA&=~(Om_RAM_WE);		// Strobe Write Enable low.  This latches the data in.
-		PORTA|=(Om_RAM_WE);			// Disbale writes.
-		break;
-	}
-
-	return(outputByte);
-}
-
-static unsigned char UpdateAudioChannel1(void)
-// New banked idea of the audio handler -- ONE FOR EACH BANK!
-{
-	signed int
-		sum;			// For doing saturated adds.
-	signed char
-		outputByte;		// What will we pass out at the end?
-	static unsigned char
-		sawtooth;		// Used for generating sawteeth.
-
-	outputByte=0;		// Pass out midscale by default.
-
-	switch(bankStates[BANK_1].audioFunction)
-	{
-
-		case AUDIO_SAWTOOTH:
-		// Puts out a noble sawtooth wave.  Doesn't talk to the RAM at all.
-		outputByte=sawtooth++;			// Increment a variable for the dac and just pass it back out.
-		break;
-
-		case AUDIO_REALTIME:
-		// Does FX in realtime to the input -- just grabs an ADC byte, effects it, and spits it out.  No RAM usage.  Used to bit reduce, alias, or multiply an input in real time.
-		outputByte=adcByte;				// Grab the value from the ADC, and put it back out.
-
-		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-		break;
-
-		case AUDIO_RECORD:
-		// Samples the current ADC channel and loads it into RAM.  Overwrites whatever is there and ALWAYS writes from the beginning of the sample to the end.
-		LATCH_DDR=0xFF;						// Data bus to output -- we never need to read the RAM in this version of the ISR.
-
-		LATCH_PORT=(bankStates[BANK_1].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_1].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_PORT=adcByte;				// Put the data to write on the RAM's input port
-
-		// Compute address while bus settles.
-
-		bankStates[BANK_1].currentAddress--;									// Next address please.
-		bankStates[BANK_1].endAddress=bankStates[BANK_1].currentAddress;			// Match ending address of the sample to the current memory address.
-		bankStates[BANK_1].adjustedEndAddress=bankStates[BANK_1].currentAddress;	// Match ending address of our user-trimmed loop (user has not done trimming yet).
-
-		if(bankStates[BANK_0].endAddress>=bankStates[BANK_1].endAddress)	// Banks stepping on each other?  Note, this test will result in one overlapping RAM location.
-		{
-			bankStates[BANK_1].audioFunction=AUDIO_IDLE;	// Stop recording on this channel.
-			outOfRam=true;									// Signal mainline code that we're out of memory.
-		}
-
-		// Put data into RAM.
-		PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
-		PORTA|=(Om_RAM_WE);					// Disbale writes.
-		break;
-
-		case AUDIO_PLAYBACK:
-		// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
-		// The playback ISR also allows the various effects to change the output.
-		// Since we cannot count on the OE staying low or the AVR's DDR remaining an input, we will explicitly set all the registers we need to every time through this ISR.
-
-		// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
-		LATCH_PORT=(bankStates[BANK_1].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_1].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
-		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
-
-		// Calculate addy while bus settles (used to be nops here)
-
-		if(bankStates[BANK_1].granularSlices)		// Big ugly conditional branch
-		{
-			// Slice first, only worry about forward ###
-
-			if(sliceRemaining[BANK_1])	// Moving through our current slice?
-			{
-				bankStates[BANK_1].currentAddress--;
-				sliceRemaining[BANK_1]--;
-			}
-			else	// Slice done, jump to new slice.
-			{
-				sliceRemaining[BANK_1]=sliceSize[BANK_1];	// Reload the slice counter.
-				granularPositionArrayPointer[BANK_1]++;	// Point to the next slice in memory.
-
-				if(granularPositionArrayPointer[BANK_1]==bankStates[BANK_1].granularSlices)
-				{
-					granularPositionArrayPointer[BANK_1]=0;	// Point back at the first slice.
-				}
-
-				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));
-			}
-		}
-		else
-		{
-			if(bankStates[BANK_1].sampleDirection==false)	// Paul is dead?  Devil voices?
-			{
-				if((bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].loopOnce==true))	// If we're looping once AND we're at the beginning of the sample, stop playing back.
-				{
-					bankStates[BANK_1].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_1].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedStartAddress)	// We're looping and have reached the beginning of the sample, so...
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;			// Back to the, um, future.
-				}
-				else
-				{
-					if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].startAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_1].currentAddress=bankStates[BANK_1].endAddress;		// Assume we're looping through to some relative start and end.
-					}
-					else	// We're not at the beginning of the loop, keep heading there.
-					{
-						bankStates[BANK_1].currentAddress++;		// In BANK_1, the beginning is high.
-					}
-				}
-			}
-			else	// Going forward through the sample.
-			{
-				if((bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedEndAddress)&&(bankStates[BANK_1].loopOnce==true))	// If we're looping once AND we're at the end of the sample, stop playing back.
-				{
-					bankStates[BANK_1].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_1].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedEndAddress)		// We're looping and have reached the end of the sample, so...
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;			// Loop around to the beginning.
-				}
-				else
-				{
-					if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].endAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_1].currentAddress=bankStates[BANK_1].startAddress;	// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_1].currentAddress--;		// In BANK_1, the end is low.
-					}
-				}
-			}
-		}
-
-		// Done with addy, read RAM.
-
-		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM.
-		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
-		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
-
-		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-		break;
-
-		case AUDIO_OVERDUB:
-		// WTPA has a destructive overdub as of now.
-		// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
-		LATCH_PORT=(bankStates[BANK_1].currentAddress);	// Put the LSB of the address on the latch.
-		PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
-
-		LATCH_PORT=((bankStates[BANK_1].currentAddress>>8));	// Put the middle byte of the address on the latch.
-		PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
-		PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
-
-		PORTC=(0x88|((bankStates[BANK_1].currentAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
-
-		LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
-		PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
-
-		// Do some operations while we wait for the data bus to settle from turnaround.
-
-		if(bankStates[BANK_1].granularSlices)		// Big ugly conditional branch
-		{
-			// Slice first, only worry about forward ###
-
-			if(sliceRemaining[BANK_1])	// Moving through our current slice?
-			{
-				bankStates[BANK_1].currentAddress--;
-				sliceRemaining[BANK_1]--;
-			}
-			else	// Slice done, jump to new slice.
-			{
-				sliceRemaining[BANK_1]=sliceSize[BANK_1];	// Reload the slice counter.
-				granularPositionArrayPointer[BANK_1]++;	// Point to the next slice in memory.
-
-				if(granularPositionArrayPointer[BANK_1]==bankStates[BANK_1].granularSlices)
-				{
-					granularPositionArrayPointer[BANK_1]=0;	// Point back at the first slice.
-				}
-
-				bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][granularPositionArrayPointer[BANK_1]]*sliceSize[BANK_1]));
-			}
-		}
-		else
-		{
-			if(bankStates[BANK_1].sampleDirection==false)	// Paul is dead?  Devil voices?
-			{
-				if((bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].loopOnce==true))	// If we're looping once AND we're at the beginning of the sample, stop playing back.
-				{
-					bankStates[BANK_1].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_1].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedStartAddress)	// We're looping and have reached the beginning of the sample, so...
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;			// Back to the, um, future.
-				}
-				else
-				{
-					if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].startAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_1].currentAddress=bankStates[BANK_1].endAddress;		// Assume we're looping through to some relative start and end.
-					}
-					else	// We're not at the beginning of the loop, keep heading there.
-					{
-						bankStates[BANK_1].currentAddress++;		// In BANK_1, the beginning is high.
-					}
-				}
-			}
-			else	// Going forward through the sample.
-			{
-				if((bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedEndAddress)&&(bankStates[BANK_1].loopOnce==true))	// If we're looping once AND we're at the end of the sample, stop playing back.
-				{
-					bankStates[BANK_1].audioFunction=AUDIO_IDLE;
-					bankStates[BANK_1].clockMode=CLK_NONE;
-				}
-				else if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].adjustedEndAddress)		// We're looping and have reached the end of the sample, so...
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;			// Loop around to the beginning.
-				}
-				else
-				{
-					if(bankStates[BANK_1].currentAddress==bankStates[BANK_1].endAddress)	// Make sure we can loop through the absolute ends of the sample in the event the sample has been trimmed.
-					{
-						bankStates[BANK_1].currentAddress=bankStates[BANK_1].startAddress;	// Assume we're looping through to some relative start and end.
-					}
-					else
-					{
-						bankStates[BANK_1].currentAddress--;		// In BANK_1, the end is low.
-					}
-				}
-			}
-		}
-
-		// Finished with addy stuff, now finish data transfer
-
-		outputByte=LATCH_INPUT;				// Get the byte from this address in RAM -- this will get sent to the DAC.
-
-		PORTA|=(Om_RAM_OE);					// Tristate the RAM.
-		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
-
-		if(bankStates[BANK_1].bitReduction)	// Low bit rate?
-		{
-			outputByte^=0x80;											// Bring the signed char back to unsigned for the bitmask.
-			outputByte&=(0xFF<<bankStates[BANK_1].bitReduction);		// Mask off however many bits we're supposed to.
-			outputByte^=0x80;											// Bring it back to signed.
-		}
-
-		sum=outputByte+adcByte;			// Do saturated add mess.
-		if(sum>127)		// Saturate to top rail.
-		{
-			sum=127;
-		}
-		else if(sum<-128) // Saturate to bottom rail.
-		{
-			sum=-128;
-		}
-
-		LATCH_PORT=(signed char)sum;	// Now replace the data at this RAM location with the data summed from the ADC and output bytes.
-		PORTA&=~(Om_RAM_WE);		// Strobe Write Enable low.  This latches the data in.
-		PORTA|=(Om_RAM_WE);			// Disbale writes.
-		break;
-	}
-
-	return(outputByte);
-}
-
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-// DAC output handling and sample combination functions:
-// These functions are called (via pointer) everytime a bank updates.
-// They worry about summing (or whatever) the different audio sources and spitting them out on the DAC.
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-
-// Globals used in the audio and output update functions.
-
-typedef void OUTPUT_FUNCTION(void);	// Creates a datatype -- a void function called OUTPUT_FUNCTION which returns void
-
-OUTPUT_FUNCTION					// Assigns a pointer called UpdateOutput to an instance of OUTPUT_FUNCTION()
-	*UpdateOutput;
-
-static signed char
-	extIsrOutputBank0,
-	extIsrOutputBank1,
-	midiOutputBank0,
-	midiOutputBank1;
-
-static void OutputMultiplyBanks(void)
-// Multiply the audio output of banks0 and 1 and spit it out
-{
-	signed int
-		sum0,			// Temporary variables for saturated adds, multiplies, other math.
-		sum1;
-
-	unsigned char
-		output;			// What to put on the DAC
-
-	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
-	if(sum0>127)		// Pin high.
-	{
-		sum0=127;
-	}
-	else if(sum0<-128)		// Pin low.
-	{
-		sum0=-128;
-	}
-
-	sum1=extIsrOutputBank1+midiOutputBank1;		// Get anything bank1 might be doing.
-	if(sum1>127)		// Pin high.
-	{
-		sum1=127;
-	}
-	else if(sum1<-127)		// Pin low.  (was pegged to -128)
-	{
-		sum1=-127;
-	}
-
-	sum0=((sum0*sum1)/64);				// Multiply the sums of the banks, and divide them down to full scale output.  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
-
-//@@@  NOTE -- as is, the result in sum0 may overflow a signed char -- when cast back below, the results may be hosed.
-//@@@  NOTE -- you are multiplying signed numbers.  This is in the asm instruction set, but divide is not.  We could cast back to unsigned then shift (otherwise a shift will not work).
-
-	output=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
-
-	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
-	{
-		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
-
-		LATCH_PORT=output;		// Put the output on the output latch's input.
-		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
-		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
-	}
-
-	lastDacByte=output;		// Flag this byte has having been spit out last time.
-}
-
-static void OutputAddBanks(void)
-// Add audio from the two banks and spit it out (normally what we do)
-{
-	signed int
-		sum0;				// Temporary variables for saturated adds, multiplies, other math.
-
-	unsigned char
-		output;			// What to put on the DAC
-
-//	sum0=(extIsrOutputBank0+extIsrOutputBank1+midiOutputBank0+midiOutputBank1);						// Sum everything that might be involved in our output waveform:
-	sum0=extIsrOutputBank0+extIsrOutputBank1+midiOutputBank0+midiOutputBank1+sdStreamOutput;		// Sum everything that might be involved in our output waveform:
-	if(sum0>127)		// Pin high.
-	{
-		sum0=127;
-	}
-	else if(sum0<-128)		// Pin low.
-	{
-		sum0=-128;
-	}
-	output=(signed char)sum0;		// Cast back to 8 bits.
-	output^=(0x80);				// Make unsigned again (shift 0 up to 128, -127 up to 0, etc)
-
-	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
-	{
-		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
-
-		LATCH_PORT=output;		// Put the output on the output latch's input.
-		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
-		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
-	}
-
-	lastDacByte=output;		// Flag this byte has having been spit out last time.
-}
-
-static void OutputXorBanks(void)
-// Performs a bitwise XOR and spits out the result
-{
-	signed int
-		sum0,				// Temporary variables for saturated adds, multiplies, other math.
-		sum1;
-
-	unsigned char
-		output;			// What to put on the DAC
-
-	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
-	if(sum0>127)		// Pin high.
-	{
-		sum0=127;
-	}
-	else if(sum0<-128)		// Pin low.
-	{
-		sum0=-128;
-	}
-	sum1=extIsrOutputBank1+midiOutputBank1;		// Get anything bank1 might be doing.
-	if(sum1>127)		// Pin high.
-	{
-		sum1=127;
-	}
-	else if(sum1<-128)		// Pin low.
-	{
-		sum1=-128;
-	}
-	output=(((signed char)sum0)^0x80)^(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then xor them.
-
-	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
-	{
-		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
-
-		LATCH_PORT=output;		// Put the output on the output latch's input.
-		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
-		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
-	}
-
-	lastDacByte=output;		// Flag this byte has having been spit out last time.
-}
-
-static void OutputAndBanks(void)
-// Performs a bitwise AND and spits out the result
-{
-	signed int
-		sum0,				// Temporary variables for saturated adds, multiplies, other math.
-		sum1;
-
-	unsigned char
-		output;			// What to put on the DAC
-
-	sum0=extIsrOutputBank0+midiOutputBank0;		// Get anything bank0 might be doing.
-	if(sum0>127)		// Pin high.
-	{
-		sum0=127;
-	}
-	else if(sum0<-128)		// Pin low.
-	{
-		sum0=-128;
-	}
-	sum1=extIsrOutputBank1+midiOutputBank1;		// Get anything bank1 might be doing.
-	if(sum1>127)		// Pin high.
-	{
-		sum1=127;
-	}
-	else if(sum1<-128)		// Pin low.
-	{
-		sum1=-128;
-	}
-	output=(((signed char)sum0)^0x80)&(((signed char)sum1)^0x80);		// Cast each sum back to 8 bits, make them unsigned, then and them.
-
-	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
-	{
-		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
-
-		LATCH_PORT=output;		// Put the output on the output latch's input.
-		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
-		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
-	}
-
-	lastDacByte=output;		// Flag this byte has having been spit out last time.
-}
 //-----------------------------------------------------------------------------
 //-----------------------------------------------------------------------------
 // Interrupt Vectors:
@@ -1564,26 +814,7 @@ static void OutputAndBanks(void)
 ISR(TIMER1_CAPT_vect)
 // The vector triggered by an external clock edge and associated with Bank0
 {
-/*
-	static bool
-		flipFlop;		// Used for half-time
-
-	if((bankStates[BANK_0].halfSpeed==false)||(bankStates[BANK_0].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
-	{
-		extIsrOutputBank0=UpdateAudioChannel0();		// If so, then call the audioIsr for bank 0 and do whatever it's currently supposed to do.
-	}
-	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
-	UpdateOutput();			// Points to our current OP function.  Combines outputs from different sources and puts them on the DAC.
-	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
-	{
-		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
-	}
-*/
-
-//	PlayCallback(&bankStates[BANK_0]);
-
-	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
+	PORTC|=Om_TEST_PIN;			// @@@ Used to time ISRs
 	AudioCallback0(&bankStates[BANK_0]);
 	PORTC&=~Om_TEST_PIN;		// @@@ Used to time ISRs
 }
@@ -1591,37 +822,15 @@ ISR(TIMER1_CAPT_vect)
 ISR(PCINT2_vect)
 // The vector triggered by a pin change and associated with Bank1
 // It's on PC4
-{
-/*
-	static bool
-		flipFlop;		// Used for half-time
-
-//	PORTC|=Om_TEST_PIN;		// @@@ Used to time ISRs
-	if((bankStates[BANK_1].halfSpeed==false)||(bankStates[BANK_1].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
-	{
-		extIsrOutputBank1=UpdateAudioChannel1();		// If so, then call the audioIsr for bank 1 and do whatever it's currently supposed to do.
-	}
-	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
-	UpdateOutput();			// Points to our current OP function.  Combines outputs from different sources and puts them on the DAC.
-	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
-	{
-		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
-	}
-	PCIFR|=(1<<PCIF2);		// Clear any pending interrupts hanging around from our rising edge
-
 // Mon May 23 16:06:37 EDT 2011
 // With new hardware (relaxation osc and pulse shaper) we removed the level check above.  The clock will be 0.5uS low pulses, so we should not ever get here unless we want to be here (IE, interrupts will be half as frequent).
 // However, we will need to clear the pin-change interrupt flag, since it may get set again about the time this ISR is starting.  IE, we might get into the interrupt with a falling edge, the flag might clear, the edge might rise, and the flag will get set again.
 // Since the pulses are so short (10 cycles) we can clear this flag at the end of this routine and be sure we're good to go.
-
 // Fri Jun 24 11:20:40 EDT 2011
 // They're more like 5uS now, but still plenty short
-*/
-
-//	PlayCallback(&bankStates[BANK_1]);
-
+{
 	AudioCallback1(&bankStates[BANK_1]);
+	PCIFR|=(1<<PCIF2);                // Clear any pending interrupts hanging around from our rising edge
 }
 
 ISR(TIMER1_COMPA_vect)
@@ -1631,13 +840,11 @@ ISR(TIMER1_COMPA_vect)
 		jitterTemp;			// Used to calculate new jitter values.
 	static unsigned int
 		lastJitterValue;
-	static bool
-		flipFlop;		// Used for half-time
 
-	if((bankStates[BANK_0].halfSpeed==false)||(bankStates[BANK_0].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
-	{
-		midiOutputBank0=UpdateAudioChannel0();			// If so, then call the audioIsr for bank 0 and do whatever it's currently supposed to do.
-	}
+	AudioCallback0(&bankStates[BANK_0]);
+
+// @@@ fix jitter as much as possible.  Do you really need a long int for timerCyclesForNextNote?
+
 	if(bankStates[BANK_0].jitterValue)				// Jitter on?	@@@ This math is wrong, or, more likely, this routine is too slow.  Once the jitterValue gets reasonably high we here the samples slow down -- Thu Aug  4 11:06:19 EDT 2011 Dumbass, it's probably the mod operation.
 	{
 		jitterTemp=bankStates[BANK_0].jitterValue*(unsigned long)bankStates[BANK_0].timerCyclesForNextNote;	// Scale the jitter value to our clock.
@@ -1649,13 +856,6 @@ ISR(TIMER1_COMPA_vect)
 	{
 		OCR1A+=bankStates[BANK_0].timerCyclesForNextNote;		// Set the interrupt register correctly for the next interrupt time.
 	}
-	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
-	UpdateOutput();			// Points to our current OP function.  Combines outputs from different sources and puts them on the DAC.
-	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
-	{
-		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
-	}
 }
 
 ISR(TIMER1_COMPB_vect)
@@ -1665,13 +865,9 @@ ISR(TIMER1_COMPB_vect)
 		jitterTemp;			// Used to calculate new jitter values.
 	static unsigned int
 		lastJitterValue;
-	static bool
-		flipFlop;		// Used for half-time
 
-	if((bankStates[BANK_1].halfSpeed==false)||(bankStates[BANK_1].halfSpeed&&flipFlop))		// Update the sample every ISR if we aren't at half speed, OR every other time if we are.
-	{
-		midiOutputBank1=UpdateAudioChannel1();		// If so, then call the audioIsr for bank 1 and do whatever it's currently supposed to do.
-	}
+	AudioCallback1(&bankStates[BANK_1]);
+
 	if(bankStates[BANK_1].jitterValue)				// Jitter on?
 	{
 		jitterTemp=bankStates[BANK_1].jitterValue*(unsigned long)bankStates[BANK_1].timerCyclesForNextNote;	// Scale the jitter value to our clock.
@@ -1683,13 +879,6 @@ ISR(TIMER1_COMPB_vect)
 	{
 		OCR1B+=bankStates[BANK_1].timerCyclesForNextNote;		// Set the interrupt register correctly for the next interrupt time.
 	}
-	flipFlop^=flipFlop;		// Toggle our half-speed flip flop.
-	UpdateOutput();			// Points to our current OP function.  Combines outputs from different sources and puts them on the DAC.
-	if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
-	{
-		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it here so the ADC S/H acquires the sample after noisy RAM/DAC activity on PORTA)
-	}
 }
 
 ISR(TIMER2_COMPB_vect)
@@ -1699,6 +888,10 @@ ISR(TIMER2_COMPB_vect)
 {
 	unsigned char
 		theByte;
+	signed int
+		sum0;			// Temporary variables for saturated adds, multiplies, other math.
+	unsigned char
+		dacOutput;		// What to put on the DAC
 
 	if(sdIsrState==SD_ISR_LOADING_RAM)	// Putting data from the SD buffer into a RAM bank?
 	{
@@ -1857,8 +1050,56 @@ ISR(TIMER2_COMPB_vect)
 				// Now spit the byte out the DAC.
 
 				sdStreamOutput=theByte;		// Mark this byte as the one we want to go out in our DAC-updating routine
-				// @@@ fix output stuff here
-				UpdateOutput();				// Update the DAC
+
+				// --------------------------------------------------
+				// Now deal with outputting the byte on the DAC.
+				// --------------------------------------------------
+
+				// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
+				if(outputFunction==OUTPUT_ADD)
+				{
+					sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.
+				}
+				else if(outputFunction==OUTPUT_SUBTRACT)
+				{
+					sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Subtract bank1 from bank0 and add in the SD card output.
+				}
+
+				else if(outputFunction==OUTPUT_MULTIPLY)															// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
+				{
+					sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;		// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
+				}
+				else if(outputFunction==OUTPUT_XOR)
+				{
+					sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise XOR the bank outputs, add in the SD card stream.
+				}
+				else	// OUTPUT_AND
+				{
+					sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise AND the bank outputs, add in the SD card stream.
+				}
+
+				// Pin to range and spit it out.
+				if(sum0>127)		// Pin high.
+				{
+					sum0=127;
+				}
+				else if(sum0<-128)		// Pin low.
+				{
+					sum0=-128;
+				}
+
+				dacOutput=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
+
+				if(dacOutput!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+				{
+					LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+					LATCH_PORT=dacOutput;		// Put the output on the output latch's input.
+					PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+					PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+				}
+
+				lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
 			}
 		}
 		else	// All sample bytes processed, end ISR and re-set the DAC to midscale
@@ -2365,47 +1606,65 @@ static void SetSampleClock(unsigned char theBank, unsigned char theClock, unsign
 	}
 }
 
-/*
-static void StartRecording(unsigned char theBank, unsigned char theClock, unsigned int theRate)
-// Set the memory pointer to the start of RAM, set up the clock source, set the interrupt to the recording handler, and enable interrupts.
-// If we're using the internal clock, set the rate.
-// Sat Apr 11 13:49:31 CDT 2009  --  ?
-// Thu Nov 24 19:22:05 CST 2011  --  Still allow play/rec to step on each other, but don't allow them to abort SD RAM access since that could mess up files saved on the SD.
+static void SetSampleDirection(unsigned char theBank)
+// So, WTPA2 can play samples forwards and backwards, and the different banks in RAM can grow up or down depending on where they are in the array.
+// Further, when the sample is edited, we can move the "end" of the sample in front of the beginning and when we do that, the direction of playback should reverse.
+// In order to keep this straight we wrote this function.
+// Thu Nov  7 16:21:42 EST 2013
+// As of right now this assumes that samples only move forward one sample at a time during normal playback.  We can fix this by returning a bool for direction if needed and worry about magnitude elsewhere.
+// NOTE -- the case for BANK_0 and BANK_1 are exactly the same right now...
 {
-
-	unsigned char
-		sreg;
-
-	if((bankStates[theBank].isLocked==false)||((sdIsrState!=SD_ISR_LOADING_RAM)&&(sdIsrState!=SD_ISR_READING_RAM)))		// Check whether the bank is locked but ONLY BY SD FUNCTIONS.  Normal RAM play/rec functions can step on each other.
+	if(theBank==BANK_0)		// Bank_0 starts at address zero and normally plays forward by incrementing
 	{
-
-		sreg=SREG;	// Store global interrupt state.
-		cli();		// Disable interrupts while we muck with the settings.
-
-		bankStates[theBank].audioFunction=AUDIO_RECORD;							// What should we be doing when we get into the ISR?
-
-		bankStates[theBank].currentAddress=bankStates[theBank].startAddress;		// Point to the beginning of our allocated sampling area.
-		bankStates[theBank].endAddress=bankStates[theBank].startAddress;			// And indicate that our sample is now 0 samples big.
-		bankStates[theBank].adjustedStartAddress=bankStates[theBank].startAddress;	// No user trimming yet
-		bankStates[theBank].adjustedEndAddress=bankStates[theBank].startAddress;	// "
-		bankStates[theBank].sampleWindowOffset=0;									// "
-
-		outOfRam=false;						// Plenty of ram left...
-
-		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
-
-		SREG=sreg;		// Restore interrupts.
-
-		// Throw out the results of an old conversion since it could be very old (unless it's already going)
-		if(!(ADCSRA&(1<<ADSC)))			// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+		if(bankStates[theBank].backwardsPlayback==true)
 		{
-			adcByte=(ADCH^0x80);		// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
-			ADCSRA |= (1<<ADSC);  		// Start the next conversion.
+			if(bankStates[theBank].adjustedStartAddress>bankStates[theBank].adjustedEndAddress)
+			{
+				bankStates[theBank].sampleIncrement=1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=-1;			
+			}		
+		}
+		else
+		{
+			if(bankStates[theBank].adjustedStartAddress>bankStates[theBank].adjustedEndAddress)
+			{
+				bankStates[theBank].sampleIncrement=-1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=1;			
+			}		
+		}
+	}
+	else					// Bank_1 starts at the end of RAM and normally plays forward by decrementing
+	{
+		if(bankStates[theBank].backwardsPlayback==true)
+		{
+			if(bankStates[theBank].adjustedStartAddress>bankStates[theBank].adjustedEndAddress)
+			{
+				bankStates[theBank].sampleIncrement=1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=-1;			
+			}		
+		}
+		else
+		{
+			if(bankStates[theBank].adjustedStartAddress>bankStates[theBank].adjustedEndAddress)
+			{
+				bankStates[theBank].sampleIncrement=-1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=1;			
+			}		
 		}
 	}
 }
-*/
 
 static void StartRecording(unsigned char theBank, unsigned char theClock, unsigned int theRate)
 // Set the memory pointer to the start of RAM, set up the clock source, set the interrupt to the recording handler, and enable interrupts.
@@ -2433,7 +1692,7 @@ static void StartRecording(unsigned char theBank, unsigned char theClock, unsign
 		bankStates[theBank].sampleWindowOffset=0;									// "
 
 		bankStates[theBank].audioOutput=0;	// When we're recording we are not putting anything on the output
-		
+
 		if(theBank==BANK_0)					// Move by ONE sample per clock, direction based on the bank
 		{
 			AudioCallback0=RecordCallback;
@@ -2442,7 +1701,7 @@ static void StartRecording(unsigned char theBank, unsigned char theClock, unsign
 		else
 		{
 			AudioCallback1=RecordCallback;
-			bankStates[theBank].sampleIncrement=-1;		
+			bankStates[theBank].sampleIncrement=-1;
 		}
 		outOfRam=false;						// Plenty of ram left...
 
@@ -2460,12 +1719,9 @@ static void StartRecording(unsigned char theBank, unsigned char theClock, unsign
 	}
 }
 
-/*
 static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigned int theRate)
 // Point to the beginning of the sample, select the clock source, and get the interrupts going.
 // Set the clock rate if we're using the internal clock.
-// Mon Jul  6 19:05:04 CDT 2009
-// We've made it clear that the beginning of the sample is relative, in the sense that if we're playing backwards we should point to the last sample address.
 {
 	unsigned char
 		sreg;
@@ -2479,76 +1735,28 @@ static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigne
 
 		if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
 		{
-			bankStates[theBank].currentAddress=bankStates[theBank].adjustedEndAddress;	// Point to the "beginning" of our sample.
-			bankStates[theBank].sampleDirection=false;	// make us run backwards.
-		}
-		else
-		{
-			bankStates[theBank].currentAddress=bankStates[theBank].adjustedStartAddress;	// Point to the beginning of our sample.
-			bankStates[theBank].sampleDirection=true;	// make us run forwards.
-		}
-
-		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
-		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
-		SREG=sreg;		// Restore interrupts.
-	}
-}
-*/
-
-static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigned int theRate)
-// Point to the beginning of the sample, select the clock source, and get the interrupts going.
-// Set the clock rate if we're using the internal clock.
-// Mon Jul  6 19:05:04 CDT 2009
-// We've made it clear that the beginning of the sample is relative, in the sense that if we're playing backwards we should point to the last sample address.
-{
-	unsigned char
-		sreg;
-
-	if((bankStates[theBank].isLocked==false)||((sdIsrState!=SD_ISR_LOADING_RAM)&&(sdIsrState!=SD_ISR_READING_RAM)))		// Check whether the bank is locked but ONLY BY SD FUNCTIONS.  Normal RAM play/rec functions can step on each other.
-	{
-		sreg=SREG;	// Store global interrupt state.
-		cli();		// Disable interrupts while we muck with the settings.
-
-		bankStates[theBank].audioFunction=AUDIO_PLAYBACK;						// What should we be doing when we get into the ISR?
-
-		if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
-		{
-			bankStates[theBank].currentAddress=bankStates[theBank].adjustedEndAddress;	// Point to the "beginning" of our sample.
+			bankStates[theBank].currentAddress=bankStates[theBank].adjustedEndAddress;		// Point to the "beginning" of our sample.
 			bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
 			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
 
-			if(theBank==BANK_0)		// Set all the ISR variables appropriately to the bank
-			{
-				AudioCallback0=PlayCallback;
-				bankStates[theBank].sampleIncrement=-1;						// Move by this much every clock
-			}
-			else
-			{
-				AudioCallback1=PlayCallback;
-				bankStates[theBank].sampleIncrement=1;						// Move by this much every clock
-			}
-
-			//  Not used anymore.  bankStates[theBank].sampleDirection=false;	// make us run backwards.
 		}
 		else																				// Playing forwards.
 		{
 			bankStates[theBank].currentAddress=bankStates[theBank].adjustedStartAddress;	// Point to the beginning of our sample.
 			bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
 			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
-
-			if(theBank==BANK_0)		// Set all the ISR variables appropriately to the bank
-			{
-				AudioCallback0=PlayCallback;
-				bankStates[theBank].sampleIncrement=1;						// Move by this much every clock
-			}
-			else
-			{
-				AudioCallback1=PlayCallback;
-				bankStates[theBank].sampleIncrement=-1;						// Move by this much every clock
-			}
-
-			//  Not used anymore.  bankStates[theBank].sampleDirection=true;	// make us run forwards.
 		}
+
+		if(theBank==BANK_0)		// Set all the ISR variables appropriately to the bank
+		{
+			AudioCallback0=PlayCallback;
+		}
+		else
+		{
+			AudioCallback1=PlayCallback;
+		}
+
+		SetSampleDirection(theBank);				// Make sure our sample increments in the right direction
 
 		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
 		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
@@ -2572,6 +1780,16 @@ static void ContinuePlayback(unsigned char theBank, unsigned char theClock, unsi
 		SetSampleClock(theBank,theClock,theRate);			// Set the appropriate clock source for this audio function.
 
 		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
+
+		if(theBank==BANK_0)							// We can get to "continue" from "overdub" so make sure we have the correct callback
+		{
+			AudioCallback0=PlayCallback;
+		}
+		else
+		{
+			AudioCallback1=PlayCallback;
+		}
+
 		SREG=sreg;		// Restore interrupts.
 	}
 }
@@ -2587,6 +1805,15 @@ static void StartOverdub(unsigned char theBank, unsigned char theClock, unsigned
 	{
 		sreg=SREG;	// Store global interrupt state.
 		cli();		// Disable interrupts while we muck with the settings.
+
+		if(theBank==BANK_0)							// We can get to "continue" from "overdub" so make sure we have the correct callback
+		{
+			AudioCallback0=OverdubCallback;
+		}
+		else
+		{
+			AudioCallback1=OverdubCallback;
+		}
 
 		bankStates[theBank].audioFunction=AUDIO_OVERDUB;	// What should we be doing when we get into the ISR?
 		SetSampleClock(theBank,theClock,theRate);			// Set the appropriate clock source for this audio function.
@@ -2616,6 +1843,15 @@ static void StartRealtime(unsigned char theBank, unsigned char theClock, unsigne
 
 	bankStates[theBank].audioFunction=AUDIO_REALTIME;	// What should we be doing when we get into the ISR?
 	SetSampleClock(theBank,theClock,theRate);			// Set the appropriate clock source for this audio function.
+
+	if(theBank==BANK_0)							// We can get to "continue" from "overdub" so make sure we have the correct callback
+	{
+		AudioCallback0=RealtimeCallback;
+	}
+	else
+	{
+		AudioCallback1=RealtimeCallback;
+	}
 
 	SREG=sreg;		// Restore interrupts.
 
@@ -2786,11 +2022,11 @@ static unsigned char GetCardFilesystem(void)
 			}
 			else if((sdTypeBuffer[4]=='D')&&(sdTypeBuffer[5]=='P')&&(sdTypeBuffer[6]=='C')&&(sdTypeBuffer[7]=='M'))	// Andrew's Nintendo DPCM samples?
 			{
-				filesystemType=SD_TYPE_DPCM;			
+				filesystemType=SD_TYPE_DPCM;
 			}
 			else if((sdTypeBuffer[4]=='B')&&(sdTypeBuffer[5]=='O')&&(sdTypeBuffer[6]=='O')&&(sdTypeBuffer[7]=='T'))	// Program image for bootloader?
 			{
-				filesystemType=SD_TYPE_BOOT;						
+				filesystemType=SD_TYPE_BOOT;
 			}
 		}
 
@@ -2945,10 +2181,10 @@ static void ResetSdCard(void)
 
 	sreg=SREG;
 	cli();
-	
+
 	EndSdTransfer();		// Bring CS high.  This will fuck things up if the card is mid transfer.
 	ClearSampleToc();
-	
+
 	// Stop SD card ISR
 
 	sdIsrState=SD_ISR_IDLE;		// ISR state to idle
@@ -4116,39 +3352,50 @@ static void CleanupAudioSources(void)
 // Look through all the banks, and if none are using a given interrupt source, disable that interrupt source.
 // Also voids the contributions those interrupts have to the audio output.
 {
-	// If we aren't streaming from the SD, void contribution to the DAC
-	if(sdIsrState!=SD_ISR_STREAMING_PLAYBACK)
-	{
-		sdStreamOutput=0;	// @@@ Not even sure we need to do this, since we set this to 0 when the ISR stops.  If we aborted during playback, this would be necessary.
-	}
+	// Turn off audio interrupts that aren't used
+	// -------------------------------------------
 
-	// Turn off audio interrupts that aren't used, and void their contributions to the DAC
 	if(bankStates[BANK_0].clockMode!=CLK_EXTERNAL)	// If bank0 isn't using the external interrupt...
 	{
-		extIsrOutputBank0=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<ICIE1);		// Disable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
 		TIFR1|=(1<<ICF1);			// Clear the interrupt flag by writing a 1.
 	}
 	if(bankStates[BANK_1].clockMode!=CLK_EXTERNAL)
 	{
-		extIsrOutputBank1=0;// Voids contribution that this audio source has to the output.
 		PCICR=0;			// No global PCINTS.
 		PCMSK2=0;			// No PORTC interrupts enabled.
 	}
 	if(bankStates[BANK_0].clockMode!=CLK_INTERNAL)		// OC1A in use?
 	{
-		midiOutputBank0=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<OCIE1A);	// Disable the compare match interrupt.
 		TIFR1|=(1<<OCF1A);		// Clear the interrupt flag by writing a 1.
 	}
 	if(bankStates[BANK_1].clockMode!=CLK_INTERNAL)		// OC1B in use?
 	{
-		midiOutputBank1=0;		// Voids contribution that this audio source has to the output.
 		TIMSK1&=~(1<<OCIE1B);	// Disable the compare match interrupt.
 		TIFR1|=(1<<OCF1B);		// Clear the interrupt flag by writing a 1.
 	}
 
+	// Void any contributions to the DAC (set the contribution of the bank to midscale)
+	// -----------------------------------------------------------------------------------
+
+	if(sdIsrState!=SD_ISR_STREAMING_PLAYBACK)	// If we aren't streaming from the SD, void contribution to the DAC
+	{
+		sdStreamOutput=0;	// @@@ Not even sure we need to do this, since we set this to 0 when the ISR stops.  If we aborted during playback, this would be necessary.
+	}
+	if((bankStates[BANK_0].clockMode!=CLK_EXTERNAL)&&(bankStates[BANK_0].clockMode!=CLK_INTERNAL))	// If bank0 isn't using any interrupts...
+	{
+		bankStates[BANK_0].audioOutput=0;	// Voids contribution that this audio source has to the output.
+	}
+	if((bankStates[BANK_1].clockMode!=CLK_EXTERNAL)&&(bankStates[BANK_1].clockMode!=CLK_INTERNAL))	// If bank0 isn't using any interrupts...
+	{
+		bankStates[BANK_1].audioOutput=0;	// Voids contribution that this audio source has to the output.
+	}
+
+
 	// Unlock banks that aren't being used by RAM  -- we need to do this since we can arbitrarily stop audio functions
+	// ----------------------------------------------------------------------------------------------------------------
+
 	if(bankStates[BANK_0].clockMode==CLK_NONE)		// Audio functions on this bank off?
 	{
 		if(sdIsrState==SD_ISR_IDLE||sdIsrState==SD_ISR_STREAMING_PLAYBACK||sdBank0==false)	// SD ISR set such that this bank cannot be using the RAM?
@@ -4219,38 +3466,38 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 
 		for(i=0;i<numSlices;i++)	// Fill our array up to the number of slices we care about.
 		{
-			granularPositionArray[theBank][i]=i;		// Our array starts as a list of numbers incrementing upwards.
+			bankStates[theBank].granularPositionArray[i]=i;		// Our array starts as a list of numbers incrementing upwards.
 		}
 
 		for(i=0;i<numSlices;i++)	// Now, for each element in the array, exchange it with another.  Shuffle the deck.
 		{
-			origContents=granularPositionArray[theBank][i];				// Store the contents of the current array address.
+			origContents=bankStates[theBank].granularPositionArray[i];				// Store the contents of the current array address.
 			randIndex=(GetRandomLongInt()%numSlices);					// Get random array address up to what we care about.
-			randContents=granularPositionArray[theBank][randIndex];		// Store the contents of the mystery address.
-			granularPositionArray[theBank][i]=randContents;				// Put the mystery register contents into the current register.
-			granularPositionArray[theBank][randIndex]=origContents;		// And the contents of the original register into the mystery register.
+			randContents=bankStates[theBank].granularPositionArray[randIndex];		// Store the contents of the mystery address.
+			bankStates[theBank].granularPositionArray[i]=randContents;				// Put the mystery register contents into the current register.
+			bankStates[theBank].granularPositionArray[randIndex]=origContents;		// And the contents of the original register into the mystery register.
 		}
 
 		if(theBank==BANK_0)		// Get slice size assuming banks grow upwards
 		{
-			sliceSize[BANK_0]=(bankStates[BANK_0].endAddress-BANK_0_START_ADDRESS)/numSlices;
+			bankStates[BANK_0].sliceSize=(bankStates[BANK_0].endAddress-BANK_0_START_ADDRESS)/numSlices;
 		}
 		else					// Otherwise assume banks grow down.
 		{
-			sliceSize[BANK_1]=(BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)/numSlices;
+			bankStates[BANK_1].sliceSize=(BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)/numSlices;
 		}
 
-		bankStates[theBank].granularSlices=numSlices;	// How many slices is our entire sample divided into?
-		granularPositionArrayPointer[theBank]=0;		// Point to the first element of our shuffled array.
-		sliceRemaining[theBank]=sliceSize[theBank];		// One entire slice to go.
+		bankStates[theBank].granularSlices=numSlices;						// How many slices is our entire sample divided into?
+		bankStates[theBank].granularPositionArrayPointer=0;					// Point to the first element of our shuffled array.
+		bankStates[theBank].sliceRemaining=bankStates[theBank].sliceSize;	// One entire slice to go.
 
 		if(theBank==BANK_0)		// Set the current address of the sample pointer to the beginning of the first slice.
 		{
-			bankStates[BANK_0].currentAddress=((granularPositionArray[BANK_0][0]*sliceSize[BANK_0])+BANK_0_START_ADDRESS);
+			bankStates[BANK_0].currentAddress=((bankStates[BANK_0].granularPositionArray[0]*bankStates[BANK_0].sliceSize)+BANK_0_START_ADDRESS);
 		}
 		else
 		{
-			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(granularPositionArray[BANK_1][0]*sliceSize[BANK_1]));
+			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(bankStates[BANK_1].granularPositionArray[0]*bankStates[BANK_1].sliceSize));
 		}
 
 		SREG=sreg;		// Restore interrupts.
@@ -4267,30 +3514,17 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 //--------------------------------------
 //--------------------------------------
 // These functions are called to bump the beginning of a sample forward or backward by an amount dictated by the shuttle wheel or a MIDI parameter.
-// The resolution of these functions is dependent on the absolute number of individual samples currently stored in the bank in question.  Since the best parameter info we can hope to get right now is 8bit (from the shuttle -- less from MIDI)
+// The resolution of these functions is dependent on the absolute number of individual samples currently stored in the bank in question.  Since the best parameter info we can hope to get right now is 8bit (from the shuttlewheel -- less from MIDI)
 // 	we divide the entire sample by 256 to find our "chunk size" and then shuttle the sample start / end / window around by that many chunks.  Finally, we turn that info into "adjustedAddress" info to be used by the ISR.
-// NOTE:  It is possible with these commands to position the sample's working boundaries such that the current address pointer is out of bounds.  Therefore, we test to make sure this is not the case and pull the pointer in accordingly.
-// NOTE:  It is possible to move a sample's adjusted end come BEFORE its adjusted beginning.  We must account for this.  Perhaps with backwards playback.
-// NOTE:  It is possible to have the sample roll around the end address.  Account for this.
-
-// We will need to update the ISR so that playback rolls through the end address.
-// Mon Nov  9 22:32:16 EST 2009 -- Think I got it.
-
-// Thu Mar 25 21:44:28 EDT 2010
-// Window problems.  When the window wraps around the absolute address of the sample, bad shit goes down.
-// Fri Mar 26 14:46:06 EDT 2010
-// Fixed.  I made some dumb changes to the ISR address wrapping and also didn't accout for the fact that window consisting of a full sample will have equal start and end addresses when it wraps.
-
-// Fri Mar 26 18:55:07 EDT 2010
-// Changed the way the whole sampler thinks about "direction" in playback.  The user sets the backwardPlayback variable.
-// The variable read by the interrupt is "sampleDirection" which actually tells us which way to go through the memory array.
-// This system lets us arbitrarily set the way we want the sample to go, and then reverse it when the sample end and start points are switched.  Using these two variables makes this decision deterministic in all cases.
+// NOTE -- when we move the sample's end before its beginning, the sample direction reverses!  Neat.  Real IDM sounding.
 
 static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 // Using window, start, and stop info, this routine sets the beginning and end point within a sample that's been trimmed.
 // We trim in "chunks" which are 1/256ths of the entire sample (because that's the resolution of the shuttlewheel)
 // Wed Jun 22 13:50:04 EDT 2011
 // Now that we use an encoder we could adjust this more finely if we wanted to.
+// Thu Nov  7 17:04:24 EST 2013
+// This now JUST changes addresses.  Sample direction (how much the sample increments each clock) is set with a different function
 {
 	unsigned char
 		sreg;
@@ -4298,47 +3532,53 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		chunkSize;
 
 	sreg=SREG;
-	cli();			// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
+	cli();					// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
 
 	if(theBank==BANK_0)		// Get chunk size assuming banks grow upwards
 	{
 		chunkSize=(((bankStates[BANK_0].endAddress-BANK_0_START_ADDRESS)<<3)/256);			// Get chunk size of current sample (shift this up to get some more resolution)
 
 		// Move the start and end points.  Removed fixed decimal points.
-
+		// NOTE -- these are written such that the adjusted start and end addresses are the same as the real addresses assuming the offsets are zero
+		
 		bankStates[BANK_0].adjustedStartAddress=(BANK_0_START_ADDRESS+((chunkSize*(bankStates[BANK_0].sampleStartOffset+(unsigned int)bankStates[BANK_0].sampleWindowOffset))>>3));			// multiply chunk size times desired offset (calculated from start and window offsets) and add it to the start address to get new working start address.
 		bankStates[BANK_0].adjustedEndAddress=(bankStates[BANK_0].endAddress-((chunkSize*bankStates[BANK_0].sampleEndOffset)>>3))+((chunkSize*bankStates[BANK_0].sampleWindowOffset)>>3);	// Same idea as above, except move end back and push forward with window.
 
-		// Now check to see whether the end is before or after the start, and if that's changed, reverse the sample.
-
-		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// Reverse playback direction on this bank and flip the start and end addresses.
+		// Now check to see whether the end is before or after the start, and if that's changed, update the loop addresses that the ISR uses
+		// ---------------------------------------------------------------------------------------------------------------------------------
+		
+/*
+		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// Flip the start and end addresses the ISR uses	@@@ NOTE -- these targets work out the same regardless of whether start is greater than end (the direction does matter though)
 		{
-			if(bankStates[BANK_0].backwardsPlayback==true)			// Toggle the direction our sample is playing.
+			if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
 			{
-				bankStates[BANK_0].sampleDirection=true;
+				bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
+				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
 			}
-			else
+			else																				// Playing forwards.
 			{
-				bankStates[BANK_0].sampleDirection=false;
+				bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
+				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
 			}
-
-			chunkSize=bankStates[BANK_0].adjustedStartAddress;								// move start to temp
-			bankStates[BANK_0].adjustedStartAddress=bankStates[BANK_0].adjustedEndAddress;	// move end to start
-			bankStates[BANK_0].adjustedEndAddress=chunkSize;								// move temp to end
 		}
 		else	// Sample is in a "normal" orientation.  Make sure it plays right.
 		{
-			if(bankStates[BANK_0].backwardsPlayback==true)			// Play direction accordingly.
+			if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
 			{
-				bankStates[BANK_0].sampleDirection=false;
+				bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
+				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
+
 			}
-			else
+			else																				// Playing forwards.
 			{
-				bankStates[BANK_0].sampleDirection=true;
+				bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
+				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
 			}
 		}
+*/
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
+		// ---------------------------------------------------------------------------------------------------------------------------------
 
 		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].endAddress)	// Start addy off the end of the scale?
 		{
@@ -4354,7 +3594,8 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			}
 		}
 
-		// Finally, if the current sample address pointer is not in between the start and end points anymore, put it there.
+		// If the current sample address pointer is not in between the start and end points anymore, put it there.
+		// ---------------------------------------------------------------------------------------------------------------------------------
 
 		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// Are we wrapping around the end?
 		{
@@ -4381,10 +3622,24 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
 			}
 		}
+
+		// Finally, set the loop points the ISR uses based on the direction of our edited, correctly bounded sample
+		// ---------------------------------------------------------------------------------------------------------------------------------
+
+		if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
+		{
+			bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
+			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
+
+		}
+		else																				// Playing forwards.
+		{
+			bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
+			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
+		}
 	}
-	else	// Otherwise assume banks grow down and do the same procedure for bank 1.
+	else	// Otherwise assume banks grow down and do the same procedure for bank 1 -- @@@ BANK 1 grows down, so the signs and comments here may not always agree.
 	{
-		// @@@ BANK 1 grows down, so the signs and comments here may not always agree.
 		chunkSize=(((BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)<<3)/256);		// Get chunk size of current sample (shift this up to get some more resolution)
 
 		// Move the start and end points.  Removed fixed decimal points.
@@ -4392,8 +3647,8 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		bankStates[BANK_1].adjustedStartAddress=(BANK_1_START_ADDRESS-((chunkSize*(bankStates[BANK_1].sampleStartOffset+(unsigned int)bankStates[BANK_1].sampleWindowOffset))>>3));			// multiply chunk size times desired offset (calculated from start and window offsets) and add it to the start address to get new working start address.
 		bankStates[BANK_1].adjustedEndAddress=(bankStates[BANK_1].endAddress+((chunkSize*bankStates[BANK_1].sampleEndOffset)>>3))-((chunkSize*bankStates[BANK_1].sampleWindowOffset)>>3);	// Same idea as above, except move end back and push forward with window.
 
+/*
 		// Now check to see whether the end is before or after the start, and if that's changed, reverse the sample.
-
 		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].adjustedEndAddress)	// Reverse playback direction on this bank and flip the start and end addresses.
 		{
 			if(bankStates[BANK_1].backwardsPlayback==true)			// Toggle the direction our sample is playing.
@@ -4420,8 +3675,10 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 				bankStates[BANK_1].sampleDirection=true;
 			}
 		}
+*/
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
+		// ---------------------------------------------------------------------------------------------------------------------------------
 
 		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].endAddress)	// Start addy off the end of the scale?
 		{
@@ -4437,7 +3694,8 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			}
 		}
 
-		// Finally, if the current sample address pointer is not in between the start and end points anymore, put it there.
+		// If the current sample address pointer is not in between the start and end points anymore, put it there.
+		// ---------------------------------------------------------------------------------------------------------------------------------
 
 		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].adjustedEndAddress)	// Are we wrapping around the end?
 		{
@@ -4453,7 +3711,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 				}
 			}
 		}
-		else	// Not wrapping around the end (this means the start addy is xxx the end).
+		else	// Not wrapping around the end (this means the start addy is greater than the end, which is correct for this bank)
 		{
 			if(bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)
 			{
@@ -4464,6 +3722,21 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
 			}
 		}
+
+		// Finally, set the loop points the ISR uses based on the direction of our edited, correctly bounded sample
+		// ---------------------------------------------------------------------------------------------------------------------------------
+		if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
+		{
+			bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
+			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
+
+		}
+		else																				// Playing forwards.
+		{
+			bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
+			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
+		}
+
 	}
 
 	SREG=sreg;		// Restore interrupts.
@@ -4495,6 +3768,7 @@ static void AdjustSampleStart(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleStartOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
+	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 static void AdjustSampleEnd(unsigned char theBank, unsigned char theAmount)
@@ -4504,6 +3778,7 @@ static void AdjustSampleEnd(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleEndOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
+	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 static void AdjustSampleWindow(unsigned char theBank, unsigned char theAmount)
@@ -4513,6 +3788,7 @@ static void AdjustSampleWindow(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleWindowOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
+	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 //--------------------------------------
@@ -4536,11 +3812,11 @@ static void SdCardMenu(void)
 // No Shift:	Play		Load		Save		Delete		Exit		Exit		Exit		Exit
 {
 	if(subState==SS_0)		// Initialize LEDs and slots
-	{		
+	{
 		if(sdCurrentSlot>127)		// Max slot we can handle with the user interface
 		{
 			sdCurrentSlot=127;
-		}		
+		}
 
 		ledOnOffMask=sdCurrentSlot;		// Turn on the LEDs corresponding to the slot we're currently looking at
 		StopBlinking();					// Make sure nothing is errantly blinking
@@ -4548,7 +3824,7 @@ static void SdCardMenu(void)
 		if(CheckSdSlotFull(sdCurrentSlot))		// Blink LED_7 if the slot is full.
 		{
 			BlinkLeds(1<<LED_7);
-		}	
+		}
 
 		subState=SS_1;
 	}
@@ -4588,11 +3864,11 @@ static void SdCardMenu(void)
 					}
 				}
 
-				ledOnOffMask=sdCurrentSlot;		
+				ledOnOffMask=sdCurrentSlot;
 				if(CheckSdSlotFull(sdCurrentSlot))		// Blink LED_7 if the slot is full.
 				{
 					BlinkLeds(1<<LED_7);
-				}	
+				}
 				else
 				{
 					StopBlinking();
@@ -4603,17 +3879,17 @@ static void SdCardMenu(void)
 			if(newKeys&Im_SWITCH_0)		// Stream sample
 			{
 				if(CheckSdSlotFull(sdCurrentSlot))
-				{		
+				{
 					PlaySampleFromSd(sdCurrentSlot);
 				}
-			}		
+			}
 			if(newKeys&Im_SWITCH_1)		// Load sample from SD card into the current bank
 			{
 				if(CheckSdSlotFull(sdCurrentSlot))
-				{		
+				{
 					ReadSampleFromSd(currentBank,sdCurrentSlot);
 				}
-			}		
+			}
 			if(newKeys&Im_SWITCH_2)		// Save sample from current bank into the current SD card slot
 			{
 				if(bankStates[currentBank].startAddress!=bankStates[currentBank].endAddress)	// Do we have something in the bank?
@@ -4621,11 +3897,11 @@ static void SdCardMenu(void)
 					WriteSampleToSd(currentBank,sdCurrentSlot);
 					BlinkLeds(1<<LED_7);							// Update LED to reflect that this is now full
 				}
-			}		
+			}
 			if(newKeys&Im_SWITCH_3)		// "Delete" sample.  This merely clears the TOC entry.  It's more like "freeing" a sample.
 			{
 				if(CheckSdSlotFull(sdCurrentSlot))
-				{		
+				{
 					if(cardState==SD_IDLE)	// Got what we wanted?
 					{
 						MarkSdSlotEmpty(sdCurrentSlot);	// Clear this in the TOC
@@ -4634,8 +3910,8 @@ static void SdCardMenu(void)
 						ledOnOffMask&=~(1<<LED_7);
 					}
 				}
-			}		
-			
+			}
+
 			if((newKeys&Im_SWITCH_4)||(newKeys&Im_SWITCH_5)||(newKeys&Im_SWITCH_6)||(newKeys&Im_SWITCH_7))		// Bail from SD card menu
 			{
 				KillLeds();
@@ -4664,14 +3940,16 @@ static void UpdateUserSwitches(void)
 	{
 		if(newKeys&Im_SWITCH_5)		// Bail!
 		{
-			UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+			outputFunction=OUTPUT_ADD;						// Start with our DAC doing normal stuff.
+
+			bankStates[currentBank].backwardsPlayback=false;
 			RevertSampleToUnadjusted(currentBank);			// Get rid of any trimming on the sample.
+			SetSampleDirection(currentBank);				// Determine the way this sample should increment
+
 			bankStates[currentBank].bitReduction=0;			// No crusties yet.
 			bankStates[currentBank].jitterValue=0;			// No hissies yet.
 			bankStates[currentBank].granularSlices=0;		// No remix yet.
 			bankStates[currentBank].halfSpeed=false;
-			bankStates[currentBank].backwardsPlayback=false;
-			bankStates[currentBank].sampleDirection=true;
 			bankStates[currentBank].loopOnce=false;
 			bankStates[currentBank].realtimeOn=false;
 			bankStates[currentBank].sampleSkipCounter=0;
@@ -4715,10 +3993,19 @@ static void UpdateUserSwitches(void)
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,0);		// Send it out to the techno nerds.
 			}
 		}
-		if(newKeys&Im_SWITCH_2)		// Do realtime
+		if(newKeys&Im_SWITCH_2)		// Toggle realtime
 		{
-			StartRealtime(currentBank,CLK_EXTERNAL,0);
-			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REALTIME,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
+			if(bankStates[currentBank].audioFunction==AUDIO_REALTIME)		
+			{			
+				bankStates[currentBank].audioFunction=AUDIO_IDLE;												// Nothing to do in the ISR
+				bankStates[currentBank].clockMode=CLK_NONE;														// Don't trigger this bank.
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REALTIME,0);						// Send it out to the techno nerds.
+			}
+			else
+			{
+				StartRealtime(currentBank,CLK_EXTERNAL,0);
+				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_REALTIME,MIDI_GENERIC_NOTE);		// Send it out to the techno nerds.
+			}
 		}
 		if(((keyState&Im_SWITCH_3)&&newEncoder)||(newKeys&Im_SWITCH_3))		// Granularize the sample -- reshuffle if the encoder moves OR we get a new button press, but not just while the button is held
 		{
@@ -4726,31 +4013,36 @@ static void UpdateUserSwitches(void)
 			PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_GRANULARITY,(encoderValue/2));		// Send it out to the techno nerds.
 		}
 		if(keyState&Im_SWITCH_4)		// Assign method for combining audio channels on the output.
+		// @@@ you need to only do this on a new key or new encoder or you're going to spew MIDI
 		{
 			if(newEncoder)	// Only change to new values
 			{
 				switch(scaledEncoderValue)
 				{
 					case 0:
-					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+					outputFunction=OUTPUT_ADD;			// Start with our DAC doing normal stuff.
 					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
 					break;
 
 					case 1:
-					UpdateOutput=OutputMultiplyBanks;	// Set our output function pointer to call this type of combination.
+					outputFunction=OUTPUT_MULTIPLY;		
 					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
 					break;
 
 					case 2:
-					UpdateOutput=OutputAndBanks;	// Set our output function pointer to call this type of combination.
+					outputFunction=OUTPUT_AND;			
 					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
 					break;
 
 					case 3:
-					UpdateOutput=OutputXorBanks;	// Set our output function pointer to call this type of combination.
+					outputFunction=OUTPUT_XOR;			
 					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
 					break;
 
+					case 4:
+					outputFunction=OUTPUT_SUBTRACT;		
+					PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_OUTPUT_COMBINATION,scaledEncoderValue);		// Send it out to the techno nerds.
+					break;
 					default:
 					break;
 				}
@@ -4769,7 +4061,8 @@ static void UpdateUserSwitches(void)
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_PLAY_BACKWARDS,0);		// Send it out to the techno nerds.
 			}
 
-			UpdateAdjustedSampleAddresses(currentBank);	// @@@ make sure we handle going backwards when considering edited samples.
+			UpdateAdjustedSampleAddresses(currentBank);	// Make sure we handle going backwards when considering edited/reversed samples.
+			SetSampleDirection(currentBank);			// Determine the way this sample should increment
 		}
 	}
 	// -----------------------------------------------------------------------------------
@@ -5040,7 +4333,8 @@ static void DoSampler(void)
 					{
 						bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
 					}
-					UpdateAdjustedSampleAddresses(currentMidiMessage.channelNumber);	// @@@ make sure we handle going backwards when considering edited samples.
+					UpdateAdjustedSampleAddresses(currentMidiMessage.channelNumber);	// Make sure we handle going backwards when considering edited/reversed samples.
+					SetSampleDirection(currentBank);									// Determine the way this sample should increment
 					break;
 
 					case MIDI_CANCEL_EFFECTS:						// Escape from audio mess please.
@@ -5049,13 +4343,12 @@ static void DoSampler(void)
 					bankStates[currentMidiMessage.channelNumber].jitterValue=0;			// No hissies yet.
 					bankStates[currentMidiMessage.channelNumber].granularSlices=0;		// No remix yet.
 					bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
-					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;
 					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
-					bankStates[currentMidiMessage.channelNumber].sampleDirection=true;
+					SetSampleDirection(currentMidiMessage.channelNumber);
 					bankStates[currentMidiMessage.channelNumber].realtimeOn=false;			// We'll default to playback.
 					bankStates[currentMidiMessage.channelNumber].samplesToSkip=0;
 					bankStates[currentMidiMessage.channelNumber].sampleSkipCounter=0;
-					UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+					outputFunction=OUTPUT_ADD;												// Start with our DAC doing normal stuff.
 					break;
 
 					case MIDI_BIT_REDUCTION:					// Crustiness quotient.
@@ -5077,19 +4370,23 @@ static void DoSampler(void)
 					switch(currentMidiMessage.dataByteTwo)
 					{
 						case 0:
-						UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+						outputFunction=OUTPUT_ADD;			// Start with our DAC doing normal stuff.
 						break;
 
 						case 1:
-						UpdateOutput=OutputMultiplyBanks;	// Set our output function pointer to call this type of combination.
+						outputFunction=OUTPUT_MULTIPLY;
 						break;
 
 						case 2:
-						UpdateOutput=OutputAndBanks;	// Set our output function pointer to call this type of combination.
+						outputFunction=OUTPUT_AND;
 						break;
 
 						case 3:
-						UpdateOutput=OutputXorBanks;	// Set our output function pointer to call this type of combination.
+						outputFunction=OUTPUT_XOR;
+						break;
+
+						case 4:
+						outputFunction=OUTPUT_SUBTRACT;
 						break;
 
 						default:
@@ -5191,7 +4488,6 @@ static void InitSampler(void)
 		bankStates[i].halfSpeed=false;
 		bankStates[currentBank].sampleSkipCounter=0;
 		bankStates[currentBank].samplesToSkip=0;
-		bankStates[i].sampleDirection=true;			// Samples go forward normally (no editing has happend yet)
 		bankStates[i].backwardsPlayback=false;		// User hasn't said reverse normal direction
 		bankStates[i].currentAddress=bankStates[i].startAddress;	// Point initial ram address to the beginning of the bank.
 		bankStates[i].endAddress=bankStates[i].startAddress;		// ...And indicate that the sample is 0 samples big.
@@ -5203,8 +4499,6 @@ static void InitSampler(void)
 		theMidiRecordRate[i]=GetMidiRecordNote(i);							// First get the proper note.
 		theMidiRecordRate[i]=GetPlaybackRateFromNote(theMidiRecordRate[i]);  // Now make it a useful number.
 	}
-
-UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.  @@@
 
 	outputFunction=OUTPUT_ADD;	// Start with our DAC doing normal stuff.
 
@@ -5237,7 +4531,9 @@ static void DoSawtooth(void)
 		bankStates[BANK_0].audioFunction=AUDIO_SAWTOOTH;	// Set the external analog clock interrupt vector to make sawtooth waves.
 		bankStates[BANK_0].clockMode=CLK_EXTERNAL;
 		SetSampleClock(BANK_0,CLK_EXTERNAL,0);
-		UpdateOutput=OutputAddBanks;	// Set our output function pointer to call this type of combination.
+		outputFunction=OUTPUT_ADD;							// Don't really use this for the sawtooth, but might as well be complete
+		AudioCallback0=SawtoothCallback;
+		
 		sei();		// DONT EVER DO Interrupts this way if you care about not messing something up.
 
 		subState=SS_2;					// And wait forever.

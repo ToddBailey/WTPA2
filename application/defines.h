@@ -130,3 +130,9 @@ enum			// Here we enumerate however many banks we're actually implementing.
 #define		Im_BANK_CHANGE		Im_SWITCH_5
 #define		Im_SHIFT_1			Im_SWITCH_6
 #define		Im_SHIFT_2			Im_SWITCH_7
+
+
+// Thu Nov  7 14:52:13 EST 2013
+// Granular Constants
+// ---------------------------------
+#define MAX_SLICES			128
