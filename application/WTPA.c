@@ -334,6 +334,11 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // NOTE -- this is how granular does it right now.  It would however allow us to skip individual samples more easily (ie -- INCREASE sample speed): we could dec the "remaining" counter by the "increment" amount and check to see if it went negative
 //		This would allow us to decrement by 2, say and not worry if we missed targetAddress 
 
+// Thu Nov  7 11:52:24 EST 2013
+//	Tried implementing bank combinations as a function call.  Started a new branch.  It was slower by about 1.5-1.75uS (about 10uS playback)
+//	Came back to switch model
+// Thu Nov  7 13:09:23 EST 2013
+//	Found that an if-else was faster (at least where ADD was concerned) assuming the optimizer flag was -O2 or -O3
 {
 	// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
 	// The playback ISR also allows the various effects to change the output.
@@ -396,22 +401,22 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		PORTA|=(Om_RAM_OE);								// Tristate the RAM.
 		LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
 
-		if(theBank->bitReduction)	// Low bit rate?
+		// Bit rate reduction slows us down to about 10uS (sometimes a bit higher) when it's not 0 and we check with an IF statement as opposed to 8.25uS when it's off.
+		// With the IF taken out, 8.7uS with no bit reduction, about 9.8uS when it's on.
+		// Note, this is with 7-bit reduction.  Smaller numbers of bits give smaller delays.
+		// So, keep the check.
+		
+		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the 
 		{
-			// @@@ if you never change the top bit do you need to xor it off?
-			// @@@ also, sanity check this
-
-	//		theBank->audioOutput^=0x80;											// Bring the signed char back to unsigned for the bitmask.
 			theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
-	//		theBank->audioOutput^=0x80;											// Bring it back to signed.
 		}
 
 		// --------------------------------------------------	
 		// Now deal with outputting the byte on the DAC.
 		// --------------------------------------------------	
-
-		// @@@ may want to favor the ADD function here, maybe with an if statement
+		// @@@ NOTE -- may want to somehow favor the ADD here.  Giving it's own IF doesn't help.
 				
+/*
 		switch(outputFunction)		// How do we combine the audio outputs?  We can add them of course but also mess with them in artsy ways.
 		{
 			case OUTPUT_MULTIPLY:																				// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
@@ -434,6 +439,30 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 			default:
 				sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;					// Sum everything that might be involved in our output waveform.				
 				break;
+		}
+*/
+
+	// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
+		if(outputFunction==OUTPUT_ADD)
+		{
+			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+		}
+		else if(outputFunction==OUTPUT_SUBTRACT)
+		{
+			sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Subtract bank1 from bank0 and add in the SD card output.
+		}
+
+		else if(outputFunction==OUTPUT_MULTIPLY)															// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
+		{
+			sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;		// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
+		}
+		else if(outputFunction==OUTPUT_XOR)
+		{
+			sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise XOR the bank outputs, add in the SD card stream.
+		}
+		else	// OUTPUT_AND
+		{
+			sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise AND the bank outputs, add in the SD card stream.
 		}
 
 		// Pin to range and spit it out.
@@ -513,20 +542,229 @@ static void RecordCallback(volatile BANK_STATE *theBank)
 }
 
 static void OverdubCallback(volatile BANK_STATE *theBank)
+// WTPA has a destructive overdub.
+// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
+// and do normal playback.  Then turn the bus around and put the ADC value PLUS the output value back into the RAM.  Then set the ADC running again.
+// NOTE -- overdub stays within the boundaries of the first recorded sample.
 {
+	unsigned long
+		theAddy;	// Using a local nonvolatile variable allows the compiler to be smarter about the address resolution and not load a 32-bit number every time.
+	signed int
+		sum0;		// Temporary variables for saturated adds, multiplies, other math.
+	unsigned char
+		dacOutput;		// What to put on the DAC
+			
+	if(theBank->sampleSkipCounter)		// Used for time division
+	{
+		theBank->sampleSkipCounter--;	// Don't play anything this time around
+	}
+	else
+	{
+		theBank->sampleSkipCounter=theBank->samplesToSkip;		// Reload number of samples to skip
 
+		theAddy=theBank->currentAddress;		// Using a local nonvolatile variable allows the compiler to be smarter about the address resolution and not load a 32-bit number every time.
+
+		LATCH_PORT=theAddy;							// Put the LSB of the address on the latch.
+		PORTA|=(Om_RAM_L_ADR_LA);					// Strobe it to the latch output...
+		PORTA&=~(Om_RAM_L_ADR_LA);					// ...Keep it there.
+
+		LATCH_PORT=(theAddy>>8);					// Put the LSB of the address on the latch.
+		PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
+		PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
+
+		PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+
+		LATCH_DDR=0x00;								// Turn the data bus around (AVR's data port to inputs)
+		PORTA&=~(Om_RAM_OE);						// RAM's IO pins to outputs.
+
+		// Calculate new addy while data bus settles
+
+		if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+		{
+			if(theBank->loopOnce==true)									// Yes, and we should be done now.
+			{
+				theBank->audioFunction=AUDIO_IDLE;
+				theBank->clockMode=CLK_NONE;		
+			}
+			else
+			{
+				theBank->currentAddress=theBank->addressAfterLoop;		// We're at the end of the sample and we need to go back to the relative beginning of the sample.
+			}
+		}
+		else
+		{
+			theBank->currentAddress=(theBank->sampleIncrement+theAddy);			// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+		}
+
+		// Finish getting the byte from RAM.
+
+		theBank->audioOutput=LATCH_INPUT;		// Get the byte from this address in RAM.
+		PORTA|=(Om_RAM_OE);						// Tristate the RAM.
+		LATCH_DDR=0xFF;							// Turn the data bus around (AVR's data port to outputs)
+
+		if(theBank->bitReduction)	// Low bit rate? The if statement saves us some time when the 
+		{
+			theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
+		}
+
+		// --------------------------------------------------	
+		// Now deal with outputting the byte on the DAC.
+		// --------------------------------------------------	
+
+		// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
+		if(outputFunction==OUTPUT_ADD)
+		{
+			sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+		}
+		else if(outputFunction==OUTPUT_SUBTRACT)
+		{
+			sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Subtract bank1 from bank0 and add in the SD card output.
+		}
+
+		else if(outputFunction==OUTPUT_MULTIPLY)															// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
+		{
+			sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;		// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
+		}
+		else if(outputFunction==OUTPUT_XOR)
+		{
+			sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise XOR the bank outputs, add in the SD card stream.
+		}
+		else	// OUTPUT_AND
+		{
+			sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise AND the bank outputs, add in the SD card stream.
+		}
+
+		// Pin to range and spit it out.
+		if(sum0>127)		// Pin high.
+		{
+			sum0=127;
+		}
+		else if(sum0<-128)		// Pin low.
+		{
+			sum0=-128;
+		}
+
+		dacOutput=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
+
+		if(dacOutput!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+		{
+			LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+			LATCH_PORT=dacOutput;		// Put the output on the output latch's input.
+			PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+			PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+		}
+
+		lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
+
+		sum0=theBank->audioOutput+adcByte;	// Do saturated add mess.
+		if(sum0>127)						// Saturate to top rail.
+		{
+			sum0=127;
+		}
+		else if(sum0<-128) 			// Saturate to bottom rail.
+		{
+			sum0=-128;
+		}
+
+		LATCH_PORT=(signed char)sum0;	// Now replace the data at this RAM location with the data summed from the ADC and output bytes.
+		PORTA&=~(Om_RAM_WE);			// Strobe Write Enable low.  This latches the data in.
+		PORTA|=(Om_RAM_WE);				// Disbale writes.
+
+		// Keep the ADC running
+		if(!(ADCSRA&(1<<ADSC)))		// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+		{
+			adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
+			ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it at the end of the callback so the ADC S/H acquires the sample after noisy RAM/DAC digital bus activity on PORTA -- this matters a lot)
+		}
+	}
 }
 
 static void SawtoothCallback(volatile BANK_STATE *theBank)
+// Just spit a sawtooth wave out the DAC.  We don't do anything with/to the bank here or the RAM
 {
+	static unsigned char
+		sawtooth;		// Used for generating sawteeth.
 
+	LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+	LATCH_PORT=sawtooth++;	// Put the output on the output latch's input.
+	PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+	PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
 }
 
 static void RealtimeCallback(volatile BANK_STATE *theBank)
+// Does FX in realtime to the input -- just grabs an ADC byte, effects it, and spits it out.  No RAM usage.  Used to bit reduce, alias, or multiply an input in real time.
 {
+	signed int
+		sum0;		// Temporary variables for saturated adds, multiplies, other math.
+	unsigned char
+		dacOutput;		// What to put on the DAC
 
+	theBank->audioOutput=adcByte;		// Grab the value from the ADC, and put it back out.
+
+	if(theBank->bitReduction)	// Low bit rate?
+	{
+		theBank->audioOutput&=(0xFF<<theBank->bitReduction);		// Mask off however many bits we're supposed to.
+	}
+
+	// --------------------------------------------------	
+	// Now deal with outputting the byte on the DAC.
+	// --------------------------------------------------	
+
+	// With the optimizer flag set to -O3 or -O2, the below is faster than a switch statement (about 8.0uS vs 8.25uS most loops, sometimes faster).  With -Os they turn out the same.  With -01 it's very slow.
+	if(outputFunction==OUTPUT_ADD)
+	{
+		sum0=bankStates[BANK_0].audioOutput+bankStates[BANK_1].audioOutput+sdStreamOutput;				// Sum everything that might be involved in our output waveform.				
+	}
+	else if(outputFunction==OUTPUT_SUBTRACT)
+	{
+		sum0=(bankStates[BANK_0].audioOutput-bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Subtract bank1 from bank0 and add in the SD card output.
+	}
+
+	else if(outputFunction==OUTPUT_MULTIPLY)															// NOTE -- multiply is really slow.  Fortunately, it sounds crappy so nobody uses it.
+	{
+		sum0=((bankStates[BANK_0].audioOutput*bankStates[BANK_1].audioOutput)/64)+sdStreamOutput;		// Multiply the bank outputs, and divide them down to full scale DAC range (or so).  If this sounds too tame, we may want to make the divisor smaller and pin this to range as above.
+	}
+	else if(outputFunction==OUTPUT_XOR)
+	{
+		sum0=(bankStates[BANK_0].audioOutput^bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise XOR the bank outputs, add in the SD card stream.
+	}
+	else	// OUTPUT_AND
+	{
+		sum0=(bankStates[BANK_0].audioOutput&bankStates[BANK_1].audioOutput)+sdStreamOutput;			// Bitwise AND the bank outputs, add in the SD card stream.
+	}
+
+	// Pin to range and spit it out.
+	if(sum0>127)		// Pin high.
+	{
+		sum0=127;
+	}
+	else if(sum0<-128)		// Pin low.
+	{
+		sum0=-128;
+	}
+
+	dacOutput=(((signed char)sum0)^0x80);	// Cast the output back to 8 bits and then make it unsigned.
+
+	if(dacOutput!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+	{
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+		LATCH_PORT=dacOutput;		// Put the output on the output latch's input.
+		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+	}
+
+	lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
+
+	// Keep the ADC running
+	if(!(ADCSRA&(1<<ADSC)))		// Last conversion done (note that once we start using different clock sources it's really possible to read this too often, so always check to make sure a conversion is done)
+	{
+		adcByte=(ADCH^0x80);	// Update our ADC conversion variable.  If we're really flying or using both interrupt sources we may use this value more than once.  Make it a signed char.
+		ADCSRA |= (1<<ADSC);  	// Start the next ADC conversion (do it at the end of the callback so the ADC S/H acquires the sample after noisy RAM/DAC digital bus activity on PORTA -- this matters a lot)
+	}
 }
-
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------

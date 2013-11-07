@@ -80,8 +80,9 @@ ASRC =
 # Optimization level, can be [0, 1, 2, 3, s]. 
 #     0 = turn off optimization. s = optimize for size.
 #     (Note: 3 is not always the best optimization level. See avr-libc FAQ.)
-OPT = s
-#OPT = 3 Mon Apr 13 18:35:54 CDT 2009 changed this to get faster interrupts at the expense of code size
+OPT = 2
+# OPT = 3 Mon Apr 13 18:35:54 CDT 2009 changed this to get faster interrupts at the expense of code size
+# This flag does make a difference in ISR speed sometimes still (TMB, Nov 7 2013) and is best to do some experimenting with.  -Os is way smaller and not always the slowest...
 
 # Debugging format.
 #     Native formats for AVR-GCC's -g are dwarf-2 [default] or stabs.
