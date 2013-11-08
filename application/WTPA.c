@@ -62,6 +62,7 @@ static void DoFruitcakeIntro(void);
 static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigned int theRate);
 static void StartRecording(unsigned char theBank, unsigned char theClock, unsigned int theRate);
 static void PlaySampleFromSd(unsigned int theSlot);
+static void UpdateAdjustedSampleAddresses(unsigned char theBank);
 static void InitSdIsr(void);
 static void DoSampler(void);
 
@@ -339,12 +340,12 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 // Thu Nov  7 18:14:35 EST 2013
 // Change out of RAM light to an SD card access light
 
-// Thu Nov  7 18:32:09 EST 2013
-// Everything runs great at the same time now.  No bogs.
-// However, there's an occasional bug where the sample seems to miss looping on the end of the sample and keeps going.  Seems to happen with the backwards effect
-
 // Thu Nov  7 18:36:06 EST 2013
-// Edit window stuff is still screwy
+// Edit start/end/window stuff is still screwy, check it out.
+
+// Fri Nov  8 12:41:17 EST 2013
+// Looks like granular array stuff is based on FULL samples, should be able to apply it to edited samples too
+
 {
 	// Goes through RAM and spits out bytes, looping (usually) from the beginning of the sample to the end.
 	// The playback ISR also allows the various effects to change the output.
@@ -384,6 +385,8 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 
 		// Calculate new addy while data bus settles
 
+		// Granular:
+		// ---------------------------------------------------------------------------
 		if(theBank->granularSlices)			// Are we granularizing the playback?
 		{
 			if(theBank->sliceRemaining--)	// Moving through our current slice?
@@ -416,6 +419,8 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 				}
 			}
 		}
+		// Non-granular playback:
+		// ---------------------------------------------------------------------------
 		else if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
 		{
 			if(theBank->loopOnce==true)							// Yes, and we should be done now.
@@ -430,7 +435,24 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		}
 		else
 		{
-			theBank->currentAddress=(theBank->sampleIncrement+theAddy);	// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+			// theBank->currentAddress=(theBank->sampleIncrement+theAddy);	// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+
+			// @@@
+			// Gotta check for absolute sample ends/beginnings to handle windowed playback, irritatingly
+			// Will miss one sample when we roll around this way
+
+			theAddy+=theBank->sampleIncrement;
+
+			if(theAddy==theBank->endAddress)
+			{
+				theAddy=theBank->startAddress;
+			}
+			else if(theAddy==theBank->startAddress)
+			{
+				theAddy=theBank->startAddress;			
+			}
+
+			theBank->currentAddress=theAddy;
 		}
 
 		// Finish getting the byte from RAM.
@@ -527,12 +549,6 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		lastDacByte=dacOutput;		// Flag this byte has having been spit out last time.
 	}
 }
-
-/*
-static void PlayGranularCallback(BANK_STATE *theBank)
-{
-}
-*/
 
 static void RecordCallback(volatile BANK_STATE *theBank)
 // See notes on PlayCallback above.
@@ -1606,6 +1622,7 @@ static void SetSampleClock(unsigned char theBank, unsigned char theClock, unsign
 	}
 }
 
+/*
 static void SetSampleDirection(unsigned char theBank)
 // So, WTPA2 can play samples forwards and backwards, and the different banks in RAM can grow up or down depending on where they are in the array.
 // Further, when the sample is edited, we can move the "end" of the sample in front of the beginning and when we do that, the direction of playback should reverse.
@@ -1613,6 +1630,8 @@ static void SetSampleDirection(unsigned char theBank)
 // Thu Nov  7 16:21:42 EST 2013
 // As of right now this assumes that samples only move forward one sample at a time during normal playback.  We can fix this by returning a bool for direction if needed and worry about magnitude elsewhere.
 // NOTE -- the case for BANK_0 and BANK_1 are exactly the same right now...
+// Fri Nov  8 10:33:28 EST 2013
+// Ought to make sure we pause interrupts when we're messing with this stuff
 {
 	if(theBank==BANK_0)		// Bank_0 starts at address zero and normally plays forward by incrementing
 	{
@@ -1665,6 +1684,7 @@ static void SetSampleDirection(unsigned char theBank)
 		}
 	}
 }
+*/
 
 static void StartRecording(unsigned char theBank, unsigned char theClock, unsigned int theRate)
 // Set the memory pointer to the start of RAM, set up the clock source, set the interrupt to the recording handler, and enable interrupts.
@@ -1756,7 +1776,7 @@ static void StartPlayback(unsigned char theBank, unsigned char theClock, unsigne
 			AudioCallback1=PlayCallback;
 		}
 
-		SetSampleDirection(theBank);				// Make sure our sample increments in the right direction
+		UpdateAdjustedSampleAddresses(theBank);		// Make sure our sample is playing in the right direction, etc etc
 
 		SetSampleClock(theBank,theClock,theRate);	// Set the appropriate clock source for this audio function.
 		bankStates[theBank].isLocked=true;			// Let program know we're using this RAM bank right now.
@@ -3478,6 +3498,8 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 			bankStates[theBank].granularPositionArray[randIndex]=origContents;		// And the contents of the original register into the mystery register.
 		}
 
+// @@@ we have a routine for getting the total adjusted size of the sample, use this and handle granularizing edited samples
+
 		if(theBank==BANK_0)		// Get slice size assuming banks grow upwards
 		{
 			bankStates[BANK_0].sliceSize=(bankStates[BANK_0].endAddress-BANK_0_START_ADDRESS)/numSlices;
@@ -3490,6 +3512,8 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		bankStates[theBank].granularSlices=numSlices;						// How many slices is our entire sample divided into?
 		bankStates[theBank].granularPositionArrayPointer=0;					// Point to the first element of our shuffled array.
 		bankStates[theBank].sliceRemaining=bankStates[theBank].sliceSize;	// One entire slice to go.
+
+// @@@ the below is also relative to the entire sample size, not the edited one
 
 		if(theBank==BANK_0)		// Set the current address of the sample pointer to the beginning of the first slice.
 		{
@@ -3523,13 +3547,17 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 // We trim in "chunks" which are 1/256ths of the entire sample (because that's the resolution of the shuttlewheel)
 // Wed Jun 22 13:50:04 EDT 2011
 // Now that we use an encoder we could adjust this more finely if we wanted to.
-// Thu Nov  7 17:04:24 EST 2013
-// This now JUST changes addresses.  Sample direction (how much the sample increments each clock) is set with a different function
 {
 	unsigned char
 		sreg;
 	unsigned long
 		chunkSize;
+	bool
+		bank0Flipped,
+		bank1Flipped;
+	
+	bank0Flipped=false;
+	bank1Flipped=false;
 
 	sreg=SREG;
 	cli();					// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
@@ -3544,38 +3572,15 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		bankStates[BANK_0].adjustedStartAddress=(BANK_0_START_ADDRESS+((chunkSize*(bankStates[BANK_0].sampleStartOffset+(unsigned int)bankStates[BANK_0].sampleWindowOffset))>>3));			// multiply chunk size times desired offset (calculated from start and window offsets) and add it to the start address to get new working start address.
 		bankStates[BANK_0].adjustedEndAddress=(bankStates[BANK_0].endAddress-((chunkSize*bankStates[BANK_0].sampleEndOffset)>>3))+((chunkSize*bankStates[BANK_0].sampleWindowOffset)>>3);	// Same idea as above, except move end back and push forward with window.
 
-		// Now check to see whether the end is before or after the start, and if that's changed, update the loop addresses that the ISR uses
-		// ---------------------------------------------------------------------------------------------------------------------------------
+		// Before we wrap around the end of the sample, we can know whether or not the user has moved the start point AFTER the end point (or the end before the start)
+		// If this has happened, the sample is "flipped".  This means we should reverse the playback direction.
+		// NOTE -- the sample's start point ALSO can come after the end point (and v/v) if we wrap the window around the end of the sample array.  The sample is NOT flipped then, it just wraps.
+		// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 		
-/*
-		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// Flip the start and end addresses the ISR uses	@@@ NOTE -- these targets work out the same regardless of whether start is greater than end (the direction does matter though)
+		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// User has reversed the relationship of start and end addresses
 		{
-			if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
-			{
-				bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
-				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
-			}
-			else																				// Playing forwards.
-			{
-				bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
-				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
-			}
+			bank0Flipped=true;
 		}
-		else	// Sample is in a "normal" orientation.  Make sure it plays right.
-		{
-			if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
-			{
-				bankStates[theBank].targetAddress=bankStates[theBank].adjustedStartAddress;		// Jump when you get to this memory address
-				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedEndAddress;	// And jump to this location
-
-			}
-			else																				// Playing forwards.
-			{
-				bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
-				bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
-			}
-		}
-*/
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
 		// ---------------------------------------------------------------------------------------------------------------------------------
@@ -3623,7 +3628,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			}
 		}
 
-		// Finally, set the loop points the ISR uses based on the direction of our edited, correctly bounded sample
+		// Set the loop points the ISR uses based on the direction of our edited, correctly bounded sample
 		// ---------------------------------------------------------------------------------------------------------------------------------
 
 		if(bankStates[theBank].backwardsPlayback)		// Playing backwards?
@@ -3637,7 +3642,38 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			bankStates[theBank].targetAddress=bankStates[theBank].adjustedEndAddress;		// Jump when you get to this memory address
 			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
 		}
+
+		// Set the direction this sample increments
+		// ---------------------------------------------------------------------------------------------------------------------------------
+
+		if(bankStates[theBank].backwardsPlayback==true)
+		{
+			if(bank0Flipped)
+			{
+				bankStates[theBank].sampleIncrement=1;
+			}
+			else	// "Normal" backwards playback
+			{
+				bankStates[theBank].sampleIncrement=-1;			
+			}		
+		}
+		else	// Not backwards
+		{
+			if(bank0Flipped)	// But start is after end
+			{
+				bankStates[theBank].sampleIncrement=-1;
+			}
+			else	// Not flipped
+			{
+				bankStates[theBank].sampleIncrement=1;			
+			}		
+		}
 	}
+
+	// Next bank
+	// ---------------------------------------------------------------------------------------------------------------------------------
+	// ---------------------------------------------------------------------------------------------------------------------------------
+
 	else	// Otherwise assume banks grow down and do the same procedure for bank 1 -- @@@ BANK 1 grows down, so the signs and comments here may not always agree.
 	{
 		chunkSize=(((BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)<<3)/256);		// Get chunk size of current sample (shift this up to get some more resolution)
@@ -3647,35 +3683,16 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		bankStates[BANK_1].adjustedStartAddress=(BANK_1_START_ADDRESS-((chunkSize*(bankStates[BANK_1].sampleStartOffset+(unsigned int)bankStates[BANK_1].sampleWindowOffset))>>3));			// multiply chunk size times desired offset (calculated from start and window offsets) and add it to the start address to get new working start address.
 		bankStates[BANK_1].adjustedEndAddress=(bankStates[BANK_1].endAddress+((chunkSize*bankStates[BANK_1].sampleEndOffset)>>3))-((chunkSize*bankStates[BANK_1].sampleWindowOffset)>>3);	// Same idea as above, except move end back and push forward with window.
 
-/*
-		// Now check to see whether the end is before or after the start, and if that's changed, reverse the sample.
-		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].adjustedEndAddress)	// Reverse playback direction on this bank and flip the start and end addresses.
-		{
-			if(bankStates[BANK_1].backwardsPlayback==true)			// Toggle the direction our sample is playing.
-			{
-				bankStates[BANK_1].sampleDirection=true;
-			}
-			else
-			{
-				bankStates[BANK_1].sampleDirection=false;
-			}
 
-			chunkSize=bankStates[BANK_1].adjustedStartAddress;								// move start to temp
-			bankStates[BANK_1].adjustedStartAddress=bankStates[BANK_1].adjustedEndAddress;	// move end to start
-			bankStates[BANK_1].adjustedEndAddress=chunkSize;								// move temp to end
-		}
-		else	// Sample is in a "normal" orientation.  Make sure it plays right.
+		// Before we wrap around the end of the sample, we can know whether or not the user has moved the start point AFTER the end point (or the end before the start)
+		// If this has happened, the sample is "flipped".  This means we should reverse the playback direction.
+		// NOTE -- the sample's start point ALSO can come after the end point (and v/v) if we wrap the window around the end of the sample array.  The sample is NOT flipped then, it just wraps.
+		// ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+		
+		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].adjustedEndAddress)	// User has reversed the relationship of start and end addresses
 		{
-			if(bankStates[BANK_1].backwardsPlayback==true)			// Play direction accordingly.
-			{
-				bankStates[BANK_1].sampleDirection=false;
-			}
-			else
-			{
-				bankStates[BANK_1].sampleDirection=true;
-			}
+			bank1Flipped=true;
 		}
-*/
 
 		// Now test to see if adjusted sample endpoints are outside of the absolute sample address space, and wrap if they are:
 		// ---------------------------------------------------------------------------------------------------------------------------------
@@ -3737,6 +3754,31 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 			bankStates[theBank].addressAfterLoop=bankStates[theBank].adjustedStartAddress;	// And jump to this location
 		}
 
+
+		// Set the direction this sample increments
+		// ---------------------------------------------------------------------------------------------------------------------------------
+		if(bankStates[theBank].backwardsPlayback==true)
+		{
+			if(bank1Flipped)
+			{
+				bankStates[theBank].sampleIncrement=-1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=1;			
+			}		
+		}
+		else
+		{
+			if(bank1Flipped)
+			{
+				bankStates[theBank].sampleIncrement=1;
+			}
+			else
+			{
+				bankStates[theBank].sampleIncrement=-1;			
+			}		
+		}
 	}
 
 	SREG=sreg;		// Restore interrupts.
@@ -3758,6 +3800,7 @@ static void RevertSampleToUnadjusted(unsigned char theBank)
 	bankStates[theBank].sampleStartOffset=0;
 	bankStates[theBank].sampleEndOffset=0;
 	bankStates[theBank].sampleWindowOffset=0;
+	UpdateAdjustedSampleAddresses(theBank);
 	SREG=sreg;		// Restore interrupts.
 }
 
@@ -3768,7 +3811,6 @@ static void AdjustSampleStart(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleStartOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
-	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 static void AdjustSampleEnd(unsigned char theBank, unsigned char theAmount)
@@ -3778,7 +3820,6 @@ static void AdjustSampleEnd(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleEndOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
-	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 static void AdjustSampleWindow(unsigned char theBank, unsigned char theAmount)
@@ -3788,7 +3829,6 @@ static void AdjustSampleWindow(unsigned char theBank, unsigned char theAmount)
 {
 	bankStates[theBank].sampleWindowOffset=theAmount;	// Store this for real.
 	UpdateAdjustedSampleAddresses(theBank);
-	SetSampleDirection(theBank);						// Determine how this sample should increment
 }
 
 //--------------------------------------
@@ -3944,7 +3984,7 @@ static void UpdateUserSwitches(void)
 
 			bankStates[currentBank].backwardsPlayback=false;
 			RevertSampleToUnadjusted(currentBank);			// Get rid of any trimming on the sample.
-			SetSampleDirection(currentBank);				// Determine the way this sample should increment
+			UpdateAdjustedSampleAddresses(currentBank);
 
 			bankStates[currentBank].bitReduction=0;			// No crusties yet.
 			bankStates[currentBank].jitterValue=0;			// No hissies yet.
@@ -4062,7 +4102,6 @@ static void UpdateUserSwitches(void)
 			}
 
 			UpdateAdjustedSampleAddresses(currentBank);	// Make sure we handle going backwards when considering edited/reversed samples.
-			SetSampleDirection(currentBank);			// Determine the way this sample should increment
 		}
 	}
 	// -----------------------------------------------------------------------------------
@@ -4334,7 +4373,6 @@ static void DoSampler(void)
 						bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
 					}
 					UpdateAdjustedSampleAddresses(currentMidiMessage.channelNumber);	// Make sure we handle going backwards when considering edited/reversed samples.
-					SetSampleDirection(currentBank);									// Determine the way this sample should increment
 					break;
 
 					case MIDI_CANCEL_EFFECTS:						// Escape from audio mess please.
@@ -4344,7 +4382,7 @@ static void DoSampler(void)
 					bankStates[currentMidiMessage.channelNumber].granularSlices=0;		// No remix yet.
 					bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
 					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
-					SetSampleDirection(currentMidiMessage.channelNumber);
+					UpdateAdjustedSampleAddresses(currentMidiMessage.channelNumber);	// Make sure we handle going backwards when considering edited/reversed samples.
 					bankStates[currentMidiMessage.channelNumber].realtimeOn=false;			// We'll default to playback.
 					bankStates[currentMidiMessage.channelNumber].samplesToSkip=0;
 					bankStates[currentMidiMessage.channelNumber].sampleSkipCounter=0;
