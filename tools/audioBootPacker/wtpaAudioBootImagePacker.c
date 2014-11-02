@@ -66,9 +66,16 @@ SSND chunk:
 
 // So, one byte is (32 * 8) samples, for a data rate of 1378.125 baud or ~172 bytes per second.
 
-
 // This makes worst case load time (60k bytes) equal to about 6 minutes plus any lead-ins/outs.
 // Current WTPA2 bin is 21008 bytes which would be about 2 minutes.
+
+// Lead-ins and outs:
+// --------------------
+// Are LF.  So six bytes per cycle of carrier.
+
+// Tones:
+// --------------
+// The tones are square waves.  Aiffs are signed, two's complement, so all data bytes are either 127 or -128 (0x7F or 0x80).
 
 // Decoding:
 // --------------
@@ -97,18 +104,169 @@ SSND chunk:
 
 #define		NUM_AUDIO_BYTES_PER_DATA_BIT		32
 #define		NUM_AUDIO_BYTES_PER_DATA_BYTE		(8*NUM_AUDIO_BYTES_PER_DATA_BIT)
-  
+
+#define		LEAD_IN_CYCLES_PER_SEC				(44100/6)						// Full cycles of lead in carrier in a second (also freq in Hz)
+#define		LEAD_OUT_CYCLES_PER_SEC				(44100/6)						
+
+#define		NUM_LEAD_IN_CYCLES					(LEAD_IN_CYCLES_PER_SEC*10)		// 10 seconds of carrier during lead in
+#define		NUM_LEAD_OUT_CYCLES					(LEAD_OUT_CYCLES_PER_SEC*2)		// 2 seconds of carrier during lead out	
+
+#define		LEAD_IN_BYTES						(NUM_LEAD_IN_CYCLES*6)			// Samples are LF square waves, so in our current format that's 3 high bytes and three low
+#define		LEAD_OUT_BYTES						(NUM_LEAD_OUT_CYCLES*6)	
+
+#define		AUDIO_SAMPLE_HIGH					0x7F
+#define		AUDIO_SAMPLE_LOW					0x80
+
+#define		NUM_BYTES_IN_HEADER					14
+
+// ---------------
+// Globals
+// ---------------
+
+FILE *sourceFile, *destFile;
+char *buffer;
+char *bufferIndex;
+uint32_t binFileLength;
+uint32_t numBytesOfAudioData, aiffBytes, bytesInSoundChunk;
+
+unsigned char binFileLengthBytes[4];
+unsigned char headerBlock[NUM_BYTES_IN_HEADER];
+
+
+// ---------------
+// Functions
+// ---------------
+
+void WriteLeadInCycle(void)
+// Writes one cycle of the lead-in waveform.
+// Currently this is a "LF" square wave, so three high bytes, three low
+{
+	fputc(AUDIO_SAMPLE_HIGH,destFile);
+	fputc(AUDIO_SAMPLE_HIGH,destFile);
+	fputc(AUDIO_SAMPLE_HIGH,destFile);
+	fputc(AUDIO_SAMPLE_LOW,destFile);
+	fputc(AUDIO_SAMPLE_LOW,destFile);
+	fputc(AUDIO_SAMPLE_LOW,destFile);
+}
+
+void WriteLeadOutCycle(void)
+// Writes one cycle of the lead-out waveform.
+{
+	WriteLeadInCycle();		// Same as lead in for now
+}
+
+void WriteBit(unsigned int theBit)
+// Write a 0 or 1 in our audio format
+// 44100 / (2 high samples + 2 low samples) = 11025 Hz
+// 44100 / (3 high samples + 3 low samples) = 7350 Hz
+// A (1) bit is 5 cycles of HF and 2 of LF	(32 samples)
+// A (0) bit is 2 cycles of HF and 4 of LF	(32 samples)
+{
+	if(theBit==0)
+	{
+		// Two HF cycles
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		// Four LF cycles
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);				
+	}
+	else if(theBit==1)
+	{
+		// Five HF cycles
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		// Two LF cycles
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_HIGH,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+		fputc(AUDIO_SAMPLE_LOW,destFile);
+	}
+	else
+	{
+		printf("\nERROR: Got bad bit value: %d\n",theBit);
+	}
+
+}
+
+void WriteBinaryByteToAudio(unsigned char inputByte)
+// Take the passed byte, go through its bits, and pack the audio data into a file.
+// Data is encoded most significant bit first.
+{
+	signed int
+		i;
+	
+	for(i=7;i>-1;i--)
+	{
+		if(inputByte&(1>>i))
+		{
+			WriteBit(1);
+		}
+		else
+		{
+			WriteBit(0);
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	unsigned int i,j;
 	uint16_t crc;
-	FILE *sourceFile, *destFile;
-	char *buffer;
-	char *bufferIndex;
-	uint32_t fileLength;
-
-	unsigned char fileLengthBytes[4];
-	unsigned char headerBlock[14];
 
 	// Check to make sure we got arguments we needed
 	if(argc!=2)		// Only expect one argument
@@ -135,11 +293,11 @@ int main(int argc, char *argv[])
 	
 	//Get file length
 	fseek(sourceFile, 0, SEEK_END);
-	fileLength=ftell(sourceFile);			// Store this for later
+	binFileLength=ftell(sourceFile);			// Store this for later
 	fseek(sourceFile, 0, SEEK_SET);
 
 	//Allocate memory
-	buffer=(char *)malloc(fileLength+1);
+	buffer=(char *)malloc(binFileLength+1);
 	if (!buffer)
 	{
 		fprintf(stderr, "Error allocating memory!\n");
@@ -148,12 +306,12 @@ int main(int argc, char *argv[])
 	}
 
 	//Read file contents into buffer
-	fread(buffer, fileLength, 1, sourceFile);
+	fread(buffer, binFileLength, 1, sourceFile);
 	fclose(sourceFile);						// Close the file
 
 	// Report on the file length
-	printf("Boot file length in bytes = %u\n",fileLength);
-	if(fileLength>(60*1024))
+	printf("Boot file length in bytes = %u\n",binFileLength);
+	if(binFileLength>(60*1024))
 	{
 		printf("It's really none of my business, but this file is bigger than 60k and probably won't fit into the flash of a WTPA2.\n");
 	}
@@ -162,15 +320,15 @@ int main(int argc, char *argv[])
 	crc=0;										// Zero checksum to start
 
 	// Break out file length into the bytes as we'll read them on the MCU
-	fileLengthBytes[0]=fileLength>>24;		// MSB
-	fileLengthBytes[1]=fileLength>>16;			
-	fileLengthBytes[2]=fileLength>>8;			
-	fileLengthBytes[3]=fileLength;			// LSB
+	binFileLengthBytes[0]=binFileLength>>24;		// MSB
+	binFileLengthBytes[1]=binFileLength>>16;			
+	binFileLengthBytes[2]=binFileLength>>8;			
+	binFileLengthBytes[3]=binFileLength;			// LSB
 		
 	// Start CRC with length of file
 	for(j=0;j<4;j++)					
 	{
-		crc=crc^((uint16_t)(fileLengthBytes[j])<<8);	// Start by XORing the CRC with the byte shifted up
+		crc=crc^((uint16_t)(binFileLengthBytes[j])<<8);	// Start by XORing the CRC with the byte shifted up
 
 		for(i=0;i<8;i++)								// Now go through and check the individual bits of the byte.  If the top bit is high, XOR it with the polynomial.  Otherwise move to the next bit.
 		{
@@ -190,7 +348,7 @@ int main(int argc, char *argv[])
 	// Now get the data bytes into the CRC
 	bufferIndex=buffer;							// Copy this over so we don't cause an error when freeing the buffer
 
-	for(j=0;j<fileLength;j++)					// Go through all data bytes
+	for(j=0;j<binFileLength;j++)					// Go through all data bytes
 	{
 //		printf("Buf=%d\n",(*bufferIndex));
 		crc=crc^((uint16_t)(*bufferIndex)<<8);	// Start by XORing the CRC with the byte shifted up
@@ -227,10 +385,10 @@ int main(int argc, char *argv[])
 	
 	// Data length
 	// Big endian byte order
-	headerBlock[8]=fileLengthBytes[0];
-	headerBlock[9]=fileLengthBytes[1];
-	headerBlock[10]=fileLengthBytes[2];
-	headerBlock[11]=fileLengthBytes[3];
+	headerBlock[8]=binFileLengthBytes[0];
+	headerBlock[9]=binFileLengthBytes[1];
+	headerBlock[10]=binFileLengthBytes[2];
+	headerBlock[11]=binFileLengthBytes[3];
 
 	// CRC (big endian byte order)
 	headerBlock[12]=(crc>>8)&0xFF;
@@ -246,12 +404,12 @@ int main(int argc, char *argv[])
 	// Need to calculate number of bytes in AIFF file.  This will be:
 	// (numBytesInBinFile + numBytesInHeader * (8 * numAudioBytesPerBit)) + leadIn + leadOut
 
-	dataLengthInAudioSamples=(fileLength*NUM_AUDIO_BYTES_PER_DATA_BYTE);
+	numBytesOfAudioData=(binFileLength*NUM_AUDIO_BYTES_PER_DATA_BYTE)+LEAD_IN_BYTES+LEAD_OUT_BYTES;
 	
 	// Stick AIFF chunks on to start
 
-	fprintf(destFile,"FORM");																			// IFF ID
-	aiffBytes = 4 + 8 + 18 + 16 + dataLengthInAudioSamples + LEAD_IN_SAMPLES + LEAD_OUT_SAMPLES;		// AIFF file byte total minus this chunk's ID and filesize = 46 non data bytes plus data: (4 left in ID chunk) + ((8+18) in comm chunk) + (16 in SSND chunk plus data and lead ins/outs)
+	fprintf(destFile,"FORM");											// IFF ID
+	aiffBytes = 4 + 8 + 18 + 16 + numBytesOfAudioData;					// AIFF file byte total minus this chunk's ID and filesize = 46 non data bytes plus data: (4 left in ID chunk) + ((8+18) in comm chunk) + (16 in SSND chunk plus data and lead ins/outs)
 	fputc((aiffBytes & 0xff000000) >> 24,destFile);
 	fputc((aiffBytes & 0x00ff0000) >> 16,destFile);
 	fputc((aiffBytes & 0x0000ff00) >> 8,destFile);
@@ -266,10 +424,10 @@ int main(int argc, char *argv[])
 	fputc(18,destFile);
 	fputc(0,destFile);                               // One channel
 	fputc(1,destFile);
-	fputc((nsamples & 0xff000000) >> 24,destFile);   // Sample frames are number of data bytes in mono 8-bit samples.
-	fputc((nsamples & 0x00ff0000) >> 16,destFile);
-	fputc((nsamples & 0x0000ff00) >> 8,destFile);
-	fputc((nsamples & 0x000000ff),destFile);
+	fputc((numBytesOfAudioData & 0xff000000) >> 24,destFile);   // Sample frames are number of data bytes in mono 8-bit samples.
+	fputc((numBytesOfAudioData & 0x00ff0000) >> 16,destFile);
+	fputc((numBytesOfAudioData & 0x0000ff00) >> 8,destFile);
+	fputc((numBytesOfAudioData & 0x000000ff),destFile);
 	fputc(0,destFile);                               // Sample size is 8 bits per sample point.
 	fputc(8,destFile);
 	fputc(0x40,destFile);							// 10 byte sample rate in IEEE extended
@@ -283,9 +441,9 @@ int main(int argc, char *argv[])
 	fputc(0,destFile);
 	fputc(0,destFile);
 
-	bytesInSoundChunk=dataLengthInAudioSamples+LEAD_IN_SAMPLES+LEAD_OUT_SAMPLES+8;		// Extra 8 is for the unused offset and block bytes
-
 	/* Write the sound data chunk */
+	bytesInSoundChunk=numBytesOfAudioData+8;		// Extra 8 is for the unused offset and block bytes
+
 	fprintf(destFile,"SSND");
 	fputc((bytesInSoundChunk & 0xff000000) >> 24,destFile);		// Size of sound chunk
 	fputc((bytesInSoundChunk & 0x00ff0000) >> 16,destFile);
@@ -300,12 +458,32 @@ int main(int argc, char *argv[])
 	fputc(0,destFile);
 	fputc(0,destFile);
 
-	// Add in lead in
-	// Now, stick the header block followed by the binary data into a file
-	// Add in lead out
+	// Write lead in audio bytes
+	for(i=0;i<NUM_LEAD_IN_CYCLES;i++)
+	{
+		WriteLeadInCycle();
+	}
+	
+	// Now, stick the header block
+	for(i=0;i<NUM_BYTES_IN_HEADER;i++)
+	{
+		WriteBinaryByteToAudio(headerBlock[i]);
+	}
 
-	fwrite(headerBlock,1,512,destFile);		// Put in the entire fixed length header buffer (512 elements, 1 byte per element)
-	fwrite(buffer,1,fileLength,destFile);	// Now put in our binary file
+	// Put actual program data into file
+	for(i=0;i<binFileLength;i++)
+	{
+		WriteBinaryByteToAudio(buffer[i]);
+	}
+
+	// Add in lead out
+	for(i=0;i<NUM_LEAD_OUT_CYCLES;i++)
+	{
+		WriteLeadOutCycle();
+	}
+
+//	fwrite(headerBlock,1,NUM_BYTES_IN_HEADER,destFile);		// Put in the entire fixed length header buffer (14 elements, 1 byte per element)
+//	fwrite(buffer,1,binFileLength,destFile);				// Now put in our binary file
 	fclose(destFile);
 
 	// Done!
