@@ -6,5 +6,3 @@
 
 #include "defines.h"
 #include "wtpa2bootloader.h"
-#include "softclock.h"
-#include "microSD.h"

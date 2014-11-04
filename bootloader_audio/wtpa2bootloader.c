@@ -30,7 +30,7 @@
 // Audio File Input Format:
 // -------------------------
 // -------------------------
-// (for further info on the audio and data formats, see the bootImagePacker tool code also)
+// (for further info on the audio and data formats, see the bootImagePacker tool code)
 
 // Incoming data is encoded with a "dual tone" system.  Each bit is some amount of a "high frequency" tone followed by a "low frequency" tone.
 // If a bit has more cycles of HF than LF, it is considered a "1".  Otherwise it is a 0.
@@ -93,7 +93,6 @@ static unsigned char
 volatile unsigned int	// This counter keeps track of software timing ticks and is referenced by the Timer routines.
 	systemTicks;
 
-// @@@ make lead out into HF to make it properly end the last data bit AND make it distinct from the lead-in
 // @@@ Interrupts:
 // Start timer 1 (or some timer) and get it counting cycles.
 // We have to use a pin change interrupt for this since we are using the audio in which is Pin 40, PA0 (PCINT0, PCI0). 
@@ -129,28 +128,20 @@ ISR(PCINT0_vect)
 	{
 	}
 }
+
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-// Local Softclock Stuff
+// Local Timekeeping Stuff
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-static void UnInitSoftclock(void)
+static void UnInitTickTimer(void)
 {
 	TCCR0B=0;			// Stop the timer
 	PRR|=(1<<PRTIM0);	// Turn the TMR0 power off.
 }
 
-static void InitSoftclock(void)
-// Wed Dec  3 22:28:06 CST 2008
-// I've changed the way the softclock works from the last rev.  It's no longer and interrupt based thing, so it doesn't potentially get in the way of the audio interrupts.
-// Also, since hardware TIMR1 is needed for bigger and better things than keeping human-time, we're going to set the softclock timer up to poll a flag.
-// This means we don't steal cycles from any other ISRs, but it also means that if we write dumb code (if we hang the main loop for more than a tick time)
-// we might miss a systemTick.
-// NOTE:  w/ TMR0 running at 1/256 prescale at 20MHz, our smallest time unit is 3.2768mSecs.
-// NOTE:  w/ 16-bit system ticks we can only time 214 seconds at this rate.
-
-// With /64 those times are 0.8192 mSecs and 53 seconds.  We did this for the sake of not missing encoder states.
-
+static void InitTickTimer(void)
+// Uses TIMER1 to keep track of cycle bootloader cycle times and also human time if necessary.
 {
 	PRR&=~(1<<PRTIM0);	// Turn the TMR0 power on.
 	TIMSK0=0x00;		// Disable all Timer 0 associated interrupts.
@@ -160,8 +151,25 @@ static void InitSoftclock(void)
 	systemTicks=0;
 //	TCCR0B=0x04;		// Start the timer in Normal mode, prescaler at 1/256
 	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
+
+
+	PRR&=~(1<<PRTIM1);	// Turn the TMR1 power on.
+	TIMSK1=0x00;		// Disable all Timer 1 associated interrupts.
+	OCR1A=65535;		// Set the compare register arbitrarily
+	OCR1B=65535;		// Set the compare register arbitrarily
+	TCCR1A=0;			// Normal Ports.
+	TCCR1B=0;			// Stop the timer.
+	TCNT1=0;			// Initialize the counter to 0.
+	TIFR1=0xFF;			// Clear the interrupt flags by writing ones.
+
+	TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.
+
+	// At 20MHz there are 907 cycles in half a 11025 period (the shortest thing we time) (113.4 if div by 8)
+	// There will be 1361 cycles in half a 7350Hz period (170.1 if div 8)
+	
 }
 
+/*
 void HandleSoftclock(void)
 {
 	if(TIFR0&(1<<TOV0))		// Got a timer overflow flag?
@@ -170,6 +178,7 @@ void HandleSoftclock(void)
 		systemTicks++;			// Increment the system ticks.
 	}
 }
+*/
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------

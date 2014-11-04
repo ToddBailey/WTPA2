@@ -27,7 +27,7 @@ Offset   Length   Contents
 ---------------------------
 
 FORM chunk:
-  0      4 bytes  "FORM" 						// A valid IFF start ID>
+  0      4 bytes  "FORM" 						// A valid IFF start ID
   4      4 bytes  <fileLength-8>				// File size in bytes of everything after this length, so total filesize minus 8 bytes (chunk lengths don't include ID or size)
   8      4 bytes  "AIFF" 						// The kind of IFF file this is
 
@@ -71,7 +71,8 @@ SSND chunk:
 
 // Lead-ins and outs:
 // --------------------
-// Are LF.  So six bytes per cycle of carrier.
+// Lead ins are LF.  So six bytes per cycle of carrier.
+// Lead outs are HF, 4 bytes per cycle.
 
 // Tones:
 // --------------
@@ -82,7 +83,7 @@ SSND chunk:
 // In decoding, we count transitions (half cycles).  If we see a greater number of HF transitions than LF, call it a 1, otherwise call it a 0.
 // There is also a long lead in tacked on of LF carrier which allows the bootloader to sync up and gives the user time to start playing the file and get the WPTA started.
 // WTPA2 will count cycles in the lead in, and if there are enough, begin inhaling bits.
-// After the data is a short ending made of all LF carrier, just to give the bootloader transitions to end the last bit, and to signal that the file is done.
+// After the data is a short lead-out made of all HF carrier, just to give the bootloader transitions to end the last bit, and to signal that the file is done.
 
 
 // Bootloader header:
@@ -106,13 +107,13 @@ SSND chunk:
 #define		NUM_AUDIO_BYTES_PER_DATA_BYTE		(8*NUM_AUDIO_BYTES_PER_DATA_BIT)
 
 #define		LEAD_IN_CYCLES_PER_SEC				(44100/6)						// Full cycles of lead in carrier in a second (also freq in Hz)
-#define		LEAD_OUT_CYCLES_PER_SEC				(44100/6)						
+#define		LEAD_OUT_CYCLES_PER_SEC				(44100/4)						// Full cycles of lead out carrier in a second (also freq in Hz)
 
 #define		NUM_LEAD_IN_CYCLES					(LEAD_IN_CYCLES_PER_SEC*10)		// 10 seconds of carrier during lead in
 #define		NUM_LEAD_OUT_CYCLES					(LEAD_OUT_CYCLES_PER_SEC*2)		// 2 seconds of carrier during lead out	
 
 #define		LEAD_IN_BYTES						(NUM_LEAD_IN_CYCLES*6)			// Samples are LF square waves, so in our current format that's 3 high bytes and three low
-#define		LEAD_OUT_BYTES						(NUM_LEAD_OUT_CYCLES*6)	
+#define		LEAD_OUT_BYTES						(NUM_LEAD_OUT_CYCLES*4)	
 
 #define		AUDIO_SAMPLE_HIGH					0x7F
 #define		AUDIO_SAMPLE_LOW					0x80
@@ -151,8 +152,12 @@ void WriteLeadInCycle(void)
 
 void WriteLeadOutCycle(void)
 // Writes one cycle of the lead-out waveform.
+// Currently this is an "HF" square wave, so two high bytes, two low
 {
-	WriteLeadInCycle();		// Same as lead in for now
+	fputc(AUDIO_SAMPLE_HIGH,destFile);
+	fputc(AUDIO_SAMPLE_HIGH,destFile);
+	fputc(AUDIO_SAMPLE_LOW,destFile);
+	fputc(AUDIO_SAMPLE_LOW,destFile);
 }
 
 void WriteBit(unsigned int theBit)
