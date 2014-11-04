@@ -1,11 +1,16 @@
 // Bootloader Code for WTPA2
-// Sat Apr 28 13:08:26 EDT 2012
+// Mon Nov  3 19:04:37 EST 2014
 
-// This code handles loading firmware off a micro SD card and into the application area of a WTPA2.
-// For this to work, the data on the micro SD card must be formatted correctly.
+// This code handles loading firmware, played into the unit via an audio file, into the application area of a WTPA2.
 
-// On power-up, WTPA2 checks first to see if the user is hitting a special button combo.  If so, it then checks for a microSD card to be present.  If it is present and valid, AND contains the correct header for WTPA2 firmware, the following code will load it into the program memory.
-// Once it is done, or if any of the tests are invalid, the code will vector to the start of the application.
+// On power-up, WTPA2 checks first to see if the user is hitting a special button combo.  If so, it then checks for the presence of a square wave of the right frequency (the bootloader "lead in") at the audio input.
+// (Really, it counts transitions -- absolute waveshape is not important)
+// If the carrier is valid, we will start collecting bytes.  The first few are the boot header, which we will check for correctness.
+// If the header starts correctly we'll record byte count and CRC and start recording the bytes passed in into SRAM.
+// Once the data is transmitted entirely, we will look for a lead out, and check the byte count and CRC.
+// If everything is correct, we will program the stored image from SRAM into application flash.
+
+// Once this is done --OR-- if any of the tests are invalid, the code will vector to the start of the application.
 
 // NOTE:
 // For this to work right, lots of things must be done, and some things ought to be done.
@@ -22,13 +27,38 @@
 
 // -------------------------
 // -------------------------
+// Audio File Input Format:
+// -------------------------
+// -------------------------
+// (for further info on the audio and data formats, see the bootImagePacker tool code also)
+
+// Incoming data is encoded with a "dual tone" system.  Each bit is some amount of a "high frequency" tone followed by a "low frequency" tone.
+// If a bit has more cycles of HF than LF, it is considered a "1".  Otherwise it is a 0.
+// Some amount of slop is allowed in frequency (we let byte counts and the CRC handle error checking) although a wildly different frequency will cause the bootloader to bail.
+// Tones were picked based on audio sampling rates mostly, so tones that were easy to make with symmetrical divisions of 44100.
+// The audio file starts with a long LF tone -- the lead-in -- partially to give the user time to press buttons and start the bootloader but also to sync up the file start.
+// The audio file ends with a long HF tone -- the lead-out -- to mark the end of the file.
+// Data in between the lead in and lead out is the bootloader blob: a header and the binary application.  See below.
+
+// ---------
+// Tones:
+// ---------
+// High Frequency:		44100 / (2 high samples + 2 low samples) = 11025 Hz
+// Low Frequency:		44100 / (3 high samples + 3 low samples) = 7350 Hz
+// In order to ease the math, absolute bit times for one and 0 are equal.
+// A (1) bit is 5 cycles of HF and 2 of LF	(32 samples)
+// A (0) bit is 2 cycles of HF and 4 of LF	(32 samples)
+// So, one byte is (32 * 8) samples, for a data rate of 1378.125 baud or ~172 bytes per second.
+// This makes worst case load time (60k bytes) equal to about 6 minutes plus lead-ins/outs.
+
+// -------------------------
+// -------------------------
 // Bootloader Data Format:
 // -------------------------
 // -------------------------
 // Header:
 // -------
-// The first block of the SDcard contains flags, data bytes, and checksums.
-// The first 8 characters on the card must be ascii WTPABOOT
+// The first 8 decoded characters of the bootloader file must be ascii WTPABOOT
 // The next 4 characters are the byte count of the databytes following (big endian byte order)
 // The next two are 16-bit "Xmodem syle" CRC for the length AND databytes (but not WTPABOOT) -- these are also big endian byte order
 
@@ -38,20 +68,12 @@
 // We would get better error checking with a hex file, but we would need to screw around a lot with decoding.
 
 // NOTES:
-// The bootloader programs in PAGES.  The SD card stores in BLOCKS.  On the 644a, page size is 128 bytes but an SD block is 512 bytes.
-// To keep the SD card happy, we must read in 512 byte blocks.
-// Also, since we write pages at a time, but there's no guarantee our application code will be multiples of that, the bootloader should handle that.
+// The bootloader programs in PAGES.  On the 644a, page size is 128 bytes.
+// Since we write pages at a time, but there's no guarantee our application code will be multiples of that, the bootloader should handle that.
 // It may be useful to handle that in a "classy" way by sticking 0xBEEF in the remainder of the page.
 // If the bootloader is LESS THAN 4k, it makes it possible for the application to get into the NRRW section, which will halt the processor when we try and write it.  This is probably fine, but...
 
-// NOTE:
-// THE PAGE SIZE (IN BYTES NOT WORDS) OF THE AVR TO BE BOOTLOADED MUST BE:
-// a.) Less than an SD block size (512 bytes)
-// b.) Must multiply cleanly into 512.
-// The 644p has a page size of 128 words (256 bytes) so this is fine here.
-
-// @@@ really ought to combine common code with application once we're done testing.  That means microSD.c, softclock, systemTicks, etc.  Maybe LEDs too, maybe make common code to check WTPA sd card format (or not)
-// @@@ Right now, our software timers are only needed by microsd.c -- if we eliminate those, we can get rid of softclock.c.  As it stands, doing timing the way we are here just takes up MORE memory.
+// @@@ really ought to combine common code with application once we're done testing.  That means softclock, systemTicks, etc.  Maybe LEDs too.
 
 #include "includes.h"
 
@@ -71,6 +93,44 @@ static unsigned char
 volatile unsigned int	// This counter keeps track of software timing ticks and is referenced by the Timer routines.
 	systemTicks;
 
+// @@@ make lead out into HF to make it properly end the last data bit AND make it distinct from the lead-in
+// @@@ Interrupts:
+// Start timer 1 (or some timer) and get it counting cycles.
+// We have to use a pin change interrupt for this since we are using the audio in which is Pin 40, PA0 (PCINT0, PCI0). 
+// Just grab cycle count and use it when entering the interrupt.
+// Obvs, set up the PCINT correctly.  See the WTPA bank1 code, like:
+//			PCIFR|=(1<<PCIF2);		// Clear any pending interrupts hanging around.
+//			PCICR=(1<<PCIE2);		// Enable the pin change interrupt for PORTC.
+//			PCMSK2=0x10;			// PORTC pin 4 generates interrupt
+
+// Make flags for gotLeadIn (maybe) and gotHeader (definitely) and badRead (so we can bail) and whatever we need to end the read during the lead out.
+// Also newByte bool.
+
+ISR(PCINT0_vect)
+// Audio data receive interrupt vector (PCINT0 interrupt, and PCINT0 pin (PA0))
+// When this triggers, read the hardware timer and see how long it has been since the last toggle, then act accordingly
+{
+	unsigned int
+		count;
+	unsigned int
+		timeSinceLast;
+	static unsigned char
+		receivedByte;
+	static unsigned int
+		bitTimeA;		// Or "hfTransitions"
+	unsigned int
+		bitTimeB;		// Or "lfTransitions"
+
+	count=(whatever timer value);						// read capture register
+	timeSinceLast=count-lastEdgeTime;					// find out how much time has passed (might have wrapped, but we don't care)
+	lastEdgeTime=count;									// keep for next time
+
+	switch(receiveState)
+	{
+	}
+}
+// ------------------------------------------------------------
+// ------------------------------------------------------------
 // Local Softclock Stuff
 // ------------------------------------------------------------
 // ------------------------------------------------------------
@@ -151,56 +211,6 @@ static void SetLeds(unsigned char mask)
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-
-
-static bool GetSdBlock(unsigned int blockAddress, unsigned char *data)
-// Reads the block at the passed address into the passed array of bytes.
-// Returns false if the operation times out.
-{
-	bool
-		success;
-	unsigned int
-		startTime,
-		i;
-	
-	success=true;		// Everything is OK so far
-
-	if(SdBeginSingleBlockRead(blockAddress)==true)		// Start reading at block...
-	{
-		// Wait for a data packet from the card.
-		startTime=systemTicks;		
-
-		while((systemTicks<(startTime+(SECOND/10)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
-		{
-			HandleSoftclock();	// Kludgy
-		}
-		if(systemTicks>(startTime+(SECOND/10)))		// Did we just time out?
-		{
-			success=false;	
-		}
-
-		for(i=0;i<SD_BLOCK_LENGTH;i++)			// Get entire block
-		{
-			*data=TransferSdByte(DUMMY_BYTE);	// Read data into array we pointed to
-			data++;								// Next byte in array
-		}
-
-		TransferSdByte(DUMMY_BYTE);		// Get block CRC/Checksum whatever the SD card is using and ignore it
-		TransferSdByte(DUMMY_BYTE);
-	}	
-	else
-	{
-		success=false;	// Error issuing read command
-	}
-
-	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
-		;
-
-	EndSdTransfer();				// Bring CS high
-	TransferSdByte(DUMMY_BYTE);		// Send some clocks to make sure the state machine gets back to where it needs to go.	
-
-	return(success);
-}
 
 static bool CheckBootHeader(unsigned char *theBlock)
 // Returns true if the magic letter sequence is on the card, indicating this card holds a good flash firmware image
@@ -337,6 +347,7 @@ int main(void)
 		currentBlock;
 
 	unsigned char
+		tempMcucr,
 		ledProgress;
 
 	cli();				// Bootloader has no interrupts
@@ -353,23 +364,25 @@ int main(void)
 
 	SetLeds(0x00);		// Init LEDs to off
 	InitSoftclock();	// Get timer ticking
-	InitSdInterface();	// Get ready to check card
 	
 	if(CheckBootButtonsPressed()==true)	// User is pressing button combo
 	{
 		SetLeds(0x01);				// Turn on first LED
-		if(!(PINC&Im_CARD_DETECT))	// Check to see if a card is inserted
+
+		tempMcucr=MCUCR;			// Get MCU control register value
+		MCUCR=(temp|(1<<IVCE));		// Enable change of interrupt vectors
+		MCUCR=(temp|(1<<IVSEL));	// Move interrupt vectors to bootloader section of flash
+		
+		// Enable bootloader interrupts
+		
+		if()	// Check to see if we have a bootloader file lead in tone
 		{
 			SetLeds(0x03);					// First two leds
-			while(systemTicks<(SECOND/2))	// Hang for half a second to make sure sd card has time to warm up
-			{
-				HandleSoftclock();			// Keep system clock moving
-			}
 
-			if(SdHandshake()==true)	// Attempt to initialize and access card
+			if()	// See if we have enough bytes to have a valid header
 			{
 				SetLeds(0x07);				// First three LEDs
-				if(GetSdBlock(0,bootBuffer)==true&&CheckBootHeader(bootBuffer)==true)	// Try to get the first block and see if header indicates a proper boot image
+				if()	// Make sure header looks legit
 				{
 					SetLeds(0x0F);				// Four LEDs on
 					if(CheckBootCrc()==true)	// Read through the image FIRST and make sure the data is not corrupt (calculated crc matches sent crc)
@@ -445,6 +458,11 @@ int main(void)
 	// Undo what we did to make the bootloader happen
 	UnInitSdInterface();
 	UnInitSoftclock();
+
+	cli();						// Disable interrupts entirely
+	tempMcucr=MCUCR;			// Get MCU control register value
+	MCUCR=temp|(1<<IVCE);		// Enable change of interrupt vectors
+	MCUCR=temp&=~(1<<IVSEL);	// Move interrupt vectors back to application
 
 	// Un init buttons 
 	// Un init LEDs
