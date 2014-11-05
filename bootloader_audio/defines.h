@@ -1,8 +1,7 @@
 // Global Definitions and Typedefs go here, but not variable declarations:
 
-#define F_CPU	20000000UL					// This is defined now three times:  here, in delay.h, and in the Makefile.
-//#define	SECOND	((F_CPU/256)/256)			// Softclock ticks in a second.  Dependent on the system clock frequency divided by the TIMER1 prescaler.
-#define	SECOND	((F_CPU/256)/64)			// Softclock ticks in a second.  Dependent on the system clock frequency divided by the TIMER1 prescaler.
+#define F_CPU	20000000UL				// This is defined now three times:  here, in delay.h, and in the Makefile.
+#define	SECOND	(F_CPU/65536)			// Softclock ticks in a second.  Dependent on the system clock frequency divided by the TIMER1 prescaler.
 
 
 // Make a C version of "bool"

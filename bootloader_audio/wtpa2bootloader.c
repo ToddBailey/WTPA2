@@ -90,11 +90,10 @@ static unsigned long
 static unsigned char
 	bootBuffer[SD_BLOCK_LENGTH];	// Holds the block we got from the SD card before we put it in flash
 
-volatile unsigned int	// This counter keeps track of software timing ticks and is referenced by the Timer routines.
+volatile unsigned int				// This counter keeps track of software timing ticks and is referenced by the Timer routines.
 	systemTicks;
 
 // @@@ Interrupts:
-// Start timer 1 (or some timer) and get it counting cycles.
 // We have to use a pin change interrupt for this since we are using the audio in which is Pin 40, PA0 (PCINT0, PCI0). 
 // Just grab cycle count and use it when entering the interrupt.
 // Obvs, set up the PCINT correctly.  See the WTPA bank1 code, like:
@@ -105,27 +104,157 @@ volatile unsigned int	// This counter keeps track of software timing ticks and i
 // Make flags for gotLeadIn (maybe) and gotHeader (definitely) and badRead (so we can bail) and whatever we need to end the read during the lead out.
 // Also newByte bool.
 
+// -------------------------
+// -------------------------
+// Bootloader Receive IRQ:
+// -------------------------
+// -------------------------
+
+#define		HF_HALF_CYCLE_TIME		907			// At 20MHz there are 907 cycles in half a 11025 period (the shortest thing we time) (113.4 if div by 8)
+#define		LF_HALF_CYCLE_TIME		1361		// There will be 1361 cycles in half a 7350Hz period (170.1 if div 8)		
+#define		AUDIO_SLOP_TIME			(200)		// Amount we can be off for a given transition and still call it good
+#define		AUDIO_SLOP_TIME			(200)
+
+#define		LEAD_IN_TRANSITIONS		1000		// This many good transitions (in a row) during a lead in tells us we're really in a lead in.
+#define		LEAD_IN_TRANSITIONS		1000		// This many good transitions (in a row) during a lead in tells us we're really in a lead in.
+
+enum	// Bootloader IRQ audio receive states
+{
+	RECEIVE_IDLE,					// receive code looking for anything
+	RECEIVE_MAYBE_LEAD_IN,			// receive code is counting lead in cycles
+	RECEIVE_GOT_LEAD_IN,			// receive code sees enough lead in cycles
+	RECEIVE_DATA_BIT_FIRST_HALF,
+	RECEIVE_DATA_BIT_SECOND_HALF,
+	RECEIVE_MAYBE_LEAD_OUT,			// Done with data bits
+};
+
+static bool InRange(unsigned int testValue,unsigned int desiredValue,unsigned int slop)
+// Return true if testValue is the same as desiredValue (with slop)
+{
+	return((testValue<=desiredValue+slop)&&(testValue>=desiredValue-slop));
+}
+
 ISR(PCINT0_vect)
 // Audio data receive interrupt vector (PCINT0 interrupt, and PCINT0 pin (PA0))
 // When this triggers, read the hardware timer and see how long it has been since the last toggle, then act accordingly
 {
 	unsigned int
-		count;
+		currentTime;
 	unsigned int
-		timeSinceLast;
+		timeSinceLastEdge;
 	static unsigned char
-		receivedByte;
+		incomingByte;
+	static unsigned char
+		bitHfTransitions;		
+	static unsigned char
+		bitLfTransitions;		
 	static unsigned int
-		bitTimeA;		// Or "hfTransitions"
-	unsigned int
-		bitTimeB;		// Or "lfTransitions"
+		leadInOutCount;
 
-	count=(whatever timer value);						// read capture register
-	timeSinceLast=count-lastEdgeTime;					// find out how much time has passed (might have wrapped, but we don't care)
-	lastEdgeTime=count;									// keep for next time
+	currentTime=TCNT1;								// read running timer register
+	timeSinceLastEdge=currentTime-lastEdgeTime;		// find out how much time has passed (might have wrapped, but we don't care)
+	lastEdgeTime=currentTime;						// keep for next time
 
 	switch(receiveState)
 	{
+		case RECEIVE_IDLE:
+			if(InRange(timeSinceLastEdge,LF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Look for lead in and start counting.
+			{
+				leadInOutCount=0;
+				receiveState=RECEIVE_MAYBE_LEAD_IN;
+			}
+			break;		
+		case RECEIVE_MAYBE_LEAD_IN:
+			if(InRange(timeSinceLastEdge,LF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Add up lead in cycles
+			{
+				leadInOutCount++;
+			}
+			else		// Bad timing on lead in
+			{
+				receiveState=RECEIVE_IDLE;				// Start counting again
+			}
+			if(leadInOutCount>=LEAD_IN_TRANSITIONS)
+			{
+				receiveState=RECEIVE_GOT_LEAD_IN;		// Wait around for the first bit
+				gotLeadIn=true;
+			}
+			break;
+		case RECEIVE_GOT_LEAD_IN:
+			if(InRange(timeSinceLastEdge,HF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Got HF cycle?
+			{
+				bitHfTransitions=1;
+				bitLfTransitions=0;
+				bitIndex=7;
+				incomingByte=0;
+				receiveState=RECEIVE_DATA_BIT_FIRST_HALF;		// Start inhaling bits
+			}
+			else if(!(InRange(timeSinceLastEdge,LF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME)))	// Got something which wasn't an LF cycle? 
+			{
+				receiveState=RECEIVE_IDLE;				// Bail
+			}
+			break;
+		case RECEIVE_DATA_BIT_FIRST_HALF:
+			if(InRange(timeSinceLastEdge,HF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Got HF cycle?
+			{
+				bitHfTransitions++;
+			}
+			else if(InRange(timeSinceLastEdge,LF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))	// Got an LF cycle?
+			{
+				bitLfTransitions++;
+				receiveState=RECEIVE_DATA_BIT_SECOND_HALF;		// Get next half of bit		
+			}
+			if(bitHfTransitions>=100)	// Probably in lead out
+			{
+				leadInOutCount=0;
+				receiveState=RECEIVE_MAYBE_LEAD_OUT;
+			}
+			break;
+		case RECEIVE_DATA_BIT_SECOND_HALF:
+			if(InRange(timeSinceLastEdge,HF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Got HF cycle?
+			{
+				if((bitHfTransitions>=2)&&(bitHfTransitions<16)&&(bitLfTransitions>=2)&&(bitLfTransitions<16))	// Check to see if our bit more or less looked like a bit
+				{
+					if(bitHfTransitions>bitLfTransitions)	// Bit a 1 or 0?
+					{
+						incomingByte|=(1<<bitIndex);
+					}	
+				
+					if(bitIndex)
+					{
+						bitIndex--;
+					}
+					else			// Finished inhaling one more byte
+					{
+						gotNewByte=true;				// Mark it for the program
+						receivedByte=incomingByte;		// Export it
+						bitIndex=7;						// Reset indices for next byte
+						incomingByte=0;
+					}
+
+					bitHfTransitions=1;
+					bitLfTransitions=0;
+					receiveState=RECEIVE_DATA_BIT_FIRST_HALF;
+				}
+				else
+				{
+					receiveState=RECEIVE_IDLE;				// Bail				
+				}
+			}
+			else if(InRange(timeSinceLastEdge,LF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))	// Got an LF cycle?
+			{
+				bitLfTransitions++;
+			}
+			break;
+		case RECEIVE_MAYBE_LEAD_OUT:
+			if(InRange(timeSinceLastEdge,HF_HALF_CYCLE_TIME,AUDIO_SLOP_TIME))		// Add up lead out cycles
+			{
+				leadInOutCount++;
+			}
+			if(leadInOutCount>=LEAD_OUT_TRANSITIONS)
+			{
+				receiveComplete=true;		// Let program know we've completed the lead out so it can check byte counts and CRCs.
+			}
+			break;			
 	}
 }
 
@@ -134,25 +263,16 @@ ISR(PCINT0_vect)
 // Local Timekeeping Stuff
 // ------------------------------------------------------------
 // ------------------------------------------------------------
-static void UnInitTickTimer(void)
+
+static void UnInitSoftclock(void)
 {
-	TCCR0B=0;			// Stop the timer
-	PRR|=(1<<PRTIM0);	// Turn the TMR0 power off.
+	TCCR1B=0;			// Stop the timer
+	PRR|=(1<<PRTIM1);	// Turn the TMR0 power off.
 }
 
-static void InitTickTimer(void)
+static void InitSoftclock(void)
 // Uses TIMER1 to keep track of cycle bootloader cycle times and also human time if necessary.
 {
-	PRR&=~(1<<PRTIM0);	// Turn the TMR0 power on.
-	TIMSK0=0x00;		// Disable all Timer 0 associated interrupts.
-	TCCR0A=0;			// Normal Ports.
-	TCNT0=0;			// Initialize the counter to 0.
-	TIFR0=0xFF;			// Clear the interrupt flags by writing ones.
-	systemTicks=0;
-//	TCCR0B=0x04;		// Start the timer in Normal mode, prescaler at 1/256
-	TCCR0B=0x03;		// Start the timer in Normal mode, prescaler at 1/64
-
-
 	PRR&=~(1<<PRTIM1);	// Turn the TMR1 power on.
 	TIMSK1=0x00;		// Disable all Timer 1 associated interrupts.
 	OCR1A=65535;		// Set the compare register arbitrarily
@@ -161,24 +281,19 @@ static void InitTickTimer(void)
 	TCCR1B=0;			// Stop the timer.
 	TCNT1=0;			// Initialize the counter to 0.
 	TIFR1=0xFF;			// Clear the interrupt flags by writing ones.
+	systemTicks=0;
 
-	TCCR1B=0x01;			// Make sure TIMER1 is going, and in normal mode.
-
-	// At 20MHz there are 907 cycles in half a 11025 period (the shortest thing we time) (113.4 if div by 8)
-	// There will be 1361 cycles in half a 7350Hz period (170.1 if div 8)
-	
+	TCCR1B=0x01;		// Make sure TIMER1 is going full out in normal mode.	
 }
 
-/*
 void HandleSoftclock(void)
 {
-	if(TIFR0&(1<<TOV0))		// Got a timer overflow flag?
+	if(TIFR1&(1<<TOV1))		// Got a timer overflow flag?
 	{
-		TIFR0 |= (1<<TOV0);		// Reset the flag (by writing a one).
+		TIFR1 |= (1<<TOV1);		// Reset the flag (by writing a one).
 		systemTicks++;			// Increment the system ticks.
 	}
 }
-*/
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------
@@ -344,6 +459,44 @@ static bool CheckBootCrc(void)
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------
+static void UpdateByteCollector(void)
+// The ISR alerts us when it makes a byte out of audio data.
+// Take these bytes and the ISR flags and put the data in the right places.
+// 
+{
+	// First 14 bytes go in header
+	// All remaining bytes go in SRAM
+	// Count the total bytes which come in for byte count
+	// @@@ receiveComplete and collectingAudioData are the same thing
+	// Cause failed bit read to bail (set readFailed and receive complete) or maybe do this in ISR
+	// Handle a timeout
+	// Reset timeout when we get an in-range transition time
+	// @@@ make StopByteCollector which stops interrupts
+
+}
+
+static void BeginByteCollector(void)
+// Set up arrays and indices to store the bytes passed to us from the audio ISR
+// and starts that ISR moving
+{
+	readFailed=false;
+	gotBootHeader=false;
+	collectingAudioData=true;
+	gotNewByte=false;
+	gotLeadIn=false;
+	receiveComplete=false;
+
+	bytesReceived=0;	
+
+	receiveState=RECEIVE_IDLE;	// ISR starts doing nothing
+
+	PCIFR=0xFF;					// Clear any pending interrupts hanging around.
+	PCICR=(1<<PCIE0);			// Enable the pin change interrupt for PORTA.
+	PCMSK0=0x01;				// PORTA pin 0 generates interrupt for audio data coming in
+}
+
+// ------------------------------------------------------------
+// ------------------------------------------------------------
 
 int main(void)
 {
@@ -359,7 +512,7 @@ int main(void)
 		tempMcucr,
 		ledProgress;
 
-	cli();				// Bootloader has no interrupts
+	cli();				// No interrupts yet
 
 	// Set the DDRs to known state so they don't flop around.
 
@@ -372,106 +525,145 @@ int main(void)
 	DDRB=0xFF;			// Latch port to OP.
 
 	SetLeds(0x00);		// Init LEDs to off
-	InitSoftclock();	// Get timer ticking
 	
 	if(CheckBootButtonsPressed()==true)	// User is pressing button combo
 	{
 		SetLeds(0x01);				// Turn on first LED
 
+		InitSoftclock();	// Get timer ticking
+
 		tempMcucr=MCUCR;			// Get MCU control register value
 		MCUCR=(temp|(1<<IVCE));		// Enable change of interrupt vectors
 		MCUCR=(temp|(1<<IVSEL));	// Move interrupt vectors to bootloader section of flash
 		
-		// Enable bootloader interrupts
-		
-		if()	// Check to see if we have a bootloader file lead in tone
+		audioCollectorState=COLLECT_LEAD_IN;
+		BeginByteCollector();
+
+		sei();						// Turn on interrupts globally
+
+		while(collectingAudioData==true)
 		{
-			SetLeds(0x03);					// First two leds
+			UpdateByteCollector();	// Fill in the header, then SRAM with data we collect.
 
-			if()	// See if we have enough bytes to have a valid header
+			switch(audioCollectorState)
 			{
-				SetLeds(0x07);				// First three LEDs
-				if()	// Make sure header looks legit
-				{
-					SetLeds(0x0F);				// Four LEDs on
-					if(CheckBootCrc()==true)	// Read through the image FIRST and make sure the data is not corrupt (calculated crc matches sent crc)
+				case COLLECT_LEAD_IN:
+					if(gotLeadIn)
 					{
-						// Everything checks out.  Write the new application to flash!
-						SetLeds(0x1F);				// Five LEDs on
-
-						bootDataIndex=0;					// Start with first data bytes
-						blockDataIndex=SD_BLOCK_LENGTH;		// Haven't read in a new block
-						currentBlock=1;						// Boot data begins in block one (header is in block 0)
-						ledProgress=0;						// No twinkles yet
-
-						while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left
+						SetLeds(0x03);								// First two leds				
+						audioCollectorState=COLLECT_HEADER;			
+					}			
+					break;
+				case COLLECT_HEADER:
+					if(gotBootHeader==true)				// See if we have enough bytes to have a valid header
+					{
+						SetLeds(0x07);					// First three LEDs
+						if(CheckBootHeader())			// Make sure header looks legit
 						{
-							if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
-							{
-								if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
-								{
-									currentBlock++;				// Point at the next block
-									blockDataIndex=0;			// Point at first byte of this block
+							SetLeds(0x0F);				// Four LEDs on
+							audioCollectorState=COLLECT_DATA;			
+						}			
+						else
+						{
+							readFailed=true;				// @@@ volatility, atomicity...  @@@ StopByteCollector
+							collectingAudioData=false;		// Bail
+						}
+					}
+					break;
+				case COLLECT_DATA:							// Toggle LED and wait for end of collection
+					if(bytesReceived&0xFF==0x0A)
+					{
+						SetLeds(0x1F);				// Five LEDs on
+					}
+					else if(bytesReceived&0xFF==0x14)
+					{
+							SetLeds(0x0F);			// Four LEDs on					
+					}					
+					break;
 
-									ledProgress++;				// Twinkle three high bits based on reading blocks
-									if(ledProgress>7)
-									{
-										ledProgress=0;
-									}
-
-									SetLeds(0x1F|(ledProgress<<5));
-								}
-								else
-								{
-									// Bail; read error
-								}
-							}
-
-							// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
-    						eeprom_busy_wait();					// Make sure we're clear to erase
-							boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
-    						boot_spm_busy_wait();      			// Wait until the memory is erased.
-
-							for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
-							{
-								tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
-								tempWord|=(bootBuffer[blockDataIndex++])<<8;
-								boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
-							}
-
-							boot_page_write(bootDataIndex);			// Write the page from data in the page buffer.  This writes the flash page which _contains_ this passed address.
-							boot_spm_busy_wait();					// Wait for it to be done
-							boot_rww_enable();						// Allow the application area to be read again
-							
-							bootDataIndex+=SPM_PAGESIZE;			// Increment our absolute address by one page -- NOTE -- this is defined in BYTES, not words, so this is the right way to increment.
-						}						
-
-						// We have bootloaded, and presumably it has been successful!
-						SetLeds(0xFF);		// Turn on all LEDs
-					}	
-				}
 			}
 		}
 
+		PCIFR=0xFF;					// Clear any pending interrupts hanging around.		// Do this in @@@ StopByteCollector
+		PCICR&=~(1<<PCIE0);			// Disable the pin change interrupt for PORTA.
+		PCMSK0&=~0x01;				// PORTA pin 0 no interrupt
+	
+		if(readFailed==false&&CheckBootData()==true)		// If we are done and did not fail reading, check the byte count and CRC
+		{
+			// Everything checks out.  Write the new application to flash!
+			SetLeds(0x1F);				// Five LEDs on
+
+			bootDataIndex=0;					// Start with first data bytes
+			blockDataIndex=SD_BLOCK_LENGTH;		// Haven't read in a new block
+			currentBlock=1;						// Boot data begins in block one (header is in block 0)
+			ledProgress=0;						// No twinkles yet
+
+			while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left
+			{
+				if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
+				{
+					if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
+					{
+						currentBlock++;				// Point at the next block
+						blockDataIndex=0;			// Point at first byte of this block
+
+						ledProgress++;				// Twinkle three high bits based on reading blocks
+						if(ledProgress>7)
+						{
+							ledProgress=0;
+						}
+
+						SetLeds(0x1F|(ledProgress<<5));
+					}
+					else
+					{
+						// Bail; read error
+					}
+				}
+
+				// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
+ 						eeprom_busy_wait();					// Make sure we're clear to erase
+				boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
+ 						boot_spm_busy_wait();      			// Wait until the memory is erased.
+
+				for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
+				{
+					tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
+					tempWord|=(bootBuffer[blockDataIndex++])<<8;
+					boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
+				}
+
+				boot_page_write(bootDataIndex);			// Write the page from data in the page buffer.  This writes the flash page which _contains_ this passed address.
+				boot_spm_busy_wait();					// Wait for it to be done
+				boot_rww_enable();						// Allow the application area to be read again
+				
+				bootDataIndex+=SPM_PAGESIZE;			// Increment our absolute address by one page -- NOTE -- this is defined in BYTES, not words, so this is the right way to increment.
+			}						
+
+			// We have bootloaded, and presumably it has been successful!
+			SetLeds(0xFF);		// Turn on all LEDs
+		
+		}
+	
 		// We were commanded to bootload and made it through some amount of bootloading.
 		// Wait for some period of time so user can see LED code and tell how far the boot loading process got
 
 		HandleSoftclock();
 		tempWord=systemTicks;
-		while(systemTicks<(tempWord+SECOND))	// Wait a bit for user to read bootloader status LEDs
+
+		while(systemTicks<(tempWord+(SECOND*2)))	// Wait a bit for user to read bootloader status LEDs
 		{
 			HandleSoftclock();	// Kludgy
 		}
+
+		// Undo what we did to make the bootloader happen
+		UnInitSoftclock();
+		tempMcucr=MCUCR;			// Get MCU control register value
+		MCUCR=temp|(1<<IVCE);		// Enable change of interrupt vectors
+		MCUCR=temp&=~(1<<IVSEL);	// Move interrupt vectors back to application
 	}
 
-	// Undo what we did to make the bootloader happen
-	UnInitSdInterface();
-	UnInitSoftclock();
-
 	cli();						// Disable interrupts entirely
-	tempMcucr=MCUCR;			// Get MCU control register value
-	MCUCR=temp|(1<<IVCE);		// Enable change of interrupt vectors
-	MCUCR=temp&=~(1<<IVSEL);	// Move interrupt vectors back to application
 
 	// Un init buttons 
 	// Un init LEDs
