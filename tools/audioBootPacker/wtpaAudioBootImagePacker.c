@@ -91,7 +91,8 @@ SSND chunk:
 // WTPABOOT (file ID)
 // Data Length (32 bits)
 // CRC (16 bits, includes everything except WTPABOOT)
-// All bin file data follows.
+// Padding to 32 out to bytes, reserved
+// Binary data begins after the header.
 
 // Bootloader Operation:
 // ----------------------
@@ -118,7 +119,7 @@ SSND chunk:
 #define		AUDIO_SAMPLE_HIGH					0x7F
 #define		AUDIO_SAMPLE_LOW					0x80
 
-#define		NUM_BYTES_IN_HEADER					14
+#define		NUM_BYTES_IN_HEADER					32								// Bytes in WTPA specific header.  Only really use 14, but room to expand if needed.
 
 // ---------------
 // Globals
@@ -399,6 +400,8 @@ int main(int argc, char *argv[])
 	headerBlock[12]=(crc>>8)&0xFF;
 	headerBlock[13]=crc&0xFF;
 
+	// Header only uses 14 of 32 bytes for now; leave room to expand.
+
 	destFile=fopen("wtpaAudioBootFile.aiff","wb");	// Open the file for writing
 	if (!destFile)
 	{
@@ -409,7 +412,7 @@ int main(int argc, char *argv[])
 	// Need to calculate number of bytes in AIFF file.  This will be:
 	// (numBytesInBinFile + numBytesInHeader * (8 * numAudioBytesPerBit)) + leadIn + leadOut
 
-	numBytesOfAudioData=(binFileLength*NUM_AUDIO_BYTES_PER_DATA_BYTE)+LEAD_IN_BYTES+LEAD_OUT_BYTES;
+	numBytesOfAudioData=NUM_BYTES_IN_HEADER+(binFileLength*NUM_AUDIO_BYTES_PER_DATA_BYTE)+LEAD_IN_BYTES+LEAD_OUT_BYTES;
 	
 	// Stick AIFF chunks on to start
 
