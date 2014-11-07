@@ -6,7 +6,8 @@
 // Tue Jul  6 19:36:23 EDT 2010
 
 #include	"includes.h"
-#define		CURRENT_FIRMWARE_VERSION	0x12		// Starts at 0x10 for WTPA2.  0x11, messing around from 2011-2013, 0x12 github pre-release version
+#define		CURRENT_FIRMWARE_VERSION	0x13		// Starts at 0x10 for WTPA2.  0x11, messing around from 2011-2013, 0x12 github pre-release version
+													// 0x13 -- Audio bootloader, application code starting November 2014
 
 //=============================
 // HOLLER-WARE LICENSE:

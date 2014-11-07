@@ -382,10 +382,10 @@ burn_application: $(TARGET).hex
 	$(AVRDUDE) $(AVRDUDE_FLAGS) $(AVRDUDE_WRITE_FLASH)
 
 burn_bootloader:
-	cd ../bootloader && $(MAKE) burn
+	cd ../bootloader_audio && $(MAKE) burn
 
 burn_bootloader_and_application: $(TARGET).hex
-	cd ../bootloader && $(MAKE) burn
+	cd ../bootloader_audio && $(MAKE) burn
 	$(AVRDUDE) $(AVRDUDE_FLAGS) -D -V $(AVRDUDE_WRITE_FLASH)
 # 	Don't erase before programming the application or verify the application.
 

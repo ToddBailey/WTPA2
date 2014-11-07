@@ -258,7 +258,7 @@ void WriteBinaryByteToAudio(unsigned char inputByte)
 	
 	for(i=7;i>-1;i--)
 	{
-		if(inputByte&(1>>i))
+		if(inputByte&(1<<i))
 		{
 			WriteBit(1);
 		}

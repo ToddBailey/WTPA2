@@ -88,10 +88,7 @@ static unsigned int
 static unsigned long
 	bootDataLength;
 
-static unsigned char
-	bootBuffer[SD_BLOCK_LENGTH];	// Holds the block we got from the SD card before we put it in flash
-
-volatile unsigned int				// This counter keeps track of software timing ticks and is referenced by the Timer routines.
+static volatile unsigned int				// This counter keeps track of software timing ticks and is referenced by the Timer routines.
 	systemTicks;
 
 // -------------------------
@@ -106,11 +103,27 @@ volatile unsigned int				// This counter keeps track of software timing ticks an
 #define		AUDIO_SLOP_TIME			(200)
 
 #define		LEAD_IN_TRANSITIONS		1000		// This many good transitions (in a row) during a lead in tells us we're really in a lead in.
-#define		LEAD_IN_TRANSITIONS		1000		// This many good transitions (in a row) during a lead in tells us we're really in a lead in.
+#define		LEAD_OUT_TRANSITIONS	1000		// This many good transitions (in a row) during a lead in tells us we're really in a lead out.
 
+static volatile unsigned char
+	receivedByte,
+	receiveState;
+static volatile bool
+	receiveComplete,
+	readFailed,
+	gotNewByte,
+	gotLeadIn,
+	gotBootHeader,
+	irqGotTransition;
+static unsigned long
+	sramAddress,
+	bytesReceived;
+static unsigned int
+	lastTransition;
+	
 enum	// Bootloader IRQ audio receive states
 {
-	RECEIVE_IDLE,					// receive code looking for anything
+	RECEIVE_IDLE=0,					// receive code looking for anything
 	RECEIVE_MAYBE_LEAD_IN,			// receive code is counting lead in cycles
 	RECEIVE_GOT_LEAD_IN,			// receive code sees enough lead in cycles
 	RECEIVE_DATA_BIT_FIRST_HALF,
@@ -118,7 +131,7 @@ enum	// Bootloader IRQ audio receive states
 	RECEIVE_MAYBE_LEAD_OUT,			// Done with data bits
 };
 
-static bool InRange(unsigned int testValue,unsigned int desiredValue,unsigned int slop)
+static inline bool InRange(unsigned int testValue,unsigned int desiredValue,unsigned int slop)
 // Return true if testValue is the same as desiredValue (with slop)
 {
 	return((testValue<=desiredValue+slop)&&(testValue>=desiredValue-slop));
@@ -129,15 +142,15 @@ ISR(PCINT0_vect)
 // When this triggers, read the hardware timer and see how long it has been since the last toggle, then act accordingly
 {
 	unsigned int
-		currentTime;
-	unsigned int
+		currentTime,
 		timeSinceLastEdge;
+	static unsigned int
+		lastEdgeTime;
 	static unsigned char
-		incomingByte;
-	static unsigned char
-		bitHfTransitions;		
-	static unsigned char
-		bitLfTransitions;		
+		incomingByte,
+		bitIndex,
+		bitHfTransitions,	
+		bitLfTransitions;				
 	static unsigned int
 		leadInOutCount;
 
@@ -328,6 +341,66 @@ static void SetLeds(unsigned char mask)
 
 // ------------------------------------------------------------
 // ------------------------------------------------------------
+// SRAM Functions
+// ------------------------------------------------------------
+// ------------------------------------------------------------
+
+static unsigned char ReadByteFromSram(unsigned long address)
+{
+	static unsigned char
+		temp;
+	
+	LATCH_DDR=0xFF;						// AVR Data bus to output (should be that already)
+	LATCH_PORT=(address);				// Put the LSB of the address on the latch.
+	PORTA|=(Om_RAM_L_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_L_ADR_LA);			// ...Keep it there.
+	
+	LATCH_PORT=(address>>8);			// Put the middle byte of the address on the latch.
+	PORTA|=(Om_RAM_H_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_H_ADR_LA);			// ...Keep it there.
+	
+	PORTC=((0x88|((address>>16)&0x07)));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	
+	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
+	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
+	
+	// NOP(s) here?
+	asm volatile("nop"::);				// Just in case the RAM needs to settle down
+	asm volatile("nop"::);
+	
+	// Finish getting the byte from RAM.
+	
+	temp=LATCH_INPUT;					// Get the byte from this address in RAM.
+	PORTA|=(Om_RAM_OE);					// Tristate the RAM.
+	LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
+	
+	return temp;
+}
+
+static void WriteByteToSram(unsigned char value,unsigned long address)
+{
+	LATCH_DDR=0xFF;						// AVR Data bus to output
+	
+	LATCH_PORT=(address);				// Put the LSB of the address on the latch.
+	PORTA|=(Om_RAM_L_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_L_ADR_LA);			// ...Keep it there.
+	
+	LATCH_PORT=((address>>8));			// Put the middle byte of the address on the latch.
+	PORTA|=(Om_RAM_H_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_H_ADR_LA);			// ...Keep it there.
+	
+	PORTC=(0x88|((address>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	
+	LATCH_PORT=value;					// Put the data to write on the RAM's input port
+	
+	// Finish writing to RAM.
+	PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
+	PORTA|=(Om_RAM_WE);					// Disbale writes.
+}
+
+
+// ------------------------------------------------------------
+// ------------------------------------------------------------
 
 static unsigned int UpdateCrc(unsigned int crc, unsigned char inputByte)
 // Updates a 16-bit CRC in the "Xmodem" style of CRC calculation.  This is cribbed more or less from the avr-libc function.
@@ -380,7 +453,7 @@ static bool CheckBootData(void)
 
 	while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left to input into the CRC
 	{
-		runningCrc=UpdateCrc(runningCrc,ReadByteFromSram(bootDataIndex++);
+		runningCrc=UpdateCrc(runningCrc,ReadByteFromSram(bootDataIndex++));
 	}
 
 	// At this point we've calculated the CRC from the data length and all the data bytes.
@@ -441,6 +514,7 @@ static void UpdateByteCollector(void)
 			{
 				if(receivedByte!=bootHeader[bytesReceived])		// Got the wrong character, bail
 				{
+SetLeds(0x80);
 					StopByteCollector();
 					readFailed=true;			// Stop interrupts and bail
 					receiveComplete=true;				
@@ -466,6 +540,7 @@ static void UpdateByteCollector(void)
 					
 					if(bootDataLength>65536)	// Not going to fit in flash (actually have less space than this due to the bootloader)
 					{
+SetLeds(0x81);
 						StopByteCollector();
 						readFailed=true;			// Stop interrupts and bail
 						receiveComplete=true;									
@@ -490,6 +565,8 @@ static void UpdateByteCollector(void)
 	}
 	else if(readFailed)		// Did the ISR report a malformed data bit?
 	{
+SetLeds(0x82);
+
 		StopByteCollector();	// Stop interrupts and bail
 		receiveComplete=true;					
 	}
@@ -503,6 +580,7 @@ static void UpdateByteCollector(void)
 	{
 		if(systemTicks>(lastTransition+(SECOND/8)))		// Went this long without a transition?
 		{
+SetLeds(0x83);
 			StopByteCollector();
 			readFailed=true;			// Stop interrupts and bail
 			receiveComplete=true;						
@@ -513,17 +591,22 @@ static void UpdateByteCollector(void)
 // ------------------------------------------------------------
 // ------------------------------------------------------------
 
+enum
+{
+	COLLECT_LEAD_IN=0,		// Minor states in main for showing where we are during inhaling audio data
+	COLLECT_HEADER,
+	COLLECT_DATA,
+};
+
 int main(void)
 {
 	unsigned long
 		bootDataIndex;
 	unsigned int
 		i,
-		tempWord,
-		blockDataIndex,
-		currentBlock;
-
+		tempWord;
 	unsigned char
+		audioCollectorState,
 		tempMcucr,
 		ledProgress;
 
@@ -547,9 +630,9 @@ int main(void)
 
 		InitSoftclock();	// Get timer ticking
 
-		tempMcucr=MCUCR;			// Get MCU control register value
-		MCUCR=(temp|(1<<IVCE));		// Enable change of interrupt vectors
-		MCUCR=(temp|(1<<IVSEL));	// Move interrupt vectors to bootloader section of flash
+		tempMcucr=MCUCR;					// Get MCU control register value
+		MCUCR=(tempMcucr|(1<<IVCE));		// Enable change of interrupt vectors
+		MCUCR=(tempMcucr|(1<<IVSEL));		// Move interrupt vectors to bootloader section of flash
 		
 		audioCollectorState=COLLECT_LEAD_IN;
 		BeginByteCollector();
@@ -558,7 +641,8 @@ int main(void)
 
 		while(receiveComplete==false)
 		{
-			UpdateByteCollector();	// Fill in the header, then SRAM with data we collect.
+			UpdateByteCollector();		// Fill in the header, then SRAM with data we collect.
+			HandleSoftclock();			// Keep timeouts working
 
 			switch(audioCollectorState)
 			{
@@ -577,11 +661,11 @@ int main(void)
 					}
 					break;
 				case COLLECT_DATA:							// Toggle LED and wait for end of collection
-					if(bytesReceived&0xFF==0x0A)
+					if((bytesReceived&0xFF)==0x0A)
 					{
 						SetLeds(0x0F);			// Four LEDs on					
 					}
-					else if(bytesReceived&0xFF==0x14)
+					else if((bytesReceived&0xFF)==0x14)
 					{
 						SetLeds(0x07);					// First three LEDs
 					}					
@@ -595,55 +679,24 @@ int main(void)
 		if(readFailed==false)	// Whatever we got was not horribly malformed, and we got a lead-out tone
 		{	
 			SetLeds(0x0F);					// Four LEDs on					
-			if(CheckBootData()==true)		// Verify byte count and CRC
+			if(CheckBootData()==true)		// Verify byte count and CRC, if good write the new application to flash!
 			{
-				// Everything checks out.  Write the new application to flash!
-				SetLeds(0x1F);				// Five LEDs on
-
-// @@@ get rid of SD card stuff.
-// Write SRAM read and write funtions
-
-
-
-
+				SetLeds(0x1F);						// Five LEDs on
 				bootDataIndex=0;					// Start with first data bytes
-				blockDataIndex=SD_BLOCK_LENGTH;		// Haven't read in a new block
-				currentBlock=1;						// Boot data begins in block one (header is in block 0)
 				ledProgress=0;						// No twinkles yet
 
 				while(bootDataIndex<bootDataLength)		// Stay here while there are still bytes left
 				{
-					if(blockDataIndex==SD_BLOCK_LENGTH)					// Are we done reading through this block?
-					{
-						if(GetSdBlock(currentBlock,&bootBuffer[0]))		// Read in a new block
-						{
-							currentBlock++;				// Point at the next block
-							blockDataIndex=0;			// Point at first byte of this block
-
-							ledProgress++;				// Twinkle three high bits based on reading blocks
-							if(ledProgress>7)
-							{
-								ledProgress=0;
-							}
-
-							SetLeds(0x1F|(ledProgress<<5));
-						}
-						else
-						{
-							// Bail; read error
-						}
-					}
-
-					// We know we have some part of a block.  If there are bytes remaining, erase/fill a page, and write it to flash
-	 						eeprom_busy_wait();					// Make sure we're clear to erase
+					// If there are bytes remaining, erase/fill a page, and write it to flash
+	 				eeprom_busy_wait();					// Make sure we're clear to erase
 					boot_page_erase(bootDataIndex);		// Erase the page that INCLUDES this byte address.  Odd, but ok.
-	 						boot_spm_busy_wait();      			// Wait until the memory is erased.
+	 				boot_spm_busy_wait();      			// Wait until the memory is erased.
 
 					for(i=0; i<SPM_PAGESIZE; i+=2)		// Take the bytes from our buffer and make them into little endian words
 					{
-						tempWord=bootBuffer[blockDataIndex++];			// Make little endian word, and keep block data pointer moving along
-						tempWord|=(bootBuffer[blockDataIndex++])<<8;
-						boot_page_fill(bootDataIndex+i,tempWord);		// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
+						tempWord=ReadByteFromSram(bootDataIndex+i);							// Make little endian word, and keep data pointer moving along
+						tempWord|=(unsigned int)(ReadByteFromSram(bootDataIndex+(i+1)))<<8;
+						boot_page_fill(bootDataIndex+i,tempWord);							// Put this word in the AVR's dedicated page buffer. This takes a byte address (although the page buffer wants words) so it must be on the correct boundary.  It also appears to take absolute addresses based on all the examples, although the buffer on the AVR is only one boot page in size...
 					}
 
 					boot_page_write(bootDataIndex);			// Write the page from data in the page buffer.  This writes the flash page which _contains_ this passed address.
@@ -651,6 +704,14 @@ int main(void)
 					boot_rww_enable();						// Allow the application area to be read again
 					
 					bootDataIndex+=SPM_PAGESIZE;			// Increment our absolute address by one page -- NOTE -- this is defined in BYTES, not words, so this is the right way to increment.
+
+					ledProgress++;							// Twinkle three high bit LEDs as we move through the pages
+					if(ledProgress>7)
+					{
+						ledProgress=0;
+					}
+					SetLeds(0x1F|(ledProgress<<5));
+
 				}						
 
 				// We have bootloaded, and presumably it has been successful!
@@ -658,22 +719,23 @@ int main(void)
 			
 			}
 		}	
-		// We were commanded to bootload and made it through some amount of bootloading.
+
+		// We know the user commanded a bootload at this point, and we made it through some amount of the bootloading process.
 		// Wait for some period of time so user can see LED code and tell how far the boot loading process got
 
 		HandleSoftclock();
 		tempWord=systemTicks;
 
-		while(systemTicks<(tempWord+(SECOND*2)))	// Wait a bit for user to read bootloader status LEDs
+		while(systemTicks<(tempWord+(SECOND*4)))	// Wait a bit for user to read bootloader status LEDs
 		{
 			HandleSoftclock();	// Kludgy
 		}
 
 		// Undo what we did to make the bootloader happen
 		UnInitSoftclock();
-		tempMcucr=MCUCR;			// Get MCU control register value
-		MCUCR=temp|(1<<IVCE);		// Enable change of interrupt vectors
-		MCUCR=temp&=~(1<<IVSEL);	// Move interrupt vectors back to application
+		tempMcucr=MCUCR;				// Get MCU control register value
+		MCUCR=tempMcucr|(1<<IVCE);		// Enable change of interrupt vectors
+		MCUCR=tempMcucr&=~(1<<IVSEL);	// Move interrupt vectors back to application
 	}
 
 	cli();						// Disable interrupts entirely
