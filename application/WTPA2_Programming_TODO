@@ -566,3 +566,7 @@ Why can't we introduce jitter from manual inputs again?
 
 Tue Oct 29 15:43:22 EDT 2013
 Allow speed control (MIDI only perhaps) of SD streaming playback
+
+Fri Nov  7 17:36:13 EST 2014
+Store the sample rate for a bank as well during the RECORD function.  Then store this on the SD card also.
+Can use this information when pulling samples off the card with a host computer for accurate playback.

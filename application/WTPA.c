@@ -1924,7 +1924,7 @@ static void InitSampleClock(void)
 // --------------------
 // WTPA has a fifo in RAM which is 768 bytes long (1.5 blocks).
 // Reading, we fill it a block (512 bytes) at a time.  When there is room for 512 bytes in the FIFO, we read the next block and continue doing this until the entire sample is read.
-// In order to not hang our state machine for two long, a fraction of a block is read at a time.  This may cause trouble...  We'll see.
+// In order to not hang our state machine for too long, a fraction of a block is read at a time.  This may cause trouble...  We'll see.
 // Storing parameters works by storing the sample exactly as it is written to the DAC, meaning if the sample is stored backwards, it is written in from end to beginning.  When it's played back, it will play from beginning to end.
 // Likewise, reducing bit depth or editing a sample will mean the sample is permanently stored that way when written to the SD.
 
