@@ -514,7 +514,7 @@ static void UpdateByteCollector(void)
 			{
 				if(receivedByte!=bootHeader[bytesReceived])		// Got the wrong character, bail
 				{
-SetLeds(0x80);
+					SetLeds(0x80);				// Mask to help user debug failed load
 					StopByteCollector();
 					readFailed=true;			// Stop interrupts and bail
 					receiveComplete=true;				
@@ -540,7 +540,7 @@ SetLeds(0x80);
 					
 					if(bootDataLength>65536)	// Not going to fit in flash (actually have less space than this due to the bootloader)
 					{
-SetLeds(0x81);
+						SetLeds(0x81);				// Mask to help user debug failed load
 						StopByteCollector();
 						readFailed=true;			// Stop interrupts and bail
 						receiveComplete=true;									
@@ -565,8 +565,7 @@ SetLeds(0x81);
 	}
 	else if(readFailed)		// Did the ISR report a malformed data bit?
 	{
-SetLeds(0x82);
-
+		SetLeds(0x82);			// Mask to help user debug failed load
 		StopByteCollector();	// Stop interrupts and bail
 		receiveComplete=true;					
 	}
@@ -580,7 +579,7 @@ SetLeds(0x82);
 	{
 		if(systemTicks>(lastTransition+(SECOND/8)))		// Went this long without a transition?
 		{
-SetLeds(0x83);
+			SetLeds(0x83);				// Mask to help user debug failed load
 			StopByteCollector();
 			readFailed=true;			// Stop interrupts and bail
 			receiveComplete=true;						
