@@ -4,6 +4,48 @@ TMB
 Tue Jul  6 19:47:50 EDT 2010
 
 
+=============================
+Sat Nov  8 16:08:34 EST 2014
+TMB
+Updated
+=============================
+
+
+----------------------------------------------
+Actual things I'd like to do before release:
+----------------------------------------------
+
+
+Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
+There are lots of @@@ w/r/t granulars, windows, and playback direction, check it out
+Samples loaded from SD card do not play once, but always loop
+	-- Actually this was a problem with looping in general.
+			--Fixed Sat Nov  8 18:06:56 EST 2014
+	-- New problem, "unpausing" a sample that has looped once and been done past end of sample into RAM
+			--Fixed	Sat Nov  8 18:13:23 EST 2014
+	-- Seems like windowed playback is not right now when we move the starts past the beginning.  Aphex Twinney garbage doesn't sound quite right.
+
+
+*Maybe* list:
+----------------
+"Bit reduction" could be a mask instead of a shift amount; could make it a new MIDI message
+Between "skip" and "sample increment" variables we could really make a mess of sample playback speeds
+Add a write protect byte to the SD card so you don't accidentally clobber samples you like
+Store the sample rate for a bank as well during the RECORD function.  Then store this on the SD card also.
+Can use this information when pulling samples off the card with a host computer for accurate playback.
+Granular samples to keyboard keys
+
+
+
+=============================================================
+=============================================================
+PRE-2014 NOTES ARE BELOW (THEY ARE A MESS)
+=============================================================
+=============================================================
+
+
+
+
 To Function:
 ==============
 Switch reading code	-- done Wed Jul  7 17:45:48 EDT 2010  -- Really done: Wed Sep  1 22:15:30 EDT 2010

@@ -422,6 +422,43 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		}
 		// Non-granular playback:
 		// ---------------------------------------------------------------------------
+		else
+		{
+			// theBank->currentAddress=(theBank->sampleIncrement+theAddy);	// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
+
+			// @@@ We don't do this in overdub right now so probably overdub with widowed playback is busted.
+			// @@@ I think we're playing one garbage sample looping this way, since we play the sample in the "endAddress" which is not filled in the record ISR.
+			// Gotta check for absolute sample ends/beginnings to handle windowed playback, irritatingly
+			// Will miss one sample when we roll around this way			
+
+			theAddy+=theBank->sampleIncrement;
+
+			if(theAddy==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
+			{
+				theBank->currentAddress=theBank->addressAfterLoop;		// We're at the end of the sample and we need to go back to the relative beginning of the sample.
+
+				if(theBank->loopOnce==true)							// Yes, and we should be done now.
+				{
+					theBank->audioFunction=AUDIO_IDLE;
+					theBank->clockMode=CLK_NONE;
+				}
+			}
+			else		// Increment through sample and handle rolling at absolute ends
+			{
+				if(theAddy==theBank->endAddress)		// Just hit the absolute end?
+				{
+					theAddy=theBank->startAddress;		// Jump to the start
+				}
+				else if(theAddy==theBank->startAddress)	// Just hit the absolute start?
+				{
+					theAddy=theBank->endAddress;		// Jump to the end
+				}
+
+				theBank->currentAddress=theAddy;
+			}
+		}
+
+/*
 		else if(theBank->currentAddress==theBank->targetAddress)		// Have we run through our entire sample or sample fragment?
 		{
 			if(theBank->loopOnce==true)							// Yes, and we should be done now.
@@ -438,24 +475,25 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		{
 			// theBank->currentAddress=(theBank->sampleIncrement+theAddy);	// "Increment" the sample address.  Note, this could be forward or backward and we must be sure not to skip the target address
 
-			// @@@
+			// @@@ We don't do this in overdub right now so probably overdub with widowed playback is busted.
+			// @@@ I think we're playing one garbage sample looping this way, since we play the sample in the "endAddress" which is not filled in the record ISR.
 			// Gotta check for absolute sample ends/beginnings to handle windowed playback, irritatingly
-			// Will miss one sample when we roll around this way
+			// Will miss one sample when we roll around this way			
 
 			theAddy+=theBank->sampleIncrement;
 
-			if(theAddy==theBank->endAddress)
+			if(theAddy==theBank->endAddress)		// Just hit the absolute end?
 			{
-				theAddy=theBank->startAddress;
+				theAddy=theBank->startAddress;		// Jump to the start
 			}
-			else if(theAddy==theBank->startAddress)
+			else if(theAddy==theBank->startAddress)	// Just hit the absolute start?
 			{
-				theAddy=theBank->startAddress;			
+				theAddy=theBank->endAddress;		// Jump to the end
 			}
 
 			theBank->currentAddress=theAddy;
 		}
-
+*/
 		// Finish getting the byte from RAM.
 
 		theBank->audioOutput=LATCH_INPUT;		// Get the byte from this address in RAM.
@@ -576,6 +614,8 @@ static void RecordCallback(volatile BANK_STATE *theBank)
 	theBank->currentAddress=theAddy;			// Store this as the current addy and also the end addresses
 	theBank->endAddress=theAddy;				// Match ending address of the sample to the current memory address.
 	theBank->adjustedEndAddress=theAddy;		// Match ending address of our user-trimmed loop (user has not done trimming yet).
+
+	// @@@ if we increment this way, the end address will always be one memory location AFTER the last good sample; make sure that's what you want
 
 	// Finish writing to RAM.
 	PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
