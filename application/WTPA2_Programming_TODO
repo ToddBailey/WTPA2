@@ -16,8 +16,13 @@ Actual things I'd like to do before release:
 ----------------------------------------------
 
 
-Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
 There are lots of @@@ w/r/t granulars, windows, and playback direction, check it out
+Can granular play once?  Can it play backward?  On both banks?
+Can you window sweep granular?
+
+
+Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
+	-- Sun Nov  9 12:57:45 EST 2014 BODIED
 Samples loaded from SD card do not play once, but always loop
 	-- Actually this was a problem with looping in general.
 			--Fixed Sat Nov  8 18:06:56 EST 2014
@@ -25,9 +30,6 @@ Samples loaded from SD card do not play once, but always loop
 			--Fixed	Sat Nov  8 18:13:23 EST 2014
 	-- Seems like windowed playback is not right now when we move the starts past the beginning.  Aphex Twinney garbage doesn't sound quite right.
 			--Sun Nov  9 12:47:02 EST 2014 Fixed edit and window vis a vis sample direction, play once, looping, banks
-
-Can granular play once?  Can it play backward?  On both banks?
-Can you window sweep granular?
 
 
 *Maybe* list:

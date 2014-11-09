@@ -15,8 +15,6 @@ typedef struct
 	bool
 		loopOnce;				// Flags for FX.
 	bool
-		halfSpeed;
-	bool
 		backwardsPlayback;			// Does the user want intend for the sample to be played in reverse?
 	bool
 		isLocked;					// Mutex which keeps the SRAM exclusive to either audio or SD functions so they don't step on each other
@@ -59,7 +57,7 @@ typedef struct
 	unsigned char
 		sampleSkipCounter;			// Used to handle half time / time division
 	unsigned char
-		samplesToSkip;
+		samplesToSkip;				// Number of ISRs to ignore; IE when this equals 1, we will play at half speed, 2 would be 1/3 speed, etc.
 
 	unsigned char
 		granularSlices;				// When doing granular playback how many pieces have we cut the sample into?

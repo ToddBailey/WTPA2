@@ -3843,8 +3843,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 
 static void RevertSampleToUnadjusted(unsigned char theBank)
 // Removes user adjustments to sample and returns it to maximum size.
-// @@@ Since the current sample address must be within these bounds, there is no need to adjust it.
-// @@@ Mon Nov  9 22:52:08 EST 2009 -- Is this true?  Yes, I think so.
+// NOTE -- Since the edited sample is a subset of the entire sample, the current sample address pointer MUST be within these bounds.  Therefore here is no need to adjust it here.
 {
 	unsigned char
 		sreg;
@@ -4046,7 +4045,6 @@ static void UpdateUserSwitches(void)
 			bankStates[currentBank].bitReduction=0;			// No crusties yet.
 			bankStates[currentBank].jitterValue=0;			// No hissies yet.
 			bankStates[currentBank].granularSlices=0;		// No remix yet.
-			bankStates[currentBank].halfSpeed=false;
 			bankStates[currentBank].loopOnce=false;
 			bankStates[currentBank].realtimeOn=false;
 			bankStates[currentBank].sampleSkipCounter=0;
@@ -4075,17 +4073,15 @@ static void UpdateUserSwitches(void)
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_BIT_REDUCTION,scaledEncoderValue);		// Send it out to the techno nerds.
 			}
 		}
-		if(newKeys&Im_SWITCH_1)		// Screw and chop (toggle)
+		if(newKeys&Im_SWITCH_1)		// Screw and chop (toggle half-speed playback)
 		{
-			if(bankStates[currentBank].halfSpeed==false)
+			if(bankStates[currentBank].samplesToSkip==0)
 			{
-				bankStates[currentBank].halfSpeed=true;
 				bankStates[currentBank].samplesToSkip=1;
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,MIDI_GENERIC_VELOCITY);		// Send it out to the techno nerds.
 			}
 			else
 			{
-				bankStates[currentBank].halfSpeed=false;
 				bankStates[currentBank].samplesToSkip=0;
 				PutMidiMessageInOutgoingFifo(currentBank,MESSAGE_TYPE_CONTROL_CHANGE,MIDI_HALF_SPEED,0);		// Send it out to the techno nerds.
 			}
@@ -4409,12 +4405,10 @@ static void DoSampler(void)
 					case MIDI_HALF_SPEED:							// Skrew and chop.
 					if(currentMidiMessage.dataByteTwo)
 					{
-						bankStates[currentMidiMessage.channelNumber].halfSpeed=true;
 						bankStates[currentMidiMessage.channelNumber].samplesToSkip=1;
 					}
 					else
 					{
-						bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
 						bankStates[currentMidiMessage.channelNumber].samplesToSkip=0;
 					}
 					break;
@@ -4437,7 +4431,6 @@ static void DoSampler(void)
 					bankStates[currentMidiMessage.channelNumber].bitReduction=0;			// No crusties yet.
 					bankStates[currentMidiMessage.channelNumber].jitterValue=0;			// No hissies yet.
 					bankStates[currentMidiMessage.channelNumber].granularSlices=0;		// No remix yet.
-					bankStates[currentMidiMessage.channelNumber].halfSpeed=false;
 					bankStates[currentMidiMessage.channelNumber].backwardsPlayback=false;
 					UpdateAdjustedSampleAddresses(currentMidiMessage.channelNumber);	// Make sure we handle going backwards when considering edited/reversed samples.
 					bankStates[currentMidiMessage.channelNumber].realtimeOn=false;			// We'll default to playback.
@@ -4580,7 +4573,6 @@ static void InitSampler(void)
 		bankStates[i].bitReduction=0;				// No crusties yet.
 		bankStates[i].jitterValue=0;				// No hissies yet.
 		bankStates[i].granularSlices=0;				// No remix yet.
-		bankStates[i].halfSpeed=false;
 		bankStates[currentBank].sampleSkipCounter=0;
 		bankStates[currentBank].samplesToSkip=0;
 		bankStates[i].backwardsPlayback=false;		// User hasn't said reverse normal direction
