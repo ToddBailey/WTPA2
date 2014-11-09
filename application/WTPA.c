@@ -3595,10 +3595,14 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		chunkSize;
 	bool
 		bank0Flipped,
-		bank1Flipped;
+		bank1Flipped,
+		bank0Wrapped,
+		bank1Wrapped;
 	
 	bank0Flipped=false;
 	bank1Flipped=false;
+	bank0Wrapped=false;
+	bank1Wrapped=false;
 
 	sreg=SREG;
 	cli();					// Pause interrupts while we non-atomically mess with variables the ISR might be reading.
@@ -3629,44 +3633,50 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].endAddress)	// Start addy off the end of the scale?
 		{
 			bankStates[BANK_0].adjustedStartAddress=(bankStates[BANK_0].adjustedStartAddress-bankStates[BANK_0].endAddress)+BANK_0_START_ADDRESS;	// Wrap it around.
+			bank0Wrapped=true;																														// Sample is maybe wrapping around end of array
 		}
 		if(bankStates[BANK_0].adjustedEndAddress>bankStates[BANK_0].endAddress)
 		{
 			bankStates[BANK_0].adjustedEndAddress=(bankStates[BANK_0].adjustedEndAddress-bankStates[BANK_0].endAddress)+BANK_0_START_ADDRESS;	// Wrap it around.
-
-			if(bankStates[BANK_0].adjustedEndAddress==bankStates[BANK_0].adjustedStartAddress)	// Did we wrap a full sized sample?
-			{
-				bankStates[BANK_0].adjustedEndAddress--;			// Trim it down so we don't have the start and end address equal.
-			}
+			bank0Wrapped=!bank0Wrapped;																											// Sample is only wrapped around the end of array if ONE endpoint is off
+		}
+		if(bankStates[BANK_0].adjustedEndAddress==bankStates[BANK_0].adjustedStartAddress)	// Did we somehow manage to make these locations the same?
+		{
+			bankStates[BANK_0].adjustedEndAddress--;			// Trim it down so we don't have the start and end address equal.
 		}
 
 		// If the current sample address pointer is not in between the start and end points anymore, put it there.
 		// ---------------------------------------------------------------------------------------------------------------------------------
+		// Must take into account how the sample is wrapping and the direction.
+		// NOTE -- the offsets by one are to handle the case where we set the current address to the TARGET address.  B/C the ISR always increments address by one, we'll miss the loop one time in this case.
 
-		if(bankStates[BANK_0].adjustedStartAddress>bankStates[BANK_0].adjustedEndAddress)	// Are we wrapping around the end?
+		if(bank0Flipped==false&&bank0Wrapped==false)		// Sample is normal -- not wrapping around array and the start is before the beginning
 		{
-			if((bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress))	// If so, is our current pointer out of bounds?
+			if((bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)||(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress))		// Outside sample range?
 			{
-				if((bankStates[BANK_0].adjustedStartAddress-bankStates[BANK_0].currentAddress)>=(bankStates[BANK_0].currentAddress-bankStates[BANK_0].adjustedEndAddress))	// Closer to the start?
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;	// Round to the start.
-				}
-				else
-				{
-					bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;	// Round to the end.
-				}
+				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress+1;	// Bring into range
+			}		
+		}
+		else if(bank0Flipped==false&&bank0Wrapped==true)		// Sample begins at start point, but endpoint has wrapped around the end of the absolute array
+		{
+			if((bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress))
+			{
+				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress+1;
+			}		
+		}
+		else if(bank0Flipped==true&&bank0Wrapped==false)		// End is before beginning (sample reversed) but not wrapping around end of array
+		{
+			if((bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedStartAddress)||(bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedEndAddress))		
+			{
+				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress-1;			
 			}
 		}
-		else	// Not wrapping around the end (this means the start addy is before the end).
+		else	// Sample is reversed and start point has been pushed around the boundary of the array
 		{
-			if(bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedStartAddress)
+			if((bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedStartAddress)&&(bankStates[BANK_0].currentAddress<bankStates[BANK_0].adjustedEndAddress))
 			{
-				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress;		// If we moved the beginning of the sample up past our current pointer, bring our current memory location up to the start.
-			}
-			else if(bankStates[BANK_0].currentAddress>bankStates[BANK_0].adjustedEndAddress)
-			{
-				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
-			}
+				bankStates[BANK_0].currentAddress=bankStates[BANK_0].adjustedStartAddress-1;
+			}				
 		}
 
 		// Set the loop points the ISR uses based on the direction of our edited, correctly bounded sample
@@ -3715,7 +3725,7 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 	// ---------------------------------------------------------------------------------------------------------------------------------
 	// ---------------------------------------------------------------------------------------------------------------------------------
 
-	else	// Otherwise assume banks grow down and do the same procedure for bank 1 -- @@@ BANK 1 grows down, so the signs and comments here may not always agree.
+	else	// Otherwise assume banks grow down and do the same procedure for bank 1 -- NOTE:  BANK 1 grows down!  Due to copy pasta, the signs and comments here may not always agree.
 	{
 		chunkSize=(((BANK_1_START_ADDRESS-bankStates[BANK_1].endAddress)<<3)/256);		// Get chunk size of current sample (shift this up to get some more resolution)
 
@@ -3741,44 +3751,50 @@ static void UpdateAdjustedSampleAddresses(unsigned char theBank)
 		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].endAddress)	// Start addy off the end of the scale?
 		{
 			bankStates[BANK_1].adjustedStartAddress=BANK_1_START_ADDRESS-(bankStates[BANK_1].endAddress-bankStates[BANK_1].adjustedStartAddress);	// Wrap it around.
+			bank1Wrapped=true;																														// Sample is maybe wrapping around end of array
 		}
 		if(bankStates[BANK_1].adjustedEndAddress<bankStates[BANK_1].endAddress)
 		{
 			bankStates[BANK_1].adjustedEndAddress=BANK_1_START_ADDRESS-(bankStates[BANK_1].endAddress-bankStates[BANK_1].adjustedEndAddress);	// Wrap it around.
-
-			if(bankStates[BANK_1].adjustedEndAddress==bankStates[BANK_1].adjustedStartAddress)	// Did we wrap a full sized sample?
-			{
-				bankStates[BANK_1].adjustedEndAddress++;			// Trim it down so we don't have the start and end address equal.
-			}
+			bank0Wrapped=!bank0Wrapped;																											// Sample is only wrapped around the end of array if ONE endpoint is off
+		}
+		if(bankStates[BANK_1].adjustedEndAddress==bankStates[BANK_1].adjustedStartAddress)	// Did we somehow manage to make these the same?
+		{
+			bankStates[BANK_1].adjustedEndAddress++;			// Trim it down so we don't have the start and end address equal.
 		}
 
 		// If the current sample address pointer is not in between the start and end points anymore, put it there.
 		// ---------------------------------------------------------------------------------------------------------------------------------
+		// Must take into account how the sample is wrapping and the direction.
+		// NOTE -- the offsets by one are to handle the case where we set the current address to the TARGET address.  B/C the ISR always increments address by one, we'll miss the loop one time in this case.
 
-		if(bankStates[BANK_1].adjustedStartAddress<bankStates[BANK_1].adjustedEndAddress)	// Are we wrapping around the end?
+		if(bank1Flipped==false&&bank1Wrapped==false)		// Sample is normal -- not wrapping around array and the start is before the beginning
 		{
-			if((bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress))	// If so, is our current pointer out of bounds?
+			if((bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)||(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress))		// Outside sample range?
 			{
-				if((bankStates[BANK_1].currentAddress-bankStates[BANK_1].adjustedStartAddress)<=(bankStates[BANK_1].adjustedEndAddress-bankStates[BANK_1].currentAddress))	// Closer to the start?
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;	// Round to the start.
-				}
-				else
-				{
-					bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;	// Round to the end.
-				}
+				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress-1;	// Bring into range
+			}		
+		}
+		else if(bank1Flipped==false&&bank1Wrapped==true)		// Sample begins at start point, but endpoint has wrapped around the end of the absolute array
+		{
+			if((bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress))
+			{
+				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress-1;
+			}		
+		}
+		else if(bank1Flipped==true&&bank1Wrapped==false)		// End is before beginning (sample reversed) but not wrapping around end of array
+		{
+			if((bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedStartAddress)||(bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedEndAddress))		
+			{
+				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress+1;			
 			}
 		}
-		else	// Not wrapping around the end (this means the start addy is greater than the end, which is correct for this bank)
+		else	// Sample is reversed and start point has been pushed around the boundary of the array
 		{
-			if(bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedStartAddress)
+			if((bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedStartAddress)&&(bankStates[BANK_1].currentAddress>bankStates[BANK_1].adjustedEndAddress))
 			{
-				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress;		// If we moved the beginning of the sample up past our current pointer, bring our current memory location up to the start.
-			}
-			else if(bankStates[BANK_1].currentAddress<bankStates[BANK_1].adjustedEndAddress)
-			{
-				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedEndAddress;		// If we moved the beginning of the sample down past our current end pointer, bring our current memory location down to the end.
-			}
+				bankStates[BANK_1].currentAddress=bankStates[BANK_1].adjustedStartAddress+1;
+			}				
 		}
 
 		// Finally, set the loop points the ISR uses based on the direction of our edited, correctly bounded sample

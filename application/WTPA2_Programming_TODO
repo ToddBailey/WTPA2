@@ -24,6 +24,10 @@ Samples loaded from SD card do not play once, but always loop
 	-- New problem, "unpausing" a sample that has looped once and been done past end of sample into RAM
 			--Fixed	Sat Nov  8 18:13:23 EST 2014
 	-- Seems like windowed playback is not right now when we move the starts past the beginning.  Aphex Twinney garbage doesn't sound quite right.
+			--Sun Nov  9 12:47:02 EST 2014 Fixed edit and window vis a vis sample direction, play once, looping, banks
+
+Can granular play once?  Can it play backward?  On both banks?
+Can you window sweep granular?
 
 
 *Maybe* list:
