@@ -15,16 +15,14 @@ Updated
 Actual things I'd like to do before release:
 ----------------------------------------------
 
-Make sure MIDI isn't nerfed w/r/t the new functions
+Make sure MIDI isn't nerfed w/r/t the new functions (make MIDI able to play SD sample slots at least)
+Delete all "scratchpad" comment blocks and commented out functions when you're sure everything is right.
+"os_main" or "noreturn" function to the main loop?
 
 
-There are lots of questionable notes w/r/t granulars, windows, and playback direction, check it out
-	-- Sun Nov  9 15:05:57 EST 2014 mostly all working except some out of RAM excursions when window sweeping a granularly divided edited sample
-
-
-
-Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
-	-- Sun Nov  9 12:57:45 EST 2014 BODIED
+-------
+DONE:
+-------
 Samples loaded from SD card do not play once, but always loop
 	-- Actually this was a problem with looping in general.
 			--Fixed Sat Nov  8 18:06:56 EST 2014
@@ -34,6 +32,12 @@ Samples loaded from SD card do not play once, but always loop
 			--Sun Nov  9 12:47:02 EST 2014 Fixed edit and window vis a vis sample direction, play once, looping, banks
 Can granular play once?  Can it play backward?  On both banks?
 	-- Yep.
+There are lots of questionable notes w/r/t granulars, windows, and playback direction, check it out
+	-- Sun Nov  9 15:05:57 EST 2014 mostly all working except some out of RAM excursions when window sweeping a granularly divided edited sample
+	-- Sun Nov  9 17:36:12 EST 2014 reconciled all windows, edits, grainy stuff, all plays nice now
+Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
+	-- Sun Nov  9 12:57:45 EST 2014 Fixed
+
 
 
 *Maybe* list:
@@ -46,6 +50,8 @@ Can use this information when pulling samples off the card with a host computer 
 Granular samples to keyboard keys
 Granular samples NOT always randomized
 Record sample to SD card as it is currently being played back, not unadjusted.
+MIDI-gate the analog clocked samples
+
 
 
 =============================================================

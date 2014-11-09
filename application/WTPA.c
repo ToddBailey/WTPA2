@@ -420,15 +420,37 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 					}
 				}
 
-				if(theBank->startAddress==0)		// @@@ Bullshit way of checking if this is BANK_0.  Since our offset into the granular array is signed, we need to differentiate banks here.  Perhaps there's a better way to do this
+				if(theBank->startAddress==0)		// Goofy way of checking if this is BANK_0.  Since our offset into the granular array is signed, we need to differentiate banks here.  Perhaps there's a better way to do this
 				{
 					//theBank->currentAddress=((theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize)+BANK_0_START_ADDRESS);	// Loops around un-edited sample
-					theBank->currentAddress=((theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize)+theBank->adjustedStartAddress);
+
+					theAddy=((theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize)+theBank->adjustedStartAddress);		// Jump to new chunk relative to edited start address
+
+					if(theAddy>=theBank->endAddress)	// Jumped past end of sample?
+					{
+						theAddy-=theBank->endAddress;								// Roll around
+						theBank->currentAddress=theAddy+theBank->startAddress;		// Add remaining jump to the absolute start
+					}
+					else
+					{
+						theBank->currentAddress=theAddy;
+					}
 				}
-				else
+				else	// Samples grow downwards (this is annoying)
 				{
 					//theBank->currentAddress=(BANK_1_START_ADDRESS-(theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize));	// Loops around unedited sample
-					theBank->currentAddress=(theBank->adjustedStartAddress-(theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize));
+	
+					theAddy=(theBank->adjustedStartAddress-(theBank->granularPositionArray[theBank->granularPositionArrayPointer]*theBank->sliceSize));
+
+					if(theAddy<=theBank->endAddress)	// Jumped past end of sample?
+					{
+						theAddy=(theBank->endAddress-theAddy);						// Roll around
+						theBank->currentAddress=theBank->startAddress-theAddy;		// Add remaining jump to the absolute start
+					}
+					else
+					{
+						theBank->currentAddress=theAddy;
+					}
 				}
 			}
 		}
@@ -3528,7 +3550,7 @@ static unsigned long GetAjustedSampleSize(unsigned char theBank)
 	higherAddy=0;
 	lowerAddy=0;
 
-	if(bankStates[theBank].adjustedEndAddress>bankStates[BANK_0].adjustedStartAddress)		// Get abs value of difference between start and end points of ajusted sample
+	if(bankStates[theBank].adjustedEndAddress>bankStates[theBank].adjustedStartAddress)		// Get abs value of difference between start and end points of ajusted sample
 	{
 		higherAddy=bankStates[theBank].adjustedEndAddress;
 		lowerAddy=bankStates[theBank].adjustedStartAddress;
@@ -3568,6 +3590,9 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		origContents,
 		randIndex,
 		randContents;
+
+	unsigned long
+		theAddy;
 
 	if(numSlices>1)		// Enough slices to do something?
 	{
@@ -3610,6 +3635,8 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		bankStates[theBank].granularPositionArrayPointer=0;					// Point to the first element of our shuffled array.
 		bankStates[theBank].sliceRemaining=bankStates[theBank].sliceSize;	// One entire slice to go.
 
+
+/*
 		if(theBank==BANK_0)		// Set the current address of the sample pointer to the beginning of the first slice.
 		{
 //			bankStates[BANK_0].currentAddress=((bankStates[BANK_0].granularPositionArray[0]*bankStates[BANK_0].sliceSize)+BANK_0_START_ADDRESS);						// For entire sample, not edited sample
@@ -3619,6 +3646,42 @@ static void MakeNewGranularArray(unsigned char theBank, unsigned char numSlices)
 		{
 //			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(bankStates[BANK_1].granularPositionArray[0]*bankStates[BANK_1].sliceSize));		// For entire sample, not edited sample
 			bankStates[BANK_1].currentAddress=(bankStates[BANK_1].adjustedStartAddress-(bankStates[BANK_1].granularPositionArray[0]*bankStates[BANK_1].sliceSize));
+		}
+
+*/
+
+
+		if(theBank==BANK_0)		// Set the current address of the sample pointer to the beginning of the first slice.
+		{
+//			bankStates[BANK_0].currentAddress=((bankStates[BANK_0].granularPositionArray[0]*bankStates[BANK_0].sliceSize)+BANK_0_START_ADDRESS);						// For entire sample, not edited sample
+
+			theAddy=((bankStates[BANK_0].granularPositionArray[0]*bankStates[BANK_0].sliceSize)+bankStates[BANK_0].adjustedStartAddress);		// Jump to new chunk relative to edited start address
+
+			if(theAddy>=(bankStates[BANK_0].endAddress-1))	// Jumped past end of sample?  (The -1 keeps us from accidentally jumping off the end before the boundary test in the ISR)
+			{
+				theAddy-=bankStates[BANK_0].endAddress;											// Roll around
+				bankStates[BANK_0].currentAddress=theAddy+bankStates[BANK_0].startAddress;		// Add remaining jump to the absolute start
+			}
+			else
+			{
+				bankStates[BANK_0].currentAddress=theAddy;
+			}
+		}
+		else	// Samples grow downwards (this is annoying)
+		{
+//			bankStates[BANK_1].currentAddress=(BANK_1_START_ADDRESS-(bankStates[BANK_1].granularPositionArray[0]*bankStates[BANK_1].sliceSize));		// For entire sample, not edited sample
+
+			theAddy=(bankStates[BANK_1].adjustedStartAddress-(bankStates[BANK_1].granularPositionArray[0]*bankStates[BANK_1].sliceSize));
+
+			if(theAddy<=(bankStates[BANK_1].endAddress+1))	// Jumped past end of sample?  (See above for the +1)
+			{
+				theAddy=(bankStates[BANK_1].endAddress-theAddy);								// Roll around
+				bankStates[BANK_1].currentAddress=bankStates[BANK_1].startAddress-theAddy;		// Add remaining jump to the absolute start
+			}
+			else
+			{
+				bankStates[BANK_1].currentAddress=theAddy;
+			}
 		}
 
 		SREG=sreg;		// Restore interrupts.
