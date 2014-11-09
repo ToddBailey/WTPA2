@@ -15,10 +15,12 @@ Updated
 Actual things I'd like to do before release:
 ----------------------------------------------
 
+Make sure MIDI isn't nerfed w/r/t the new functions
 
-There are lots of @@@ w/r/t granulars, windows, and playback direction, check it out
-Can granular play once?  Can it play backward?  On both banks?
-Can you window sweep granular?
+
+There are lots of questionable notes w/r/t granulars, windows, and playback direction, check it out
+	-- Sun Nov  9 15:05:57 EST 2014 mostly all working except some out of RAM excursions when window sweeping a granularly divided edited sample
+
 
 
 Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
@@ -30,6 +32,8 @@ Samples loaded from SD card do not play once, but always loop
 			--Fixed	Sat Nov  8 18:13:23 EST 2014
 	-- Seems like windowed playback is not right now when we move the starts past the beginning.  Aphex Twinney garbage doesn't sound quite right.
 			--Sun Nov  9 12:47:02 EST 2014 Fixed edit and window vis a vis sample direction, play once, looping, banks
+Can granular play once?  Can it play backward?  On both banks?
+	-- Yep.
 
 
 *Maybe* list:
@@ -40,7 +44,8 @@ Add a write protect byte to the SD card so you don't accidentally clobber sample
 Store the sample rate for a bank as well during the RECORD function.  Then store this on the SD card also.
 Can use this information when pulling samples off the card with a host computer for accurate playback.
 Granular samples to keyboard keys
-
+Granular samples NOT always randomized
+Record sample to SD card as it is currently being played back, not unadjusted.
 
 
 =============================================================

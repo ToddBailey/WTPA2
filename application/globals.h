@@ -42,6 +42,11 @@ typedef struct
 		sampleEndOffset;			// Used to shift the sample backwards in chunks -- an offset applied to the adjusted end address
 	unsigned char
 		sampleWindowOffset;			// Used to shift the sample backwards and forwards in chunks -- an offset applied to the adjusted start and end addresses
+	bool
+		endpointsFlipped;			// Does the adjusted sample have the end before the beginning?
+	bool
+		wrappedAroundArray;			// Does the adjusted sample span play across the end of the sample to the beginning?
+
 	unsigned long
 		currentAddress;				// Points to the sample's current location in SRAM
 
