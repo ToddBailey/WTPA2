@@ -18,7 +18,7 @@ Actual things I'd like to do before release:
 Make sure MIDI isn't nerfed w/r/t the new functions (make MIDI able to play SD sample slots at least)
 Delete all "scratchpad" comment blocks and commented out functions when you're sure everything is right.
 "os_main" or "noreturn" function to the main loop?
-
+Finish adding DPCM
 
 -------
 DONE:

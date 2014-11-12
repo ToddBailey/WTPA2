@@ -1140,6 +1140,8 @@ ISR(TIMER2_COMPB_vect)
 
 				// Now spit the byte out the DAC.
 
+// @@@ don't think we really need this copy, rather, we could just get sdStreamOutput from the FIFO above
+
 				sdStreamOutput=theByte;		// Mark this byte as the one we want to go out in our DAC-updating routine
 
 				// --------------------------------------------------
