@@ -59,7 +59,7 @@ SSND chunk:
 // 432	bytes 		don't care
 
 // All remaining blocks are audio data.
-// There are a maximum of 512 samples per SD card (this is arbitrary, but those are the breaks) 
+// There are a maximum of 512 samples per SD card (this is arbitrary, but those are the breaks)
 // Samples are aligned on 512k boundaries, although they frequently don't use all 512k.
 // So, the first sample starts at byte (512 + 0), next starts at (512 + (1 * 512k)), etc.
 
@@ -80,7 +80,7 @@ SSND chunk:
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>			// For strcpy
-#include <sys/stat.h>		// For mkdir
+#include <sys/stat.h>		// For mkdir, fstat
 #include <time.h>			// For tagging destination directory with system time
 
 #define		NUM_SAMPLES_MAX					512				// Can't store more samples than this.
@@ -125,7 +125,7 @@ static bool GetHeaderData(void)
 			printf("Non-sample data detected.  This is WTPA data but it does not appear to be standard audio samples.\n");
 			return(false);
 	}
-	
+
 	sampleSlot=0;
 	numSamplesFound=0;
 
@@ -145,14 +145,14 @@ static bool GetHeaderData(void)
 
 			sampleSlot++;
 		}
-	}	
+	}
 
 	if(numSamplesFound)
 	{
 		printf("Header good, found %d audio samples.\n",numSamplesFound);
 		return(true);
 	}
-	
+
 	printf("Header looks OK but I can't see any samples in the TOC.\n");
 	return(false);
 }
@@ -195,7 +195,7 @@ static bool MakeAiffDirectory(void)
 	    return(false);
 	}
 
-	printf("Made AIFF directory: %s\n",outputDirName);	
+	printf("Made AIFF directory: %s\n",outputDirName);
 	return(true);
 }
 
@@ -219,19 +219,19 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 		filenameString[1024],
 		destString[1024];
 
-		
+
 	if(((theSlot*1024*512)+512)>blobFileLength)		// Make sure we dont try to seek off the end of the buffer b/c of bad TOC
 	{
 	    fprintf(stderr,"Input blob too short to contain a sample at slot %d\n",theSlot);
-	    return(false);		
+	    return(false);
 	}
-	
+
 	addressPointer=((theSlot*1024*512)+512);	// Point at beginning of 512k sample slot (take into account the 512 byte header data)
 
 	// Sample length is first four bytes -- big endian
-	
+
 	numBytesInWtpaSample=0;
-	
+
 	numBytesInWtpaSample|=(buffer[addressPointer++]<<24)&0xFF000000;
 	numBytesInWtpaSample|=(buffer[addressPointer++]<<16)&0x00FF0000;
 	numBytesInWtpaSample|=(buffer[addressPointer++]<<8)&0x0000FF00;
@@ -240,17 +240,17 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 	if(numBytesInWtpaSample>(512*1024))		// Sample cannot be this big.
 	{
 	    fprintf(stderr,"Bad sample in slot %u, sample size reads %u bytes\n",theSlot,numBytesInWtpaSample);
-	    return(false);		
+	    return(false);
 	}
 
 	if(addressPointer+numBytesInWtpaSample>blobFileLength)	// Sample runs off file end?
 	{
 	    fprintf(stderr,"Sample in slot %u runs off end of input file!  Num bytes = %u\n",theSlot,numBytesInWtpaSample);
-	    return(false);			
+	    return(false);
 	}
 
 	// Open aiff file
-	
+
 	sprintf(slotString,"%d",theSlot);				// Number of sample slot to string
 	strcpy(filenameString,"wtpa2_sample_slot_");
 	strcat(filenameString,slotString);
@@ -268,7 +268,7 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 	}
 
 	printf("Writing %d bytes from sample slot %d to AIFF output file...",numBytesInWtpaSample,theSlot);
-		
+
 	// Stick AIFF chunks on to start
 
 	fprintf(destinationAiff,"FORM");											// IFF ID
@@ -321,7 +321,7 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 	fputc(0,destinationAiff);
 	fputc(0,destinationAiff);
 
-	
+
 	for(i=0;i<numBytesInWtpaSample;i++)
 	{
 		fputc(buffer[addressPointer++],destinationAiff);
@@ -330,9 +330,9 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 	fclose(destinationAiff);
 
 	printf("Done!\n");
-	
+
 	return(true);
-} 
+}
 
 // ---------------
 // Main Loop
@@ -340,15 +340,27 @@ static bool WriteSampleToAiff(unsigned int theSlot)
 
 int main(int argc, char *argv[])
 {
-	unsigned int i,j;
+	unsigned int
+		i,j;
+	struct
+		stat fileStat;	// Structure needed to get file info
+	int
+		fileDescriptor;
+	char
+		*strtolPtr;
+	long
+		optionalFileLength;
 
-	// Check to make sure we got arguments we needed
-	if(argc!=2)		// Only expect one argument
+	if((argc!=2)&(argc!=3))		// One or two arguments allowed
 	{
 		printf("\n--WTPA2 Sample To AIFF converter--\n");
-		printf("When passed a the blob which comes off a WTPA2 formatted SD card,\n");
-		printf("this program will spit out a folder full of playable AIFF files numbered according to their WTPA2 slots.\n");
-		printf("Usage: wtpaAudioSampleExtractor [filename]\n");
+		printf("When pointed at a WTPA2 formatted SD card (raw block device) or a blob of bytes extracted from one,\n");
+		printf("this program will spit out a timestamped folder full of playable AIFF files numbered according to their WTPA2 slots.\n");
+		printf("NOTE:  This program is not very smart, and if passed a block device (like an SD card) will default to inhaling 256MB even if you only have one sample.\n");
+		printf("This will work, but it is not fast.  Copy your bytes to a file first if you are in a hurry, or use the optional length desciptor.\n\n");
+		printf("Usage: wtpaAudioSampleExtractor [filename] [optional block device amount to inhale (in MB)]\n");
+		printf("Example: <sudo wtpaAudioSampleExtractor /dev/sdb 20> will inhale 20MB from whatever is stuck in slot /dev/sdb and find the samples in those 20MB.\n");
+		printf("Example: <wtpaAudioSampleExtractor blobFile> will look at the file 'blobFile' as a WTPA2 sd card image and turn whatever samples are in it into AIFFs.\n\n");
 		printf("TMB, November 2014\n\n");
 		return;
 	}
@@ -357,16 +369,58 @@ int main(int argc, char *argv[])
 	sourceFile = fopen(argv[1], "rb");
 	if (!sourceFile)
 	{
-		fprintf(stderr, "Unable to open file: %s\n",argv[1]);
+		fprintf(stderr, "Unable to open file: %s -- is it there and do you have permission?)\n",argv[1]);
 		return;
 	}
 
 	printf("\nReading WTPA2 sample data...\n");
-	
-	//Get file length
-	fseek(sourceFile, 0, SEEK_END);
-	blobFileLength=ftell(sourceFile);			// Store this for later
-	fseek(sourceFile, 0, SEEK_SET);
+
+	fileDescriptor=fileno(sourceFile);	// Get file descriptor from file object
+
+	if(fstat(fileDescriptor,&fileStat)<0)	// Try to get file stats
+	{
+		fprintf(stderr, "Cannot get file stats for this file.");
+		return;
+	}
+
+	if(S_ISBLK(fileStat.st_mode))	// See if this is a block device (like an SD card, say)
+	{
+		if(argc==3)
+		{
+			optionalFileLength=strtol(argv[2],&strtolPtr,10);
+
+			if((optionalFileLength>256)||(optionalFileLength<0))	// Only 256MB of samples possible, and obviously negative is bad
+			{
+				blobFileLength=(256*1024*1024);
+				printf("Sorry, %ldMB doesn't make sense, reading 256MB.\n",optionalFileLength);
+			}
+			else
+			{
+				printf("\nReading %ldMB from block device...\n",optionalFileLength);
+				blobFileLength=(optionalFileLength*1024*1024);
+			}
+		}
+		else
+		{
+			printf("\nReading from block device, no size specified. Reading 256MB (this may a few minutes...)\n");
+			blobFileLength=(256*1024*1024);
+		}
+	}
+	else
+	{
+		printf("\nReading standard file.\n");
+
+		fseek(sourceFile, 0, SEEK_END);				//Get file length
+		blobFileLength=ftell(sourceFile);			// Store this for later
+		fseek(sourceFile, 0, SEEK_SET);
+
+		// Cap limit on read amount to what we can use
+		if(blobFileLength>(256*1024*1024))	// Only 256MB of samples possible
+		{
+			blobFileLength=(256*1024*1024);
+			printf("Only using useful sample area (first 256MB) of passed file.");
+		}
+	}
 
 	//Allocate memory
 	buffer=(char *)malloc(blobFileLength+1);
@@ -389,7 +443,7 @@ int main(int argc, char *argv[])
 	{
 		fprintf(stderr, "Error in WTPA2 file header, exiting.\n");
 		return;
-	}	
+	}
 
 	// Good header, have samples.  Read them in.
 
@@ -397,10 +451,10 @@ int main(int argc, char *argv[])
 	if(MakeAiffDirectory()==false)
 	{
 		fprintf(stderr, "Couldn't make directory to store AIFFs, exiting.\n");
-		return;	
+		return;
 	}
-	
-	// Go through all samples and put them in the directory	
+
+	// Go through all samples and put them in the directory
 	for(i=0;i<NUM_SAMPLES_MAX;i++)
 	{
 		if(sampleInSlot[i])		// NOTE -- you can "force" an erased sample to be read back by making this check true (erasing just clears a bit in the TOC, the sample is still there until overwritten)
