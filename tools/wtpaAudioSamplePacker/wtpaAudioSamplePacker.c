@@ -412,14 +412,18 @@ int main(int argc, char *argv[])
 
     DIR* 
     	directoryDescriptor;
-    struct dirent*
-    	directoryEntry;
+//    struct dirent*
+//    	directoryEntry;
     FILE
     	*outFile;
     FILE
     	*targetFile;
 
 
+	struct
+		dirent **namelist;
+	int
+		numEntriesInDirectory;
 
 	if(argc!=2)		// One argument allowed
 	{
@@ -434,106 +438,89 @@ int main(int argc, char *argv[])
 		return(1);	
 	}
 	
-    outFile=fopen("./wtpa2SampleImage", "w");	// Open our output file
+	//printf("Target Dir = %s\n",targetDirName);
+
+    numEntriesInDirectory=scandir(targetDirName,&namelist,0,alphasort);		// Scandir and alphasort will give you a sensical order to the files in the directory, as opposed to iterating through the directory with readdir() which is pretty much random
+
+	if(numEntriesInDirectory<0)		// Bail if we can't sort directory
+	{
+	    fprintf(stderr, "Error: Failed to scan target directory - %s\n", strerror(errno));
+        return(1);
+	}
+	else if(numEntriesInDirectory<=2)	// Dot and dot-dot will still exist in an empty directory
+	{
+		printf("No files in source directory!  Even I can't make something from nothing.  Exiting.\n");
+		free(namelist);
+        return(0);	
+	}
+
+    outFile=fopen("./wtpa2SampleImage", "w");	// Probably have real input fules, so open our output file for writing
     if(outFile==NULL)
     {
         fprintf(stderr, "Error: Failed to open outFile - %s\n", strerror(errno));
+		free(namelist);
         return(1);
     }
 
-printf("Target Dir = %s\n",targetDirName);
-
-
-
-
-struct dirent **namelist;
-
-
-    j = scandir(targetDirName, &namelist, 0, alphasort);
-    if (j < 0)
-        perror("scandir");
-    else {
-        for (i = 0; i < j; i++) {
-            printf("%s\n", namelist[i]->d_name);
-            free(namelist[i]);
-            }
-        }
-    free(namelist);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-    if(NULL==(directoryDescriptor=opendir(targetDirName)))		// Open our input directory
+    for(i=0;i<numEntriesInDirectory;i++)	// Loop through everything in the directory
     {
-        fprintf(stderr, "Error: Failed to open input directory - %s\n", strerror(errno));
-        fclose(outFile);
-        return(1);
-    }
-
-
-    while((directoryEntry=readdir(directoryDescriptor)))		// Loop through everything in the directory
-    {
-        if(!strcmp(directoryEntry->d_name,"."))		// Skip current directory
+        if(!strcmp(namelist[i]->d_name,"."))		// Skip current directory
 		{
             continue;
         }
-        if(!strcmp(directoryEntry->d_name,".."))	// Skip parent directory
+        if(!strcmp(namelist[i]->d_name,".."))		// Skip parent directory
         { 
             continue;
         }
 
-        //targetFile=fopen(directoryEntry->d_name,"r");	// Open up this file for reading
-        //targetFile=fopen((realpath(directoryEntry->d_name,pathBuf)),"r");	// Open up this file for reading
+		strcpy(pathBuf,targetDirName);				// Since d_name just gives you the filename in the directory, we need to stick the target folder path on.
+		strcat(pathBuf,namelist[i]->d_name);
 
-		realpath(directoryEntry->d_name,pathBuf);	// Get absolute path to file
-
-printf("dname = %s\n",directoryEntry->d_name);
-printf("realpath = %s\n",pathBuf);
-
-		strcpy(pathBuf,targetDirName);
-		strcat(pathBuf,directoryEntry->d_name);
-
-printf("Combined Path = %s\n",pathBuf);
-
-
+		//printf("Combined Path = %s\n",pathBuf);
 
         targetFile=fopen(pathBuf,"r");				// Open up this file for reading
 
         if(targetFile==NULL)
         {
-            fprintf(stderr, "Error: Failed to open %s in target directory - %s\n",directoryEntry->d_name,strerror(errno));
+            fprintf(stderr, "Error: Failed to open %s in target directory - %s\n",namelist[i]->d_name,strerror(errno));
             fclose(outFile);
+			free(namelist);
             return(1);
         }
 
-		printf("Opened %s\n",directoryEntry->d_name);
+		printf("Opened %s -- ",namelist[i]->d_name);
+
+		fseek(targetFile,0,SEEK_SET);	// Point at beginning of file
+		
+		if(fgetc(targetFile)!='F')		// Read magic AIFF sequence
+		{
+			printf("Not an AIFF!\n");		
+		}
+		else
+		{
+			printf("AIFF Ahoy!\n");					
+		}
+
 		// Check FORM
 		// Check AIFF
 		// Check size <512k (plus AIFF headers)
 		// Check bit depth less than 8
 		// Get sample rate
 		// Get sample length
-		
+		// Inhale file and stick it in output file at the correct offset
+		// @@@ get rid of all these unused variables
 
         fclose(targetFile);
     }
-*/
 
+	// Write TOC / Header to outfile
+
+	free(namelist);
     fclose(outFile);
-//	closedir(directoryDescriptor);
+
+
+
+
 
 
 
@@ -547,7 +534,6 @@ printf("Combined Path = %s\n",pathBuf);
 
 
 /*
-
 
 	//Open file
 	sourceFile = fopen(argv[1], "rb");
