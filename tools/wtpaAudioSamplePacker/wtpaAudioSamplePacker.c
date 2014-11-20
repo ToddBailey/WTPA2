@@ -4,7 +4,7 @@
 
 
 // When pointed at a directory, takes all valid aiff files in that directory and makes them into a blob which can be put on a micro SD card
-// and played by a WTPA2.  File order is preserved.
+// and played by a WTPA2.  File order is preserved (ie, alphabetical)
 
 // NOTES:
 // ----------
@@ -98,9 +98,19 @@ typedef unsigned char bool;
 #define		false			(0)
 #define		true			(!(false))
 
-FILE *sourceFile;
-static char *buffer;
-static uint32_t blobFileLength;
+static char
+	*buffer;
+static uint32_t
+	targetFileLength;
+FILE
+	*targetFile;
+
+// @@@ KILL ME
+static uint32_t
+	blobFileLength;
+//FILE
+//	*sourceFile;
+
 
 static bool sampleInSlot[NUM_SAMPLES_MAX];		// Presence of sample in a given slot
 
@@ -117,7 +127,7 @@ static void Usage(void)
 {
 	printf("\n--AIFF to WTPA2 Sample Packer--\n");
 	printf("When pointed at a directory, this program will take all AIFF files in that directory and make them into an image\n");
-	printf("suitable for loading onto a WTPA2's SD card.  The order of the files in the folder is preserved.\n");
+	printf("suitable for loading onto a WTPA2's SD card.  The files are ordered alphabetically.\n");
 	printf("AIFF files must be mono, 8 or fewer bits per sample, and less than 512k bytes of audio data (the size of WTPA2's SRAM).\n"); 
 	printf("NOTE: the image must overwrite any filesystem on the SD card (ie, by using dd or the like) and cannot be dragged and dropped\n"); 
 	printf("onto a normal FAT formatted card.  Read the man page on dd and be careful not to accidentally hose your hard drive's MBR.\n\n"); 
@@ -390,6 +400,173 @@ static bool IsDirectory(char *path)
 	}	
 }
 
+static bool IsBitDepthCorrect(void)
+// Returns false if the sample has a bit depth greater than 8.
+// Look for the COMM chunk, then skip into it the right amount and get the bit depth
+{
+
+	char
+		searchChars[] = {'C','O','M','M'},
+		currentChar;
+	int
+		index,
+		indexInString;
+
+	index=0;
+	indexInString=0;
+
+	fseek(targetFile, 0, SEEK_SET);					// Go to beginning of file
+
+	while(index<=targetFileLength)					// Loop through whole file if needed
+	{
+		currentChar=getc(targetFile);				 // Get a character
+		index++;      
+
+		if(currentChar==searchChars[indexInString])	// In the string we're looking for, in the right position?
+		{
+			indexInString++;       					// Look for next
+			if(indexInString>3)						// Got the whole thing?
+			{   
+				break;								// Exit with our index in the right place
+			}
+		}
+		else										// No match with string
+		{ 
+			indexInString=0;                		// Look for first char of string again
+		}
+	 }
+
+	if(index<targetFileLength)						// Was this search string in the file?
+	{
+		fseek(targetFile,(index+11),SEEK_SET);		// Bit depth is 11 bytes out from the first byte after COMM
+		currentChar=getc(targetFile);
+		if(currentChar<=8)
+		{
+			return(true);
+		}	
+	}
+
+	return(false);
+}
+
+static bool IsCorrectSize(void)
+// Returns false if the sample is too big to fit in a sample slot.
+// IE, is <512k plus AIFF headers
+{
+	fseek(targetFile, 0, SEEK_END);				// Get file length
+	targetFileLength=ftell(targetFile);			// Store this for later
+	fseek(targetFile, 0, SEEK_SET);
+
+	if(targetFileLength>((512+1)*1024))			// Bigger than 512k plus a bit for the AIFF headers?
+	{
+		return(false);
+	}
+	return(true);
+}
+
+static bool IsAiff(void)
+// Check whether "FORM" and "AIFF" are in the right spots in this file
+{
+	fseek(targetFile,0,SEEK_SET);	// Point at beginning of file
+	
+	if(fgetc(targetFile)!='F')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='O')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='R')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='M')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+
+	fseek(targetFile,8,SEEK_SET);	// Point to "AIFF"
+
+	if(fgetc(targetFile)!='A')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='I')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='F')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+	if(fgetc(targetFile)!='F')		// Read magic AIFF sequence
+	{
+		return(false);		
+	}
+
+	fseek(targetFile,0,SEEK_SET);	// Point at beginning of file
+	return(true);
+}
+
+static bool IsLegit(void)
+// Can we work with this file?
+{
+	bool
+		legit;
+	
+	legit=true;
+	
+	if(!IsAiff())
+	{
+		legit=false;
+		printf("Not an AIFF!\n");		
+	}
+	else if(!IsCorrectSize())
+	{
+		legit=false;
+		printf("AIFF too long to fit in WTPA sample slot!\n");		
+	}
+	else if(!IsBitDepthCorrect())
+	{
+		legit=false;	
+		printf("Too many bits per sample!  You want more than 8, buy a real sampler.\n");		
+	}
+/*
+	else if(!IsMono())
+	{
+		legit=false;
+		printf("Stereo? OH YOU FANCY.\n");		
+	}
+*/
+
+	if(legit)
+	{
+		printf("A properly old-school AIFF.\n");			
+	}
+	return(legit);
+}
+
+static void GetSampleRate(void)
+{
+
+}
+
+static void UpdateToc(void)
+{
+
+}
+
+static void WriteSampleToOutputFile(void)
+{
+
+}
+
+static void WriteTocToOutputFile(void)
+{
+
+}
+
 // ---------------
 // Main Loop
 // ---------------
@@ -416,8 +593,6 @@ int main(int argc, char *argv[])
 //    	directoryEntry;
     FILE
     	*outFile;
-    FILE
-    	*targetFile;
 
 
 	struct
@@ -439,7 +614,8 @@ int main(int argc, char *argv[])
 	}
 	
 	//printf("Target Dir = %s\n",targetDirName);
-
+	
+	printf("\n--WTPA2 AIFF to Sample Converter--\n");
     numEntriesInDirectory=scandir(targetDirName,&namelist,0,alphasort);		// Scandir and alphasort will give you a sensical order to the files in the directory, as opposed to iterating through the directory with readdir() which is pretty much random
 
 	if(numEntriesInDirectory<0)		// Bail if we can't sort directory
@@ -461,6 +637,8 @@ int main(int argc, char *argv[])
 		free(namelist);
         return(1);
     }
+
+	printf("Beginning file check...\n");
 
     for(i=0;i<numEntriesInDirectory;i++)	// Loop through everything in the directory
     {
@@ -490,20 +668,20 @@ int main(int argc, char *argv[])
 
 		printf("Opened %s -- ",namelist[i]->d_name);
 
-		fseek(targetFile,0,SEEK_SET);	// Point at beginning of file
-		
-		if(fgetc(targetFile)!='F')		// Read magic AIFF sequence
+		if(IsLegit())	// Check criteria for using this file
 		{
-			printf("Not an AIFF!\n");		
-		}
-		else
-		{
-			printf("AIFF Ahoy!\n");					
+			GetSampleRate();			// Get this from the AIFF
+			UpdateToc();				// Log any data in info about WTPA header, write this at the end
+			WriteSampleToOutputFile();	// Write sample data to sample slot
 		}
 
-		// Check FORM
-		// Check AIFF
-		// Check size <512k (plus AIFF headers)
+
+
+
+
+
+
+
 		// Check bit depth less than 8
 		// Get sample rate
 		// Get sample length
@@ -513,8 +691,7 @@ int main(int argc, char *argv[])
         fclose(targetFile);
     }
 
-	// Write TOC / Header to outfile
-
+	WriteTocToOutputFile();		// Write TOC / Header to outfile
 	free(namelist);
     fclose(outFile);
 
@@ -641,5 +818,6 @@ int main(int argc, char *argv[])
 	free(buffer);		// This will complain if we change the buffer's address, so we have to make an alias (see above)
 	printf("Sample files successfully converted.\n\n");
 */
+	printf("Done!\n");
 	return(0);
 }
