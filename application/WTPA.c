@@ -66,6 +66,7 @@ static void PlaySampleFromSd(unsigned int theSlot);
 static void UpdateAdjustedSampleAddresses(unsigned char theBank);
 static void InitSdIsr(void);
 static void DoSampler(void);
+static void InitDpcm(void);
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
@@ -157,6 +158,9 @@ static unsigned char
 	encoderState,			// What the encoder switches look like.
 	encoderValue,			// Incremental ticks on the encoder.
 	scaledEncoderValue;		// The number that we display on the LEDs and use to select different effects and stuff.  Generated from the encoder reading.
+
+static bool
+	dpcmMode;				// Doing the DPCM loop?
 
 // Granular stuff
 //-----------------------------------------------------------------------
@@ -1980,7 +1984,6 @@ static void InitSampleClock(void)
 	TIFR1=0xFF;			// Clear the interrupt flags by writing ones.
 }
 
-
 //-----------------------------------------------------------------------
 // SD Memory/Filesystem handling:
 //-----------------------------------------------------------------------
@@ -2356,9 +2359,9 @@ static void UpdateCard(void)
 					}
 					else if(theByte==SD_TYPE_DPCM)	// Looks like Nintendo samples, uninitialize the normal sampler routines and get that going.
 					{
-						// @@@ Load up DPCM stuff
+						InitDpcm();					// WOOO LETS GET TRIFORCE TATTOOS! 
+						cardState=SD_IDLE;			// Card is legit and ready to go.
 					}
-
 					else	// Valid card, but either invalid filesystem or BOOT card.  Vector to "are you sure" state and give user the option to Format the card.
 					{
 						cardState=SD_INVALID;	// Don't let the state machine mess with the card while it's being Formatted.
@@ -3176,6 +3179,557 @@ static void PlaySampleFromSd(unsigned int theSlot)
 	}
 */
 //}
+
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+// DPCM Handling:
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+
+// Nintendo DPCM-sample playing code
+// Andrew Reitano wrote this sometime around Novermber 16, 2011
+// TMB made it play nice with mainline WTPA code in 2013.
+// Fri Nov  1 17:56:04 EDT 2013
+
+// Currently, WTPA will turn into a DPCM sample player if the user puts a card full of DPCM samples into the uSD card slot.
+// The SD card access routines are the same as ever, but if the header on the card is correct, WTPA will shut down normal functionality, vector here,
+// and load the SRAM with 128 4kB samples.
+
+// Samples don't necessarily fill all 4kB, but that's the max length.
+// Samples can be played via MIDI or via the control switches, although the clock rate is set by the master VCO.
+// You'll need to ask Andy what (if anything) makes Nintendo DPCM different than normal DPCM.
+
+// Fri Nov  1 18:12:52 EDT 2013
+// Questions for Andy --
+//	ADC?
+// 	Handling of pausing interrupts (random sei() calls)
+//	Not returning ramped down output to audio DAC
+//	Probably makes sense to clean up main WTPA interrupts before shoehorning this one in.
+
+// Fri Nov 21 15:18:18 EST 2014
+// Resolved.
+// TMB
+
+// NOTE:  Most of the notes below are Andrew's.
+
+// Supporting 4 x DMC channels
+struct dpcmChannelStruct
+{
+	unsigned long 
+		currentAddress,
+		endAddress;
+	unsigned char
+		sampleNumber,
+		bitIndex;
+	signed char
+		deltaTrack;
+	bool
+		isPlaying;
+};
+
+static struct dpcmChannelStruct dmcChannels[4];
+
+static unsigned long
+	dpcmSampleLength[128];		// 4 byte value for each sample read from block immediately after sample data	-- @@@ OMFG ANDREW YOU THINK IM MADE OUT OF RAM???
+static unsigned char
+	dpcmSampleAssignment[8];	// Sample assignment to switches for one-shot playback
+
+//-----------------------------------------------------------------------------
+// DPCM Error Handling:
+//-----------------------------------------------------------------------------
+
+// Crappy function to indicate that something has failed in absence of a printf
+// Don't leave this function (while 1) since we're not interested in going further
+static void ShowFailure(unsigned char pattern)
+{	
+	cli();						// Why bother... it's all over..
+	
+	WriteLedLatch(pattern);		
+	while(1)				
+	{
+		SetTimer(TIMER_SD,(SECOND/2));
+		while (!CheckTimer(TIMER_SD))
+		{
+			HandleSoftclock();
+		}
+		pattern ^= 0xFF;		// Toggle LEDs to absolutely dazzle the user
+		WriteLedLatch(pattern);
+	}
+}
+
+//-----------------------------------------------------------------------------
+// DPCM RAM Access:
+//-----------------------------------------------------------------------------
+
+/*
+static void ClearRAM(void)
+{
+	for(int i=0; i < 0x1000; i++)
+	{
+		WriteRAM(i, 0);
+		WriteLedLatch(i / (0x80000 >> 8));
+	}
+}
+*/
+
+static unsigned char ReadRAM(unsigned long address)
+{
+	unsigned char
+		temp;
+	
+	// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
+	LATCH_PORT=(address);				// Put the LSB of the address on the latch.
+	PORTA|=(Om_RAM_L_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_L_ADR_LA);			// ...Keep it there.
+	
+	LATCH_PORT=(address>>8);			// Put the middle byte of the address on the latch.
+	PORTA|=(Om_RAM_H_ADR_LA);			// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_H_ADR_LA);			// ...Keep it there.
+	
+	PORTC=((0x88|((address>>16)&0x07)));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	
+	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
+	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
+	
+	// NOP(s) here?
+	asm volatile("nop"::);				// Just in case the RAM needs to settle down
+	asm volatile("nop"::);
+	
+	// Finish getting the byte from RAM.
+	
+	temp=LATCH_INPUT;					// Get the byte from this address in RAM.
+	PORTA|=(Om_RAM_OE);					// Tristate the RAM.
+	LATCH_DDR=0xFF;						// Turn the data bus around (AVR's data port to outputs)
+	
+	return temp;
+}
+
+static void WriteRAM(unsigned long address, unsigned char value)
+{
+	LATCH_DDR=0xFF;						// Data bus to output -- we never need to read the RAM in this version of the ISR.
+	
+	LATCH_PORT=(address);	// Put the LSB of the address on the latch.
+	PORTA|=(Om_RAM_L_ADR_LA);								// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_L_ADR_LA);								// ...Keep it there.
+	
+	LATCH_PORT=((address>>8));	// Put the middle byte of the address on the latch.
+	PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
+	PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
+	
+	PORTC=(0x88|((address>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	
+	LATCH_PORT=value;				// Put the data to write on the RAM's input port
+	
+	// Finish writing to RAM.
+	PORTA&=~(Om_RAM_WE);				// Strobe Write Enable low.  This latches the data in.
+	PORTA|=(Om_RAM_WE);					// Disbale writes.
+}
+
+// Junk function to expand blocks stored on uSD card 1 to 1 to RAM
+static void SdToRam(void)
+{
+	static unsigned long 
+		currentAddress;
+	static unsigned char
+		currentByte;
+
+	currentAddress = 0;
+	
+/*
+	SetTimer(TIMER_SD,SECOND);
+	while(!CheckTimer(TIMER_SD))
+	{	
+		HandleSoftclock();
+	}
+	if(SdHandshake() == false)
+	{
+		ShowFailure(0x55);	// Branch off here and never come back if we don't have an SD card
+	}
+*/	
+//	for(int blockNum = 0; blockNum < (8*128); blockNum++)	// 8 blocks * 128 samples * 512B = 512KB 
+	for(int blockNum = 1; blockNum < ((8*128)+1); blockNum++)	// 8 blocks * 128 samples * 512B = 512KB (and skip header page)
+	{
+		StartSdTransfer();
+		
+		if(SdBeginSingleBlockRead(blockNum) == true)
+		{
+			SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+			
+			while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+			{
+				HandleSoftclock();	// Kludgy
+			}
+			
+			for(int i=0; i < 512; i++)
+			{
+				currentByte = TransferSdByte(DUMMY_BYTE);
+				WriteRAM(currentAddress, currentByte);
+				currentAddress++;
+			}
+			TransferSdByte(DUMMY_BYTE);		// Eat a couple of CRC bytes
+			TransferSdByte(DUMMY_BYTE);
+			
+			WriteLedLatch(blockNum / 8);	// Show progress
+		}
+		else 
+		{
+			ShowFailure(0x03);
+		}
+		
+		while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+			;
+		
+		EndSdTransfer();				// Bring CS high
+	}
+	
+	
+	// BULLSHIT LENGTH CALCULATION - stored as 4-byte values on the block immediately after the 512KB sample data
+	static unsigned long
+		charToInt[4];
+
+	StartSdTransfer();
+	
+//	if(SdBeginSingleBlockRead(1024) == true)
+	if(SdBeginSingleBlockRead(1024+1)==true)	// Include offset for header page
+	{
+		SetTimer(TIMER_SD,(SECOND/10));		// 100mSecs timeout
+		
+		while((!(CheckTimer(TIMER_SD)))&&(TransferSdByte(DUMMY_BYTE)!=0xFE))	// Wait for the start of the packet.  Could take 100mS
+		{
+			HandleSoftclock();	// Kludgy
+		}
+				
+		for(unsigned char j=0; j < 128; j++)
+		{			
+			charToInt[0] = TransferSdByte(DUMMY_BYTE);
+			charToInt[1] = TransferSdByte(DUMMY_BYTE);
+			charToInt[2] = TransferSdByte(DUMMY_BYTE);
+			charToInt[3] = TransferSdByte(DUMMY_BYTE);
+			
+			dpcmSampleLength[j] = (charToInt[3] << 24) | (charToInt[2] << 16) | (charToInt[1] << 8) | (charToInt[0]);	// There might be a function to do this - whatever.
+			//dpcmSampleLength[j] = 0x1000;	// Debug fixed length	
+		}
+		TransferSdByte(DUMMY_BYTE);		// Eat a couple of CRC bytes
+		TransferSdByte(DUMMY_BYTE);
+	}
+	else 
+	{
+		ShowFailure(0x03);
+	}
+	
+	while(!(UCSR1A&(1<<TXC1)))	// Spin until the last clocks go out
+		;
+		
+	EndSdTransfer();				// Bring CS high
+	
+
+	UnInitSdInterface();
+	WriteLedLatch(0x01);
+}
+
+//-----------------------------------------------------------------------------
+// DPCM interrupts and audio output
+//-----------------------------------------------------------------------------
+
+// DPCM implementation - 1-bit delta sample storage
+// NES sample encoding works like this:
+// 1) Sample IRQ causes the CPU to fetch a byte from a pointer in memory and places it in a buffer
+// 2) Counter is reset - clocked by (~22KHz?) drives out a single bit at a time
+// 3) Waveform DAC adjusts a fixed amount based on the bit (0=-x / 1=+x)
+// 4) When counter has reached 8 and the buffer is exhausted address is incremented and the sample IRQ (fetch byte) is triggered again
+// 5) Internal counter keeps track of length and ends if not in "loop mode"
+static volatile inline signed char UpdateDpcmChannel(unsigned char i)
+{
+	if(dmcChannels[i].isPlaying == 1)
+	{
+		if (((ReadRAM(dmcChannels[i].currentAddress) >> dmcChannels[i].bitIndex) & 0x01) == 0)		// Right shift register driven by an 8-bit counter - only interested in a single bit
+		{
+			dmcChannels[i].deltaTrack -= 1;	   // Apply delta change
+		}
+		else 
+		{
+			dmcChannels[i].deltaTrack += 1;
+		}
+		
+		dmcChannels[i].bitIndex++;				// Increment counter
+		
+		if(dmcChannels[i].bitIndex == 8)		// If we've shifted out 8 bits fetch a new byte and reset counter
+		{
+			dmcChannels[i].bitIndex = 0;
+			dmcChannels[i].currentAddress++;
+		}
+		
+		if(dmcChannels[i].currentAddress == dmcChannels[i].endAddress)	// Did we reach the end?
+		{
+			dmcChannels[i].currentAddress = 0;							// If so, reset parameters and free the channel
+			dmcChannels[i].bitIndex = 0;
+			//dmcChannels[i].deltaTrack = 0;
+			dmcChannels[i].isPlaying = 0;
+		}
+		
+		return(dmcChannels[i].deltaTrack);
+	}	
+	else 
+	{
+		// Else the channel is inactive, if it's not already 0 then let's gently put it there
+		if(dmcChannels[i].deltaTrack > 0)
+		{
+			dmcChannels[i].deltaTrack--;
+		}
+		else if(dmcChannels[i].deltaTrack < 0)
+		{
+			dmcChannels[i].deltaTrack++;
+		}
+
+		return(dmcChannels[i].deltaTrack);	// @@@ don't we need to return this?  Added it in, Andy didn't have it.  --TMB
+	}
+}
+
+static void DpcmCallback(volatile BANK_STATE *theBank)
+// HAAAAY BATSLY
+// Interrupt callback which spits out audio in DPCM mode
+{
+	signed int
+		sum0;				// Temporary variables for saturated adds, multiplies, other math.
+	static unsigned char
+		lastDacByte;		// Very possible we haven't changed output values since last time (like for instance we're recording) so don't bother strobing it out (adds noise to ADC)
+
+	unsigned char
+		output;				// What to put on the DAC
+	
+	sum0=UpdateDpcmChannel(0)+UpdateDpcmChannel(1)+UpdateDpcmChannel(2)+UpdateDpcmChannel(3);	// Sum everything that might be involved in our output waveform -- @@@ TMB this is pretty slow, but since we're only using one ISR it's probably fine
+	
+	if(sum0>127)		// Pin high.
+	{
+		sum0=127;
+	}
+	else if(sum0<-128)		// Pin low.
+	{
+		sum0=-128;
+	}
+	output=(signed char)sum0;	// Cast back to 8 bits.
+	output^=(0x80);				// Make unsigned again (shift 0 up to 128, -127 up to 0, etc)
+
+	if(output!=lastDacByte)	// Don't toggle PORTA pins if you don't have to (keep ADC noise down)
+	{
+		LATCH_DDR=0xFF;			// Turn the data bus around (AVR's data port to outputs)
+
+		LATCH_PORT=output;		// Put the output on the output latch's input.
+		PORTA|=(Om_DAC_LA);		// Strobe dac latch enable high -- this puts the output on the 373's output...
+		PORTA&=~(Om_DAC_LA);	// ...And keeps it there.
+	}
+
+	lastDacByte=output;		// Flag this byte has having been spit out last time.
+}
+
+//-----------------------------------------------------------------------------
+// DPCM Sample Handling:
+//-----------------------------------------------------------------------------
+
+// Find an open channel and direct it to start playing a sample
+// We might need to disable interrupts before we do this
+static void PlayDpcmSample(unsigned long sampleNumber)
+{
+	unsigned char
+		sreg;
+	
+	if(sampleNumber<128)	// Bound to max number of nintendo samples, change later if needed
+	{
+		sreg=SREG;
+		cli();
+		for(unsigned char i=0; i < 4; i++)
+		{
+			if(dmcChannels[i].isPlaying == 0)
+			{
+				dmcChannels[i].isPlaying = 1;							// Let UpdateDpcmChannel() know to start playing
+				dmcChannels[i].currentAddress = (sampleNumber << 12);   // Which 4K sample? (* 4096)
+				dmcChannels[i].endAddress = (dmcChannels[i].currentAddress + dpcmSampleLength[sampleNumber]); //*4096	// Use the whole bank for now - until I figure out to index
+				
+				// DEBUG fixed sample length
+				//dmcChannels[i].endAddress = (dmcChannels[i].currentAddress + 0x400);
+				// DEBUG play all of RAM
+				//dmcChannels[i].endAddress = 0x80000;
+				
+				// Reset our other parameters
+				dmcChannels[i].bitIndex = 0;
+				dmcChannels[i].deltaTrack = 0;
+				break;
+			}
+			
+			// Else we're all busy - take a hike kid.
+		}
+	//	sei();
+		SREG=sreg;
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Main DPCM Loop:
+//-----------------------------------------------------------------------------
+
+static void HandleDpcm(void)
+{
+	static unsigned char 
+		oldEncoderState,
+		setMode;		
+		
+	if(oldEncoderState != encoderValue)
+	{
+		oldEncoderState = encoderValue;
+
+		if(encoderValue>127)	// Pin to max number of samples
+		{
+			encoderValue=0;
+		}
+
+		WriteLedLatch(encoderValue);
+		PlayDpcmSample(encoderValue);
+	}
+	
+	// Wasteful code for these switches - just here for a demo - MIDI is where it's at
+	if(newKeys&Im_SWITCH_0)
+	{
+		if(setMode)							// If you hit the 8th switch
+		{
+			dpcmSampleAssignment[0] = encoderValue;	// Take on that value
+		}
+		PlayDpcmSample(dpcmSampleAssignment[0]);	// Preview sound that has just been written
+		WriteLedLatch(0x01);				// Indicate bank slot
+		setMode = 0;					    // Clear set mode and go back to playing on press
+	}
+	
+	// Copy pasta v
+	if(newKeys&Im_SWITCH_1)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[1] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[1]);
+		WriteLedLatch(0x02);
+		setMode = 0;
+	}	
+	if(newKeys&Im_SWITCH_2)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[2] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[2]);
+		WriteLedLatch(0x04);
+		setMode = 0;
+	}
+	if(newKeys&Im_SWITCH_3)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[3] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[3]);
+		WriteLedLatch(0x08);
+		setMode = 0;
+	}
+	if(newKeys&Im_SWITCH_4)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[4] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[4]);
+		WriteLedLatch(0x10);
+		setMode = 0;
+	}	
+	if(newKeys&Im_SWITCH_5)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[5] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[5]);
+		WriteLedLatch(0x20);
+		setMode = 0;
+	}
+	if(newKeys&Im_SWITCH_6)
+	{
+		if(setMode)
+		{
+			dpcmSampleAssignment[6] = encoderValue;
+		}
+		PlayDpcmSample(dpcmSampleAssignment[6]);
+		WriteLedLatch(0x40);
+		setMode = 0;
+	}
+
+	// Set mode assigns samples to the switch
+	if(newKeys&Im_SWITCH_7)
+	{
+		setMode = 1;
+		WriteLedLatch(0x80);
+	}
+
+	if((keyState&Im_SWITCH_7)&&(keyState&Im_SWITCH_6)&&(keyState&Im_SWITCH_5))	// Bail!  If we have an SD card in the slot we'll come back here, otherwise back to normal sampler function
+	{
+		cli();
+		asm volatile("jmp 0000");	// Jump to normal reset vector -- start application
+	}
+		
+	// Deal with MIDI
+
+	static MIDI_MESSAGE
+		currentMidiMessage;				// Used to point to incoming midi messages.
+	
+	GetMidiMessageFromIncomingFifo(&currentMidiMessage);
+	
+	if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_ON)		// Note on.
+	{
+		WriteLedLatch(currentMidiMessage.dataByteOne);
+		PlayDpcmSample(currentMidiMessage.dataByteOne);					// Playsample sets isPlaying flag LAST to prime it, avoids any problems with the interrupt jumping in the middle of a load
+		currentMidiMessage.messageType = IGNORE_ME;					// Crumby way to operate especially with all the information available from midi.c - but only look for a NOTE_ON to be simple (drumkit)
+	}		
+}
+
+//-----------------------------------------------------------------------------
+// Initialize WTPA for DPCM functions
+//-----------------------------------------------------------------------------
+
+static void InitDpcm(void)
+// Called when we want to go into DPCM playback mode (TMB)
+// Basically stop all interrupts and get them set up for DPCM
+{
+	unsigned char
+		sreg;
+	
+	sreg=SREG;
+	cli();
+
+	TIMSK1&=~(1<<ICIE1);	// Disable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
+	TIFR1|=(1<<ICF1);		// Clear the interrupt flag by writing a 1.
+	PCICR=0;				// No global PCINTS.
+	PCMSK2=0;				// No PORTC interrupts enabled.
+	TIMSK1&=~(1<<OCIE1A);	// Disable the compare match interrupt.
+	TIFR1|=(1<<OCF1A);		// Clear the interrupt flag by writing a 1.
+	TIMSK1&=~(1<<OCIE1B);	// Disable the compare match interrupt.
+	TIFR1|=(1<<OCF1B);		// Clear the interrupt flag by writing a 1.
+
+	sdStreamOutput=0;						// @@@ Not even sure we need to do this, since we set this to 0 when the ISR stops.  If we aborted during playback, this would be necessary.
+	bankStates[BANK_0].audioOutput=0;	// Voids contribution that this audio source has to the output.
+	bankStates[BANK_1].audioOutput=0;	// Voids contribution that this audio source has to the output.
+
+	SdToRam();	// Inhale DPCM into SRAM
+
+	// Turn on analog clock interrupts for DPCM use
+	TCCR1B|=(1<<ICES1);		// Trigger on a rising edge.
+	TIFR1|=(1<<ICF1);		// Clear Input Capture interrupt flag.
+	TIMSK1|=(1<<ICIE1);		// Enable Input Capture Interrupt (yo, son, I thought I was the Icy One?)
+
+	AudioCallback0=DpcmCallback;	// Set the ISR to do DPCM stuff
+	SetState(HandleDpcm);		
+	InitLeds();						// Stop any blinking
+
+	dpcmMode=true;
+
+	SREG=sreg;
+}
 
 //--------------------------------------
 //--------------------------------------
@@ -5049,6 +5603,7 @@ int main(void)
 	keyState=0;
 	cardState=SD_NOT_PRESENT;	// No card yet
 	cardDetect=false;
+	dpcmMode=false;
 
 	sei();						// THE ONLY PLACE we should globally enable interrupts in this code.
 

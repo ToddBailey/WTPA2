@@ -9,7 +9,7 @@
 
 // Samples don't necessarily fill all 4kB, but that's the max length.
 // Samples can be played via MIDI or via the control switches, although the clock rate is set by the master VCO.
-// You'll need to ask Andy what if anything makes Nintendo DPCM different than normal DPCM if anything.
+// You'll need to ask Andy what (if anything) makes Nintendo DPCM different than normal DPCM.
 
 // Fri Nov  1 18:12:52 EDT 2013
 // Questions for Andy --
@@ -18,7 +18,9 @@
 //	Not returning ramped down output to audio DAC
 //	Probably makes sense to clean up main WTPA interrupts before shoehorning this one in.
 
-
+// Fri Nov 21 15:18:18 EST 2014
+// Resolved.
+// TMB
 
 
 //-----------------------------------------------------------------------------
@@ -65,7 +67,7 @@ static void ClearRAM(void)
 
 static unsigned char ReadRAM(unsigned long address)
 {
-	static unsigned char
+	unsigned char
 		temp;
 	
 	// Read memory (as of now all audio functions end with the LATCH_DDR as an output so we don't need to set it at the beginning of this function)
@@ -244,6 +246,11 @@ static struct channelStruct dmcChannels[4];
 // We might need to disable interrupts before we do this
 static void PlaySample(unsigned long sampleNumber)
 {
+	unsigned char
+		sreg;
+	
+	sreg=SREG;
+
 	cli();
 	for(unsigned char i=0; i < 4; i++)
 	{
@@ -266,7 +273,8 @@ static void PlaySample(unsigned long sampleNumber)
 		
 		// Else we're all busy - take a hike kid.
 	}
-	sei();
+//	sei();
+	SREG=sreg;
 }
 
 // DPCM implementation - 1-bit delta sample storage
@@ -371,6 +379,19 @@ ISR(TIMER1_CAPT_vect)
 // Removed the ADC code -- Andy left it in but I don't think we used it for anything.
 {
 	OutputAudio();				// Let's do this thang
+}
+
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+// Initialize WTPA for DPCM functions
+//-----------------------------------------------------------------------------
+//-----------------------------------------------------------------------------
+
+static void InitDpcm(void)
+// Called when we want to go into DPCM playback mode (TMB)
+// 
+{
+
 }
 
 //-----------------------------------------------------------------------------
