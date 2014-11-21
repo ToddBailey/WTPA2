@@ -9,7 +9,6 @@
 // NOTES:
 // ----------
 
-
 // AIFF Stuff came from here:
 // http://paulbourke.net/dataformats/audio/  (Thanks to Paul Bourke)
 // http://www.onicos.com/staff/iz/formats/aiff.html
@@ -739,7 +738,40 @@ static void WriteTocToOutputFile(void)
 // Write canonical WTPA2 header.
 // Take the number of samples we wrote and make them into a bitfield.
 {
+	int
+		i,bytesSet,bitsInPartialByte,partialByte;
 
+	fseek(outFile,0,SEEK_SET);		// Go to beginning of file (512 byte block)
+	fprintf(outFile,"WTPASAMP");	// ID this as a WTPA2 sd card which holds samples
+
+	fseek(outFile,16,SEEK_SET);		// Go to beginning of TOC
+	for(i=0;i<64;i++)				// Zero out TOC
+	{
+		fputc(0,outFile);
+	}
+
+	fseek(outFile,16,SEEK_SET);		// Go to beginning of TOC, set bits in TOC according to how many samples we have (always sequential)
+
+	bytesSet=sampleIndex/8;				// Number of full bytes set in TOC
+	bitsInPartialByte=sampleIndex%8;	// Slots left over after full bytes
+
+	if(bytesSet)	// Any full bytes?
+	{
+		for(i=0;i<bytesSet;i++)
+		{
+			fputc(0xFF,outFile);
+		}
+	}
+
+	if(bitsInPartialByte)	// Part of a byte left over?
+	{
+		partialByte=0;
+		for(i=0;i<bitsInPartialByte;i++)
+		{
+			partialByte|=(1<<i);
+		}	
+		fputc(partialByte,outFile);
+	}
 }
 
 // ---------------
@@ -854,6 +886,12 @@ int main(int argc, char *argv[])
 		// @@@ get rid of all these unused variables
 
         fclose(targetFile);
+
+		if(sampleIndex>=NUM_SAMPLES_MAX)
+		{
+			printf("Reached max number of samples (512) possible on WTPA2 SD Card, stopping!\n");
+			break;
+		}
     }
 
 	WriteTocToOutputFile();		// Write TOC / Header to outfile
@@ -983,6 +1021,6 @@ int main(int argc, char *argv[])
 	free(buffer);		// This will complain if we change the buffer's address, so we have to make an alias (see above)
 	printf("Sample files successfully converted.\n\n");
 */
-	printf("Done!\n");
+	printf("Done!\n\n");
 	return(0);
 }
