@@ -104,6 +104,8 @@ static uint32_t
 	targetFileLength;
 FILE
 	*targetFile;
+FILE
+	*outFile;
 
 // @@@ KILL ME
 static uint32_t
@@ -111,6 +113,12 @@ static uint32_t
 //FILE
 //	*sourceFile;
 
+static unsigned int
+	sampleIndex;
+
+static char
+	commChunkId[4]={'C','O','M','M'},
+	soundChunkId[4]={'S','S','N','D'};
 
 static bool sampleInSlot[NUM_SAMPLES_MAX];		// Presence of sample in a given slot
 
@@ -400,55 +408,141 @@ static bool IsDirectory(char *path)
 	}	
 }
 
-static bool IsBitDepthCorrect(void)
-// Returns false if the sample has a bit depth greater than 8.
-// Look for the COMM chunk, then skip into it the right amount and get the bit depth
+static int FindPatternInFile(char *pattern,unsigned int patternLength,FILE *theFile,unsigned int startingIndex)
+// Given the passed pattern of bytes (or chars) of the passed length, search the passed file beginning from the passed index
+// until either an instance of that pattern is found or the file ends.
+// Return the location of the first character after the first time the pattern is found, or -1 if it is not found.
+// NOTE -- to find the pattern a second time in a file you can call this again with the returned location, etc.
+// Basically stolen from Igor at:
+// http://stackoverflow.com/questions/1541779/search-for-binary-pattern-in-c-read-buffered-binary-file
 {
-
 	char
-		searchChars[] = {'C','O','M','M'},
 		currentChar;
 	int
+		theFileLength,
 		index,
-		indexInString;
+		indexInPattern;
 
-	index=0;
-	indexInString=0;
 
-	fseek(targetFile, 0, SEEK_SET);					// Go to beginning of file
+	index=startingIndex;
+	indexInPattern=0;
 
-	while(index<=targetFileLength)					// Loop through whole file if needed
+	fseek(theFile, 0, SEEK_END);				// Get file length
+	theFileLength=ftell(theFile);			// Store this for later
+	fseek(theFile, 0, SEEK_SET);				// Go to beginning of file
+
+	while(index<=theFileLength)					// Loop through whole file if needed
 	{
-		currentChar=getc(targetFile);				 // Get a character
+		currentChar=getc(theFile);				 // Get a character
 		index++;      
 
-		if(currentChar==searchChars[indexInString])	// In the string we're looking for, in the right position?
+		if(currentChar==pattern[indexInPattern])		// In the string we're looking for, in the right position?
 		{
-			indexInString++;       					// Look for next
-			if(indexInString>3)						// Got the whole thing?
+			indexInPattern++;       					// Look for next
+			if(indexInPattern>=patternLength)			// Got the whole thing?
 			{   
-				break;								// Exit with our index in the right place
+				break;					// Exit with our index in the right place
 			}
 		}
-		else										// No match with string
+		else							// No match with string
 		{ 
-			indexInString=0;                		// Look for first char of string again
+			indexInPattern=0;			// Look for first char of string again
 		}
 	 }
 
-	if(index<targetFileLength)						// Was this search string in the file?
+	if(index<=theFileLength)			// Was this search string in the file?
 	{
-		fseek(targetFile,(index+11),SEEK_SET);		// Bit depth is 11 bytes out from the first byte after COMM
-		currentChar=getc(targetFile);
-		if(currentChar<=8)
+		return(index);					// Point to next character
+	}
+
+	return(-1);							// Not found
+}
+
+static bool IsMono(void)
+// Returns false if the sample has more (or less) than one channel
+// Look for the COMM chunk, then skip into it the right amount and get the number of channels
+{
+	int
+		index;
+	unsigned char
+		numChannels;
+
+	index=FindPatternInFile(commChunkId,4,targetFile,0);		// Find location of first "COMM" in the file
+
+	if(index>0)		// Found it?
+	{
+		fseek(targetFile,(index+5),SEEK_SET);		// Number of channels is 5 bytes out from the first byte after COMM
+		numChannels=getc(targetFile);
+		if(numChannels==1)							// Only deal with mono.  I suppose we could accidentally pass a file with 257 channels since the AIFF format specifies two bytes for this, but.		
 		{
 			return(true);
-		}	
+		}		
 	}
 
 	return(false);
 }
 
+static bool IsBitDepthCorrect(void)
+// Returns false if the sample has a bit depth greater than 8.
+// Look for the COMM chunk, then skip into it the right amount and get the bit depth
+{
+	int
+		index;
+	unsigned char
+		bitDepth;
+
+	index=FindPatternInFile(commChunkId,4,targetFile,0);		// Find location of first "COMM" in the file
+
+	if(index>0)		// Found it?
+	{
+		fseek(targetFile,(index+11),SEEK_SET);		// Bit depth is 11 bytes out from the first byte after COMM
+		bitDepth=getc(targetFile);
+		if(bitDepth<=8)								// 8 bits or less?
+		{
+			return(true);
+		}		
+	}
+
+	return(false);
+}
+
+static bool CheckRecommendedSampleRate(void)
+// Returns true if the sample rate is 22050.
+// WTPA2 (currently) discards the sample rate info and will assign an arbitrary sample rate of 22050 when converting BACK from WTPA to AIFF.
+// 22050 is also squarely in WTPA2's sample clock range.
+// If you use a different rate, then convert back, your sample will revert to 22050 and change tempo.
+// Look for the COMM chunk, then skip into it the right amount and get the sample rate
+{
+	int
+		index;
+	unsigned char
+		bitDepth;
+
+	index=FindPatternInFile(commChunkId,4,targetFile,0);		// Find location of first "COMM" in the file
+
+	if(index>0)		// Found it?
+	{
+		fseek(targetFile,(index+12),SEEK_SET);		// First byte of float is is 12 bytes out from the first byte after COMM
+
+		if(getc(targetFile)==0x40)
+		{
+			if(getc(targetFile)==0x0d)
+			{
+				if(getc(targetFile)==0xac)
+				{
+					if(getc(targetFile)==0x44)
+					{
+						return(true);			// Not all 10 bytes, but what are the chances?  These are the first four (non zero) bytes of 22050 in IEEE extended (big endian).
+					}			
+				}	
+			}	
+		}
+	}
+
+	return(false);
+}
+
+/*
 static bool IsCorrectSize(void)
 // Returns false if the sample is too big to fit in a sample slot.
 // IE, is <512k plus AIFF headers
@@ -462,6 +556,33 @@ static bool IsCorrectSize(void)
 		return(false);
 	}
 	return(true);
+}
+*/
+
+static int GetSampleLength(void)
+// Returns number of sound data bytes in the AIFF (sample frames)
+// This is a four-byte big endian number in the COMM chunk
+{
+	int
+		index;
+	unsigned int
+		sampleBytes;
+
+	index=FindPatternInFile(commChunkId,4,targetFile,0);		// Find location of first "COMM" in the file
+
+	if(index>0)		// Found it?
+	{
+		fseek(targetFile,(index+6),SEEK_SET);		// MSB of sample frames is six bytes out from the ID
+
+		sampleBytes=((unsigned int)getc(targetFile))<<24;
+		sampleBytes|=((unsigned int)getc(targetFile))<<16;
+		sampleBytes|=((unsigned int)getc(targetFile))<<8;
+		sampleBytes|=getc(targetFile);
+		
+		return(sampleBytes);
+	}
+
+	return(-1);
 }
 
 static bool IsAiff(void)
@@ -514,6 +635,8 @@ static bool IsLegit(void)
 {
 	bool
 		legit;
+	int
+		wtpaSampleLength;
 	
 	legit=true;
 	
@@ -522,47 +645,99 @@ static bool IsLegit(void)
 		legit=false;
 		printf("Not an AIFF!\n");		
 	}
+/*
 	else if(!IsCorrectSize())
 	{
 		legit=false;
 		printf("AIFF too long to fit in WTPA sample slot!\n");		
 	}
+*/
 	else if(!IsBitDepthCorrect())
 	{
 		legit=false;	
 		printf("Too many bits per sample!  You want more than 8, buy a real sampler.\n");		
 	}
-/*
 	else if(!IsMono())
 	{
 		legit=false;
 		printf("Stereo? OH YOU FANCY.\n");		
 	}
-*/
 
 	if(legit)
 	{
-		printf("A properly old-school AIFF.\n");			
+		wtpaSampleLength=GetSampleLength();		// Store this for later since we need it anyway.
+
+		if((wtpaSampleLength<1)||(wtpaSampleLength>(512*1024)))
+		{
+			legit=false;
+			printf("AIFF too long to fit in WTPA sample slot!\n");		
+		}
+		else
+		{
+			if(!CheckRecommendedSampleRate())
+			{
+				printf("WARNING: Sample rate not 22050, will revert if re-converted.  Bytes: %d\n",wtpaSampleLength);	
+			}
+			else
+			{
+				printf("A well-groomed AIFF, %d bytes long.\n",wtpaSampleLength);			
+			}
+		}
 	}
 	return(legit);
 }
 
-static void GetSampleRate(void)
+static int GetSampleRate(void)
+// Gets the sample rate from the AIFF's COMM chunk.
+// Converts it from IEEE 10-byte extended floating point to WTPA format.
+// @@@ unimplemented
 {
-
+	return(1);
 }
 
 static void UpdateToc(void)
+// Keeps track of the table of contents for the WTPA SD card
 {
-
+	sampleIndex++;		// All we do now is keep track of number of samples.
 }
 
 static void WriteSampleToOutputFile(void)
+// Get the sample length from the COMM chunk, write it to the output file at the correct offset.
+// Then get the sample data from the SSND chunk and write it at the correct offset.
 {
+	unsigned int
+		soundDataStart,
+		i,
+		wtpaSampleLength;
+	unsigned int
+		offsetIntoOutFile;
 
+	wtpaSampleLength=GetSampleLength();				// Get length in bytes for wtpa
+	offsetIntoOutFile=(sampleIndex*512*1024)+512;		// First SD block plus number of samples before this times 512k
+
+	fseek(outFile,offsetIntoOutFile,SEEK_SET);			// Go there
+	
+	fputc((wtpaSampleLength&0xff000000)>>24,outFile);   // First four bytes are length
+	fputc((wtpaSampleLength&0x00ff0000)>>16,outFile);
+	fputc((wtpaSampleLength&0x0000ff00)>>8,outFile);
+	fputc((wtpaSampleLength&0x000000ff),outFile);
+
+	// Find start of sample data
+
+	soundDataStart=FindPatternInFile(soundChunkId,4,targetFile,0);		// Find location of first "SSND" in the file
+	soundDataStart+=12;													// Sound data lives 12 bytes after the end of SSND
+
+	fseek(targetFile,soundDataStart,SEEK_SET);			// Go there	
+
+	for(i=0;i<wtpaSampleLength;i++)
+	{
+		fputc(getc(targetFile),outFile);
+	}
 }
 
 static void WriteTocToOutputFile(void)
+// Write canonical WTPA2 header.
+// Take the number of samples we wrote and make them into a bitfield.
 {
 
 }
@@ -591,9 +766,6 @@ int main(int argc, char *argv[])
     	directoryDescriptor;
 //    struct dirent*
 //    	directoryEntry;
-    FILE
-    	*outFile;
-
 
 	struct
 		dirent **namelist;
@@ -639,6 +811,7 @@ int main(int argc, char *argv[])
     }
 
 	printf("Beginning file check...\n");
+	sampleIndex=0;
 
     for(i=0;i<numEntriesInDirectory;i++)	// Loop through everything in the directory
     {
@@ -670,22 +843,14 @@ int main(int argc, char *argv[])
 
 		if(IsLegit())	// Check criteria for using this file
 		{
-			GetSampleRate();			// Get this from the AIFF
-			UpdateToc();				// Log any data in info about WTPA header, write this at the end
+			GetSampleRate();			// @@@ Does nothing right now
 			WriteSampleToOutputFile();	// Write sample data to sample slot
+			printf("Written!\n");
+			UpdateToc();				// Log any data in info about this sample we'll need for the WTPA header, write this at the end
 		}
 
 
 
-
-
-
-
-
-		// Check bit depth less than 8
-		// Get sample rate
-		// Get sample length
-		// Inhale file and stick it in output file at the correct offset
 		// @@@ get rid of all these unused variables
 
         fclose(targetFile);
