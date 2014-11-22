@@ -226,6 +226,7 @@ enum					// All the things the micro sd card state machine can be doing
 	{
 		SD_NOT_PRESENT=0,
 		SD_WARMUP,
+		SD_JUST_INSERTED,
 		SD_WRITE_START,
 		SD_WRITING_BLOCK,
 		SD_WRITE_CARD_WAIT,
@@ -383,7 +384,7 @@ static void PlayCallback(volatile BANK_STATE *theBank)
 		PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
 
-		PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		PORTC=(0xA8|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 
 		LATCH_DDR=0x00;								// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);						// RAM's IO pins to outputs.
@@ -644,7 +645,7 @@ static void RecordCallback(volatile BANK_STATE *theBank)
 	PORTA|=(Om_RAM_H_ADR_LA);						// Strobe it to the latch output...
 	PORTA&=~(Om_RAM_H_ADR_LA);						// ...Keep it there.
 
-	PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	PORTC=(0xA8|((unsigned char)(theAddy>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 
 	LATCH_PORT=adcByte;							// Put the data to write on the RAM's input port
 
@@ -705,7 +706,7 @@ static void OverdubCallback(volatile BANK_STATE *theBank)
 		PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
 		PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
 
-		PORTC=(0x88|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+		PORTC=(0xA8|((unsigned char)(theAddy>>16)&0x07));			// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.  NOTE -- PC5 is card detect
 
 		LATCH_DDR=0x00;								// Turn the data bus around (AVR's data port to inputs)
 		PORTA&=~(Om_RAM_OE);						// RAM's IO pins to outputs.
@@ -909,9 +910,9 @@ static void RealtimeCallback(volatile BANK_STATE *theBank)
 ISR(TIMER1_CAPT_vect)
 // The vector triggered by an external clock edge and associated with Bank0
 {
-	PORTC|=Om_TEST_PIN;			// @@@ Used to time ISRs
+//	PORTC|=Om_TEST_PIN;			// @@@ Used to time ISRs
 	AudioCallback0(&bankStates[BANK_0]);
-	PORTC&=~Om_TEST_PIN;		// @@@ Used to time ISRs
+//	PORTC&=~Om_TEST_PIN;		// @@@ Used to time ISRs
 }
 
 ISR(PCINT2_vect)
@@ -1017,7 +1018,7 @@ ISR(TIMER2_COMPB_vect)
 				PORTA|=(Om_RAM_H_ADR_LA);					// Strobe it to the latch output...
 				PORTA&=~(Om_RAM_H_ADR_LA);					// ...Keep it there.
 
-				PORTC=(0x88|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+				PORTC=(0xA8|((sdRamAddress>>16)&0x07));		// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.  PC5 is card detect
 				LATCH_PORT=theByte;							// Put the data to write on the RAM's input port
 
 				// Compute address while bus settles.
@@ -1072,7 +1073,7 @@ ISR(TIMER2_COMPB_vect)
 				PORTA|=(Om_RAM_H_ADR_LA);				// Strobe it to the latch output...
 				PORTA&=~(Om_RAM_H_ADR_LA);				// ...Keep it there.
 
-				PORTC=(0x88|((sdRamAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+				PORTC=(0xA8|((sdRamAddress>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 
 				LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 				PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -2337,7 +2338,7 @@ static void UpdateCard(void)
 // Warmup / Init	---------------------------------------------------------------------------------------------------------
 // --------------------------------------------------------------------------------------------------------------------------------------
 
-			case SD_NOT_PRESENT:	// Card just inserted
+			case SD_JUST_INSERTED:	// Just went into slot
 			cardState=SD_WARMUP;	// Let card get power settled before trying to do anything.
 			SetTimer(TIMER_SD,SD_WARMUP_TIME);		// Give card this long
 			break;
@@ -2354,8 +2355,17 @@ static void UpdateCard(void)
 
 					if(theByte==SD_TYPE_SAMPLES)	// Looks like WTPA-formatted samples.
 					{
-						cardState=SD_IDLE;			// Card is legit and ready to go.
-						InitSdIsr();				// Enable the timers necessary to give the SD card its own IRQ
+						if(dpcmMode==true)
+						{
+							cli();
+							asm volatile("jmp 0000");	// Jump to normal reset vector -- start application
+						}
+						else
+						{
+							cardState=SD_IDLE;			// Card is legit and ready to go.
+							InitSdIsr();				// Enable the timers necessary to give the SD card its own IRQ						
+						}
+
 					}
 					else if(theByte==SD_TYPE_DPCM)	// Looks like Nintendo samples, uninitialize the normal sampler routines and get that going.
 					{
@@ -2873,8 +2883,15 @@ static void UpdateCard(void)
 			}
 			break;
 
-			case SD_IDLE:		// Do nothing if IDLE.
-			case SD_INVALID:	// If we're invalid, fall through and do nothing.
+			case SD_NOT_PRESENT:			// If there is no SD card, just check to see if that changes.
+				if(cardDetect==true)
+				{
+					cardState=SD_JUST_INSERTED;		// Got a new SD card, warm up and check it out.
+				}
+				break;
+
+			case SD_IDLE:			// Do nothing if IDLE until told to by program (card is present and valid).
+			case SD_INVALID:		// If we're invalid, fall through and do nothing.
 			default:
 			break;
 		}
@@ -3286,7 +3303,7 @@ static unsigned char ReadRAM(unsigned long address)
 	PORTA|=(Om_RAM_H_ADR_LA);			// Strobe it to the latch output...
 	PORTA&=~(Om_RAM_H_ADR_LA);			// ...Keep it there.
 	
-	PORTC=((0x88|((address>>16)&0x07)));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	PORTC=((0xA8|((address>>16)&0x07)));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), don't care about unused pins (PC6-7) low, PC5 is card detect, keep it high, and put the high addy bits on 0-2.
 	
 	LATCH_DDR=0x00;						// Turn the data bus around (AVR's data port to inputs)
 	PORTA&=~(Om_RAM_OE);				// RAM's IO pins to outputs.
@@ -3316,7 +3333,7 @@ static void WriteRAM(unsigned long address, unsigned char value)
 	PORTA|=(Om_RAM_H_ADR_LA);									// Strobe it to the latch output...
 	PORTA&=~(Om_RAM_H_ADR_LA);									// ...Keep it there.
 	
-	PORTC=(0x88|((address>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
+	PORTC=(0xA8|((address>>16)&0x07));	// Keep the switch OE high (hi z) (PC3), test pin high (PC7 used to time isrs), and the unused pins (PC4-6) low, and put the high addy bits on 0-2.
 	
 	LATCH_PORT=value;				// Put the data to write on the RAM's input port
 	
@@ -3422,7 +3439,6 @@ static void SdToRam(void)
 		
 	EndSdTransfer();				// Bring CS high
 	
-
 	UnInitSdInterface();
 	WriteLedLatch(0x01);
 }
@@ -3715,7 +3731,8 @@ static void InitDpcm(void)
 	bankStates[BANK_0].audioOutput=0;	// Voids contribution that this audio source has to the output.
 	bankStates[BANK_1].audioOutput=0;	// Voids contribution that this audio source has to the output.
 
-	SdToRam();	// Inhale DPCM into SRAM
+	InitLeds();						// Stop any blinking
+	SdToRam();						// Inhale DPCM into SRAM
 
 	// Turn on analog clock interrupts for DPCM use
 	TCCR1B|=(1<<ICES1);		// Trigger on a rising edge.
@@ -3724,7 +3741,6 @@ static void InitDpcm(void)
 
 	AudioCallback0=DpcmCallback;	// Set the ISR to do DPCM stuff
 	SetState(HandleDpcm);		
-	InitLeds();						// Stop any blinking
 
 	dpcmMode=true;
 
@@ -5568,8 +5584,8 @@ int main(void)
 
 	// Set the DDRs for all RAM, DAC, latch related pins here.  Any non-SFR related IO pin gets initialized here.  ADC and anything else with a specific init routine will be intialized separately.
 
-	DDRC=0xEF;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  Pins PC5-PC7 are unused now, so pull them low.
-	PORTC=0x08;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
+	DDRC=0xDE;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  PC5 is the card detect input. Pins PC6-PC7 are unused now, so pull them low.
+	PORTC=0x28;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
 
 	DDRD=0x80;			// PORTD is the UART (midi) the Flash interface (SPI) the ACLK input and the LED latch enable.  Make UART and Flash input for now and the rest make appropriate (LE is an output) .
 	PORTD=0x00;			// Drive the LE for the LEDs low and leave the rest floating.
