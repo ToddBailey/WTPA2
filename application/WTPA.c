@@ -5048,7 +5048,7 @@ static void DoSampler(void)
 			{
 				if(currentMidiMessage.channelNumber==BANK_SD)				// Is this a command to stream SD?
 				{
-					PlaySampleFromSd(currentMidiMessage.dataByteOne*midiSdSampleOffset);	// Play it.  No velocity, and let it ring out.
+					PlaySampleFromSd(currentMidiMessage.dataByteOne+midiSdSampleOffset);	// Play it.  No velocity, and let it ring out.
 				}
 				else	// Real sample, not sd card.
 				{
