@@ -15,10 +15,7 @@ Updated
 Actual things I'd like to do before release:
 ----------------------------------------------
 
-Make sure MIDI isn't nerfed w/r/t the new functions (make MIDI able to play SD sample slots at least)
 Delete all "scratchpad" comment blocks and commented out functions when you're sure everything is right.
-"os_main" or "noreturn" function to the main loop?
-Finish adding DPCM
 
 -------
 DONE:
@@ -38,12 +35,20 @@ There are lots of questionable notes w/r/t granulars, windows, and playback dire
 Right now I think we have the ability to make arbitrary clock divs, but halfspeed variable is still around -- get rid of it
 	-- Sun Nov  9 12:57:45 EST 2014 Fixed
 
+"os_main" or "noreturn" function to the main loop
+Finish adding DPCM
+Make sure MIDI isn't nerfed w/r/t the new functions (make MIDI able to play SD sample slots at least)
+	-- Sun Nov 23 13:15:04 EST 2014 Done
+
+load/store samples from a host PC
+	-- Sun Nov 23 13:16:19 EST 2014 Done a couple days ago
+
 
 
 *Maybe* list:
 ----------------
 "Bit reduction" could be a mask instead of a shift amount; could make it a new MIDI message
-Between "skip" and "sample increment" variables we could really make a mess of sample playback speeds
+Between "skip" and "sample increment" variables we could really make a cool mess of sample playback speeds
 Add a write protect byte to the SD card so you don't accidentally clobber samples you like
 Store the sample rate for a bank as well during the RECORD function.  Then store this on the SD card also.
 Can use this information when pulling samples off the card with a host computer for accurate playback.

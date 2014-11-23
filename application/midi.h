@@ -71,7 +71,8 @@ extern MIDI_MESSAGE
 
 extern unsigned char
 	midiChannelNumberA,				// This is one midi channel our hardware is assigned to -- @@@ make this an array if we expand beyond two; really ought to handle (n) cases.
-	midiChannelNumberB,				// This is one midi channel our hardware is assigned to.
+	midiChannelNumberB,				// Second
+	midiChannelNumberC,				// Third
 	midiMessagesInIncomingFifo,		// How many messages in the rx queue?
 	midiMessagesInOutgoingFifo;		// How many messages in the tx queue?
 

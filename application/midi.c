@@ -30,8 +30,9 @@ enum					// How many channels are we interpreting?  This data is passed to the m
 */
 
 unsigned char
-	midiChannelNumberA,				// This is one midi channel our hardware is assigned to -- @@@ make this an array if we expand beyond two; really ought to handle (n) cases.
-	midiChannelNumberB,				// This is one midi channel our hardware is assigned to.
+	midiChannelNumberA,				// This is first midi channel our hardware is assigned to -- make this an array if we expand much; really ought to handle (n) cases.
+	midiChannelNumberB,				// This is second midi channel
+	midiChannelNumberC,				// Third
 	midiMessagesInIncomingFifo,		// How many messages in the rx queue?
 	midiMessagesInOutgoingFifo;		// How many messages in the tx queue?
 
@@ -221,7 +222,7 @@ void HandleIncomingMidiByte(unsigned char theByte)
 
 		// Not a system message we care about.  Channel / Voice Message on our channel?
 */
-		if(((theByte&0x0F)==midiChannelNumberA)||((theByte&0x0F)==midiChannelNumberB))		// Are you talking a valid Channel?  Now see if it's a command we understand.  
+		if(((theByte&0x0F)==midiChannelNumberA)||((theByte&0x0F)==midiChannelNumberB)||((theByte&0x0F)==midiChannelNumberC))		// Is this a midi channel we are listening on?  Now see if it's a command we understand.  
 		{
 			if((theByte&0xF0)==MIDI_NOTE_ON_MASK)				// Is the byte a NOTE_ON status byte?  Two Data bytes.
 			{
@@ -231,9 +232,13 @@ void HandleIncomingMidiByte(unsigned char theByte)
 				{
 					temporaryChannel=BANK_0;
 				}
-				else
+				else if((theByte&0x0F)==midiChannelNumberB)
 				{
 					temporaryChannel=BANK_1;
+				}
+				else
+				{
+					temporaryChannel=BANK_SD;
 				}
 			}
 			else if((theByte&0xF0)==MIDI_NOTE_OFF_MASK)			// Is the byte a NOTE_OFF status byte?
@@ -244,9 +249,13 @@ void HandleIncomingMidiByte(unsigned char theByte)
 				{
 					temporaryChannel=BANK_0;
 				}
-				else
+				else if((theByte&0x0F)==midiChannelNumberB)
 				{
 					temporaryChannel=BANK_1;
+				}
+				else
+				{
+					temporaryChannel=BANK_SD;
 				}
 			}
 			else if((theByte&0xF0)==MIDI_PROGRAM_CHANGE_MASK)	// Program change started.  One data byte.
@@ -283,9 +292,13 @@ void HandleIncomingMidiByte(unsigned char theByte)
 				{
 					temporaryChannel=BANK_0;
 				}
-				else
+				else if((theByte&0x0F)==midiChannelNumberB)
 				{
 					temporaryChannel=BANK_1;
+				}
+				else
+				{
+					temporaryChannel=BANK_SD;
 				}
 			}			
 			else
@@ -316,7 +329,7 @@ void HandleIncomingMidiByte(unsigned char theByte)
 			break;
 
 			case GET_NOTE_ON_DATA_BYTE_TWO:					// Check velocity, and make the hardware do a note on, note off, or bug out if there's an error.
-			if(theByte==0)									// This "note on" is really a "note off".
+			if(theByte==0)									// This "note on" is really a "note off" (a note on with a velocity of zero)
 			{
 				// Queue midi message
 				theMessage.messageType=MESSAGE_TYPE_NOTE_OFF;		// What kind of message is this?

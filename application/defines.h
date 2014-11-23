@@ -50,12 +50,14 @@ enum								// Add more timers here if you need them, but don't get greedy.
 
 // Canonical list of banks:
 
-enum			// Here we enumerate however many banks we're actually implementing.
+enum			// Here we enumerate however many proper sample banks we're actually implementing.
 {
 	BANK_0=0,
 	BANK_1,
 	NUM_BANKS,
 };
+
+#define		BANK_SD		NUM_BANKS		// Always after the "real" banks, does not get a data structure, just used for MIDI receive address.
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------

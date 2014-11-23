@@ -260,6 +260,9 @@ enum					// All the things the micro sd card's interrupt can be doing
 		SD_ISR_STREAMING_PLAYBACK,
 	};
 
+static unsigned int
+	midiSdSampleOffset=0;		// Offset for MIDI NOTE numbers for the SD Streaming playback channel, set to allow access to all 512 samples on an SD card
+
 //-----------------------------------------------------------------------
 
 
@@ -3752,7 +3755,7 @@ static void InitDpcm(void)
 // MIDI Functions
 //--------------------------------------
 //--------------------------------------
-// Control Changes messages are what tells the midi state machine what to do next.
+// Control Change messages are what tells the midi state machine what to do next.
 
 /*
 #define		MIDI_RECORD_RATE		((OctaveZeroCompareMatches[C_NOTE])>>5)		// About 9.6k -- This is MIDI Note 60. (C4)
@@ -3770,6 +3773,10 @@ static unsigned int
 
 // Fri Mar 26 22:02:22 EDT 2010
 // Renumbered to undefined CCs
+// Sun Nov 23 11:47:00 EST 2014
+// You can find a list here:
+// http://www.midi.org/techspecs/midi_chart-v2.pdf
+// There are probably all kinds of reasons to pick some CC numbers and not others but I don't know what they are.
 
 #define		MIDI_RECORDING				3
 #define		MIDI_OVERDUB				9
@@ -3793,6 +3800,10 @@ static unsigned int
 #define 	MIDI_ADJUST_SAMPLE_START_WIDE		28
 #define 	MIDI_ADJUST_SAMPLE_END_WIDE			29
 #define 	MIDI_ADJUST_SAMPLE_WINDOW_WIDE		30
+
+// SD stuff
+
+#define		MIDI_CHANGE_SD_SAMPLE_BANK			52		// SD samples are played with NOTE_ON messages, which can only hit 128 positions in memory.  "Banks" here are 0-3 which set which group of 128 samples you will play (the SD card has up to 512).
 
 static const unsigned int OctaveZeroCompareMatches[]=
 // This table corresponds to a musical octave (the lowest octave we can generate with a 16-bit compare match timer) in 12 tone equal temperament.
@@ -3893,7 +3904,8 @@ static unsigned char GetMidiRecordNote(unsigned char theBank)
 
 
 static void StoreMidiChannel(unsigned char theBank, unsigned char theChannel)
-// We store our midi channels in the 4th and 8th bytes of EEPROM for the respective channels.  This is pretty arbitrary.
+// We store our midi channels in the 4th, 8th and 3rd bytes of EEPROM for the respective channels.  This is pretty arbitrary.
+// NOTE:  SD isn't a sample channel, it's the instrument number where SD streaming playback comes in.  So you can't set its record note, for instance.
 {
 	if(theBank==BANK_0)
 	{
@@ -3902,6 +3914,10 @@ static void StoreMidiChannel(unsigned char theBank, unsigned char theChannel)
 	else if(theBank==BANK_1)
 	{
 		EepromWrite(8,theChannel);	// Write the channel to EEPROM.
+	}
+	else if(theBank==BANK_SD)
+	{
+		EepromWrite(3,theChannel);	// Write the channel to EEPROM.
 	}
 }
 
@@ -3922,6 +3938,10 @@ static unsigned char GetMidiChannel(unsigned char theBank)
 	{
 		x=EepromRead(8);		// Get the channel from EEPROM.
 	}
+	else if(theBank==BANK_SD)
+	{
+		x=EepromRead(3);		// Get the channel from EEPROM.
+	}
 
 	if(x<16)					// Legit number?
 	{
@@ -3931,11 +3951,15 @@ static unsigned char GetMidiChannel(unsigned char theBank)
 	{
 		if(theBank==BANK_0)
 		{
-			x=0;			// If we've got poo poo in EEPROM or a bad address then default to the first midi channel.
+			x=0;			// If we've got unerased EEPROM or a bad address then default to the first midi channel.
 		}
-		else
+		else if(theBank==BANK_1)
 		{
 			x=1;			// Return midi channel 2 if we're screwing up the second bank.
+		}
+		else if(theBank==BANK_SD)
+		{
+			x=2;			// Return midi channel 3 if we're looking for the SD playback channel
 		}
 		return(x);
 	}
@@ -5006,30 +5030,40 @@ static void DoSampler(void)
 //				// Do this here.
 //			}
 
-			if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_OFF)		//  Note off.  Do it.  NOTE:  Our serial-to-midi functions handle turning velocity 0 NOTE_ON messages into NOTE_OFFs.
+			if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_OFF)		//  Note off.  Do it.  NOTE: Low level midi FIFO functions already handle turning velocity 0 NOTE_ON messages into NOTE_OFFs, so we can keep it simple here.
 			{
-				if((bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_PLAYBACK)||(bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_REALTIME))	// Are we playing a sample to begin with, or running audio through in realtime?
+				if(currentMidiMessage.channelNumber!=BANK_SD)				// Don't do anything with NOTE_OFF for the SD stream.  Treat this like MPC-pads, just let the note play out.
 				{
-					if(currentMidiMessage.dataByteOne==currentNoteOn[currentMidiMessage.channelNumber])			// Sampler channels are mono.  Only turn off the last note we turned on.
+					if((bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_PLAYBACK)||(bankStates[currentMidiMessage.channelNumber].audioFunction==AUDIO_REALTIME))	// Are we playing a sample to begin with, or running audio through in realtime?
 					{
-						bankStates[currentMidiMessage.channelNumber].audioFunction=AUDIO_IDLE;	// Nothing to do in the ISR
-						bankStates[currentMidiMessage.channelNumber].clockMode=CLK_NONE;		// Don't trigger this bank.
+						if(currentMidiMessage.dataByteOne==currentNoteOn[currentMidiMessage.channelNumber])			// Sampler channels are mono.  Only turn off the last note we turned on.
+						{
+							bankStates[currentMidiMessage.channelNumber].audioFunction=AUDIO_IDLE;	// Nothing to do in the ISR
+							bankStates[currentMidiMessage.channelNumber].clockMode=CLK_NONE;		// Don't trigger this bank.
+						}
 					}
 				}
 			}
-			else if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_ON)		// Note on.
+			else if(currentMidiMessage.messageType==MESSAGE_TYPE_NOTE_ON)	// Note on.
 			{
-				currentNoteOn[currentMidiMessage.channelNumber]=currentMidiMessage.dataByteOne;			// This is our new note.
-
-				if(bankStates[currentMidiMessage.channelNumber].realtimeOn)			// Real time sound editing?
+				if(currentMidiMessage.channelNumber==BANK_SD)				// Is this a command to stream SD?
 				{
-					StartRealtime(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// Yes, do realtime.
+					PlaySampleFromSd(currentMidiMessage.dataByteOne*midiSdSampleOffset);	// Play it.  No velocity, and let it ring out.
 				}
-				else
+				else	// Real sample, not sd card.
 				{
-					if(bankStates[currentMidiMessage.channelNumber].startAddress!=bankStates[currentMidiMessage.channelNumber].endAddress)		// Something to play?
+					currentNoteOn[currentMidiMessage.channelNumber]=currentMidiMessage.dataByteOne;			// This is our new note.
+
+					if(bankStates[currentMidiMessage.channelNumber].realtimeOn)			// Real time sound editing?
 					{
-						StartPlayback(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// No realtime, sample in memory, do playback.
+						StartRealtime(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// Yes, do realtime.
+					}
+					else
+					{
+						if(bankStates[currentMidiMessage.channelNumber].startAddress!=bankStates[currentMidiMessage.channelNumber].endAddress)		// Something to play?
+						{
+							StartPlayback(currentMidiMessage.channelNumber,CLK_INTERNAL,GetPlaybackRateFromNote(currentNoteOn[currentMidiMessage.channelNumber]));	// No realtime, sample in memory, do playback.
+						}
 					}
 				}
 			}
@@ -5107,7 +5141,6 @@ static void DoSampler(void)
 					if(currentMidiMessage.dataByteTwo)
 					{
 						bankStates[currentMidiMessage.channelNumber].backwardsPlayback=true;
-						// @@@ Fix this to account for banked increment etc etc
 					}
 					else
 					{
@@ -5180,7 +5213,7 @@ static void DoSampler(void)
 					SREG=sreg;		// Re-enable interrupts.
 					break;
 
-//	Editing functions (resolute and wide are whether we want a MIDI step to correspond to 1 edit-sized chunk per increase in value or 2):
+					//	Editing functions (resolute and wide are whether we want a MIDI step to correspond to 1 edit-sized chunk per increase in value or 2):
 
 					case MIDI_ADJUST_SAMPLE_START_RESOLUTE:
 					AdjustSampleStart(currentMidiMessage.channelNumber,currentMidiMessage.dataByteTwo);
@@ -5208,6 +5241,24 @@ static void DoSampler(void)
 
 					case MIDI_ADJUST_SAMPLE_WINDOW_WIDE:
 					AdjustSampleWindow(currentMidiMessage.channelNumber,(currentMidiMessage.dataByteTwo*2));
+					break;
+
+					// SD sample playback
+
+					case MIDI_CHANGE_SD_SAMPLE_BANK:
+					// If this comes in on the SD playback channel, add (128*value) to the note value for SD sample playback.
+					// Allows note on messages to reach all 512 samples.
+					if(currentMidiMessage.channelNumber==BANK_SD)		
+					{
+						if(currentMidiMessage.dataByteTwo>3)
+						{
+							midiSdSampleOffset=0;				// Max of 512 samples
+						}
+						else
+						{
+							midiSdSampleOffset=(currentMidiMessage.dataByteTwo*128);		// All note on messages after this (for the SD card) will be shifted by this much.
+						}												
+					}
 					break;
 
 					default:
@@ -5252,6 +5303,7 @@ static void InitSampler(void)
 
 	midiChannelNumberA=GetMidiChannel(BANK_0);				// Get our MIDI channel from Eeprom.
 	midiChannelNumberB=GetMidiChannel(BANK_1);				// Get our MIDI channel from Eeprom.
+	midiChannelNumberC=GetMidiChannel(BANK_SD);				// Get our MIDI channel from Eeprom.
 	bankStates[BANK_0].startAddress=BANK_0_START_ADDRESS;	// Link indexable bank 0 variable to hardcoded start address at the beginning of RAM
 	bankStates[BANK_1].startAddress=BANK_1_START_ADDRESS;	// Link indexable bank 1 variable to hardcoded start address at the end of RAM (it will count down).
 
@@ -5403,6 +5455,8 @@ static void SetMidiChannels(void)
 	{
 		midiChannelNumberA=GetMidiChannel(BANK_0);					// Get the midi channels we have stored in memory.
 		midiChannelNumberB=GetMidiChannel(BANK_1);
+		midiChannelNumberC=GetMidiChannel(BANK_SD);
+
 		ledOnOffMask=(midiChannelNumberA)|(midiChannelNumberB<<4);	// Put the values on the LEDs.  The binary value of midi channel A is displayed on the top 4 leds and the bottom leds display midi channel B.
 		subState=SS_1;
 	}
@@ -5416,8 +5470,7 @@ static void SetMidiChannels(void)
 				midiChannelNumberA=0;
 			}
 
-			ledOnOffMask&=~0x0F;				// Clear low nybble (upper LEDs).
-			ledOnOffMask|=(midiChannelNumberA);	// Channel A displays on low nybble.
+			ledOnOffMask=(midiChannelNumberA)|(midiChannelNumberB<<4);	// Put the values on the LEDs.  The binary value of midi channel A is displayed on the top 4 leds and the bottom leds display midi channel B.
 		}
 		if(newKeys&Im_SWITCH_1)
 		{
@@ -5427,13 +5480,23 @@ static void SetMidiChannels(void)
 				midiChannelNumberB=0;
 			}
 
-			ledOnOffMask&=~0xF0;					// Clear top nybble (leds near bottom of PCB).
-			ledOnOffMask|=(midiChannelNumberB<<4);	// Channel B displays on low nybble.
+			ledOnOffMask=(midiChannelNumberA)|(midiChannelNumberB<<4);	// Put the values on the LEDs.  The binary value of midi channel A is displayed on the top 4 leds and the bottom leds display midi channel B.
 		}
-		if(newKeys&Im_SWITCH_2)		// Write them to eeprom and get on with life.
+		if(newKeys&Im_SWITCH_2)		// Display channel C (the SD channel) alone.
+		{
+			midiChannelNumberC++;
+			if(midiChannelNumberC>15)			// Roll around when we get to the max midi channel
+			{
+				midiChannelNumberC=0;
+			}
+
+			ledOnOffMask=midiChannelNumberC;	// Display it all alone.			
+		}
+		if(newKeys&Im_SWITCH_3)		// Write them to eeprom and get on with life.
 		{
 			StoreMidiChannel(BANK_0,midiChannelNumberA);
 			StoreMidiChannel(BANK_1,midiChannelNumberB);
+			StoreMidiChannel(BANK_SD,midiChannelNumberC);
 			SetState(InitSampler);
 		}
 	}
@@ -5576,7 +5639,7 @@ static void DoFruitcakeIntro(void)
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
 
-int main(void)
+__attribute__ ((OS_main)) int main(void)		// OS_main tells us to not save registers upon entry.
 // Initialize this mess.
 {
 	PRR=0xFF;			// Power off everything, let the initialization routines turn on modules you need.
