@@ -58,7 +58,7 @@ Record sample to SD card as it is currently being played back, not unadjusted.
 MIDI-gate the analog clocked samples
 Bank to bank copy
 Fix length of second bank to be recorded to first recorded (sync samples)
-
+Seed granular "random" with midi number from 1-128, to get duplicateable granular weirdness.
 
 =============================================================
 =============================================================
