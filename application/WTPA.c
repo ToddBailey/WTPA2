@@ -5647,7 +5647,7 @@ __attribute__ ((OS_main)) int main(void)		// OS_main tells us to not save regist
 
 	// Set the DDRs for all RAM, DAC, latch related pins here.  Any non-SFR related IO pin gets initialized here.  ADC and anything else with a specific init routine will be intialized separately.
 
-	DDRC=0xDE;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt for the bank1 clock.  PC5 is the card detect input. Pins PC6-PC7 are unused now, so pull them low.
+	DDRC=0xCF;			// PORTC is the switch latch OE and direct address line outputs which must be initialized here.  PC4 is the interrupt-on-change input for the bank1 clock.  PC5 is the card detect input. Pins PC6-PC7 are unused now, so pull them low.
 	PORTC=0x28;			// 0, 1, 2 are the address lines, pull them low.  Pull bit 3 high to tristate the switch latch.  Pull unused pins low.
 
 	DDRD=0x80;			// PORTD is the UART (midi) the Flash interface (SPI) the ACLK input and the LED latch enable.  Make UART and Flash input for now and the rest make appropriate (LE is an output) .
