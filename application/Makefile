@@ -369,11 +369,11 @@ fuses:
 
 
 app_fuses:
-	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
+	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -B 8 -U efuse:w:0xFC:m -U hfuse:w:0xD9:m -U lfuse:w:0xF7:m
 #	hfuse doesn't point at bootloader.
 
 boot_fuses:
-	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -U efuse:w:0xFC:m -U hfuse:w:0xD2:m -U lfuse:w:0xF7:m
+	$(AVRDUDE) -p $(AVRDUDE_MCU) -c $(AVRDUDE_PROGRAMMER) -P $(AVRDUDE_PORT) -u -v -B 8 -U efuse:w:0xFC:m -U hfuse:w:0xD2:m -U lfuse:w:0xF7:m
 #	efuse = 0xFC:	sets BOD level to max, about 4.3v typ (4.5v max)
 #	hfuse = 0xD2:	no ocd, no jtag, spi prog enabled, wdt NOT always on, eeprom preserved through erase, boot size 2048 words, go to bootloader at reset
 #	lfuse = 0xF7:	Select startup time and crystal osc source
